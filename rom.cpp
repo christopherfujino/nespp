@@ -87,15 +87,17 @@ void Rom::renderCHR() {
   // Decode n tiles
   const int n = this->chrSize / TILE_SIZE;
 
-  const auto SCREEN_WIDTH = 1280;
-  const auto PIXEL_SCALE = 4;
-  InitWindow(SCREEN_WIDTH, 240, "NES");
+  const auto SCREEN_WIDTH = 1920;
+  const auto SCREEN_HEIGHT = 1080;
+  const auto PIXEL_SCALE = 1;
+  const auto TILE_WIDTH = 8 * PIXEL_SCALE;
+  const auto TILES_PER_ROW = SCREEN_WIDTH / TILE_WIDTH;
+
+  InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "NES");
   while (!WindowShouldClose()) {
     BeginDrawing();
 
-    for (int tileNumber = 0; tileNumber < (SCREEN_WIDTH / (8 * PIXEL_SCALE));
-         tileNumber++) {
-      // for (int tileNumber = 0; tileNumber < n; tileNumber++) {
+    for (int tileNumber = 0; tileNumber < n; tileNumber++) {
       std::size_t tileOffset = tileNumber * (TILE_SIZE);
       for (int byteOffset = 0; byteOffset < 8; byteOffset++) {
         uint8_t plane0Byte = this->chrBlob[tileOffset + byteOffset];
@@ -105,11 +107,14 @@ void Rom::renderCHR() {
           uint8_t lowerBit = plane0Byte >> (7 - bitOffset) & 0x1;
           uint8_t upperBit = plane1Byte >> (7 - bitOffset) & 0x1;
           uint8_t bit = lowerBit | (upperBit << 1);
+
+          int yOffset = (tileNumber / TILES_PER_ROW) * 8 * PIXEL_SCALE;
           DrawRectangleV(
               // position
-              (Vector2){.x =
-                            (float)((tileNumber * 8 + bitOffset) * PIXEL_SCALE),
-                        .y = (float)(byteOffset * PIXEL_SCALE)},
+              (Vector2){
+                  .x = (float)(((tileNumber % TILES_PER_ROW) * 8 + bitOffset) *
+                               PIXEL_SCALE),
+                  .y = (float)(yOffset + (byteOffset * PIXEL_SCALE))},
               // size
               (Vector2){.x = PIXEL_SCALE, .y = PIXEL_SCALE},
               (Color){
