@@ -83,8 +83,9 @@ Rom romFromPath(const char *path) {
 }
 
 int main() {
+  Rom rom;
   try {
-    Rom rom = romFromPath("./rom.nes");
+    rom = romFromPath("./rom.nes");
   } catch (const char *msg) {
     fprintf(stderr, "Caught %s!\n", msg);
     _exit(1);
