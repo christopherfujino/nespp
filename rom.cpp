@@ -93,7 +93,8 @@ void Rom::renderCHR() {
   while (!WindowShouldClose()) {
     BeginDrawing();
 
-    for (int tileNumber = 0; tileNumber < (SCREEN_WIDTH / (8 * PIXEL_SCALE)); tileNumber++) {
+    for (int tileNumber = 0; tileNumber < (SCREEN_WIDTH / (8 * PIXEL_SCALE));
+         tileNumber++) {
       // for (int tileNumber = 0; tileNumber < n; tileNumber++) {
       std::size_t tileOffset = tileNumber * (TILE_SIZE);
       for (int byteOffset = 0; byteOffset < 8; byteOffset++) {
@@ -106,7 +107,8 @@ void Rom::renderCHR() {
           uint8_t bit = lowerBit | (upperBit << 1);
           DrawRectangleV(
               // position
-              (Vector2){.x = (float)((tileNumber * 8 + bitOffset) * PIXEL_SCALE),
+              (Vector2){.x =
+                            (float)((tileNumber * 8 + bitOffset) * PIXEL_SCALE),
                         .y = (float)(byteOffset * PIXEL_SCALE)},
               // size
               (Vector2){.x = PIXEL_SCALE, .y = PIXEL_SCALE},
@@ -116,13 +118,6 @@ void Rom::renderCHR() {
                   .b = 0xFF,
                   .a = (unsigned char)(0xFF / 3 * bit),
               });
-          // DrawPixel(tileNumber * 8 + bitOffset, byteOffset,
-          //           (Color){
-          //               .r = 0xFF,
-          //               .g = 0xFF,
-          //               .b = 0xFF,
-          //               .a = (unsigned char)(0xFF / 3 * bit),
-          //           });
         }
       }
     }
