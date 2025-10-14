@@ -1,0 +1,3 @@
+CompileFlags:
+  Add:
+    - -I./THIRD_PARTY/raylib-5.5/src

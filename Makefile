@@ -1,13 +1,16 @@
-CXXFLAGS = -std=c++20
+RAYLIB_VERSION = 5.5
+RAYLIB_INCLUDE = ./THIRD_PARTY/raylib-$(RAYLIB_VERSION)/out/raylib/include
+RAYLIB_BUILD = ./THIRD_PARTY/raylib-$(RAYLIB_VERSION)/out/raylib
+CXXFLAGS = -std=c++20 -I$(RAYLIB_INCLUDE) -L$(RAYLIB_BUILD)
 
 .PHONY: run
 run: a.out
 	./a.out
 
-a.out: main.o rom.o
-	clang++ $(CXXFLAGS) main.o rom.o -o a.out
+a.out: main.o rom.o $(RAYLIB_BUILD)/libraylib.a
+	clang++ $(CXXFLAGS) main.o rom.o $(RAYLIB_BUILD)/libraylib.a -o a.out
 
-rom.o: rom.cpp rom.hpp
+rom.o: rom.cpp rom.hpp $(RAYLIB_INCLUDE)/raylib.h
 	clang++ $(CXXFLAGS) -c rom.cpp -o rom.o
 
 main.o: main.cpp rom.hpp

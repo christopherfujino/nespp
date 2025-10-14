@@ -11,6 +11,7 @@
 // rippers put their name across bytes 7-15)
 
 #include "rom.hpp"
+#include "raylib.h"
 #include <cstdio>
 #include <cstring>
 
@@ -86,14 +87,56 @@ void Rom::renderCHR() {
   // Decode n tiles
   const int n = this->chrSize / TILE_SIZE;
 
-  printf("\n\n");
+  const auto SCREEN_WIDTH = 1280;
+  const auto PIXEL_SCALE = 4;
+  InitWindow(SCREEN_WIDTH, 240, "NES");
+  while (!WindowShouldClose()) {
+    BeginDrawing();
+
+    for (int tileNumber = 0; tileNumber < (SCREEN_WIDTH / (8 * PIXEL_SCALE)); tileNumber++) {
+      // for (int tileNumber = 0; tileNumber < n; tileNumber++) {
+      std::size_t tileOffset = tileNumber * (TILE_SIZE);
+      for (int byteOffset = 0; byteOffset < 8; byteOffset++) {
+        uint8_t plane0Byte = this->chrBlob[tileOffset + byteOffset];
+        uint8_t plane1Byte = this->chrBlob[tileOffset + byteOffset + 8];
+
+        for (int bitOffset = 0; bitOffset < 8; bitOffset++) {
+          uint8_t lowerBit = plane0Byte >> (7 - bitOffset) & 0x1;
+          uint8_t upperBit = plane1Byte >> (7 - bitOffset) & 0x1;
+          uint8_t bit = lowerBit | (upperBit << 1);
+          DrawRectangleV(
+              // position
+              (Vector2){.x = (float)((tileNumber * 8 + bitOffset) * PIXEL_SCALE),
+                        .y = (float)(byteOffset * PIXEL_SCALE)},
+              // size
+              (Vector2){.x = PIXEL_SCALE, .y = PIXEL_SCALE},
+              (Color){
+                  .r = 0xFF,
+                  .g = 0xFF,
+                  .b = 0xFF,
+                  .a = (unsigned char)(0xFF / 3 * bit),
+              });
+          // DrawPixel(tileNumber * 8 + bitOffset, byteOffset,
+          //           (Color){
+          //               .r = 0xFF,
+          //               .g = 0xFF,
+          //               .b = 0xFF,
+          //               .a = (unsigned char)(0xFF / 3 * bit),
+          //           });
+        }
+      }
+    }
+
+    EndDrawing();
+  }
+  return; // TODO delete
 
   for (int tileNumber = 0; tileNumber < n; tileNumber++) {
-    std:size_t tileOffset = tileNumber * (TILE_SIZE);
+  std:
+    size_t tileOffset = tileNumber * (TILE_SIZE);
     for (int byteOffset = 0; byteOffset < 8; byteOffset++) {
       uint8_t plane0Byte = this->chrBlob[tileOffset + byteOffset];
-      uint8_t plane1Byte =
-          this->chrBlob[tileOffset + byteOffset + 8];
+      uint8_t plane1Byte = this->chrBlob[tileOffset + byteOffset + 8];
 
       // Since we're printing from least sig to most sig
       for (int bitOffset = 7; bitOffset >= 0; bitOffset--) {

@@ -1,0 +1,21 @@
+#!/usr/bin/env sloth
+
+# If updating this, the local source dir name will change, you'll need to
+# update the Makefile
+let raylibVersion = "5.5"
+let remoteTarball = "https://github.com/raysan5/raylib/archive/refs/tags/${raylibVersion}.tar.gz"
+let localPath = "./THIRD_PARTY/raylib.tar.gz"
+
+with ($cwd = $scriptDir) {
+  ["curl", "-L", remoteTarball, "-o", localPath]!
+  "tar xvzf ${localPath} -C ./THIRD_PARTY"!
+
+  with ($cwd = "${$cwd}/THIRD_PARTY/raylib-${raylibVersion}") {
+    let build = Directory("./out")
+    build.create();
+    with ($cwd = build.path) {
+      "cmake .."!
+      "make"!
+    }
+  }
+}
