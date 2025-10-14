@@ -36,6 +36,10 @@ struct Rom {
 
 private:
   static const std::size_t HEADER_SIZE = 16;
+
+  // 8 bytes for plane 0, 8 bytes for plane 1
+  static const std::size_t TILE_SIZE = 16;
+
   inline std::size_t prgStart();
   inline std::size_t chrStart();
 };

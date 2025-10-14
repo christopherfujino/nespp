@@ -12,6 +12,7 @@
 
 #include "rom.hpp"
 #include <cstdio>
+#include <cstring>
 
 Rom Rom::fromPath(const char *path) {
   Rom rom;
@@ -50,11 +51,9 @@ Rom Rom::fromPath(const char *path) {
 
   // TODO parse flags 8-10
 
-  printf("PRG starts from 0x%lX\n", rom.prgStart());
   rom.prgBlob = new uint8_t[rom.prgSize];
   fread(rom.prgBlob, rom.prgSize, 1, f);
 
-  printf("CHR starts from 0x%lX\n", rom.chrStart());
   rom.chrBlob = new uint8_t[rom.chrSize];
   fread(rom.chrBlob, rom.chrSize, 1, f);
 
@@ -67,12 +66,43 @@ inline std::size_t Rom::prgStart() { return HEADER_SIZE; }
 inline std::size_t Rom::chrStart() { return this->prgStart() + this->prgSize; }
 
 void Rom::renderCHR() {
-  const int columns = 16;
-  for (int i = 0; i < 4 * columns; i += columns) {
-    printf("%04lX\t", this->chrStart() + i);
-    for (int j = 0; j < columns; j++) {
-      printf("%02X ", this->chrBlob[i + j]);
+  //   RGB(0,0,0)
+  // const char black[] = "\033[30m\u2588\033[0m";
+  const char black[] = " ";
+  // RGB(85,85,85)
+  const char brightBlack[] = "\033[90m\u2588\033[0m";
+  // RGB(170,170,170)
+  const char white[] = "\033[37m\u2588\033[0m";
+  // RGB(255,255,255)
+  const char brightWhite[] = "\033[97m\u2588\033[0m";
+
+  const char *colorMatrix[] = {
+      black,
+      brightBlack,
+      white,
+      brightWhite,
+  };
+
+  // Decode n tiles
+  const int n = this->chrSize / TILE_SIZE;
+
+  printf("\n\n");
+
+  for (int tileNumber = 0; tileNumber < n; tileNumber++) {
+    std:size_t tileOffset = tileNumber * (TILE_SIZE);
+    for (int byteOffset = 0; byteOffset < 8; byteOffset++) {
+      uint8_t plane0Byte = this->chrBlob[tileOffset + byteOffset];
+      uint8_t plane1Byte =
+          this->chrBlob[tileOffset + byteOffset + 8];
+
+      // Since we're printing from least sig to most sig
+      for (int bitOffset = 7; bitOffset >= 0; bitOffset--) {
+        uint8_t lowerBit = (plane0Byte >> bitOffset) & 0x1;
+        uint8_t upperBit = (plane1Byte >> bitOffset) & 0x1;
+        uint8_t bit = lowerBit | (upperBit << 1);
+        printf("%s", colorMatrix[bit]);
+      }
+      printf("\n");
     }
-    printf("\n");
   }
 }
