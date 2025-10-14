@@ -50,11 +50,11 @@ Rom Rom::fromPath(const char *path) {
 
   // TODO parse flags 8-10
 
-  printf("PRG starts from 0x%lX\n", HEADER_SIZE);
+  printf("PRG starts from 0x%lX\n", rom.prgStart());
   rom.prgBlob = new uint8_t[rom.prgSize];
   fread(rom.prgBlob, rom.prgSize, 1, f);
 
-  printf("CHR starts from 0x%lX\n", HEADER_SIZE + rom.prgSize);
+  printf("CHR starts from 0x%lX\n", rom.chrStart());
   rom.chrBlob = new uint8_t[rom.chrSize];
   fread(rom.chrBlob, rom.chrSize, 1, f);
 
@@ -62,6 +62,17 @@ Rom Rom::fromPath(const char *path) {
   return rom;
 }
 
+inline std::size_t Rom::prgStart() { return HEADER_SIZE; }
+
+inline std::size_t Rom::chrStart() { return this->prgStart() + this->prgSize; }
+
 void Rom::renderCHR() {
-  printf("TODO: render\n");
+  const int columns = 16;
+  for (int i = 0; i < 4 * columns; i += columns) {
+    printf("%04lX\t", this->chrStart() + i);
+    for (int j = 0; j < columns; j++) {
+      printf("%02X ", this->chrBlob[i + j]);
+    }
+    printf("\n");
+  }
 }

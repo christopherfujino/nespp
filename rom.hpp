@@ -36,4 +36,6 @@ struct Rom {
 
 private:
   static const std::size_t HEADER_SIZE = 16;
+  inline std::size_t prgStart();
+  inline std::size_t chrStart();
 };
