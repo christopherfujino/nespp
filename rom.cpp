@@ -89,7 +89,7 @@ void Rom::renderCHR() {
 
   const auto SCREEN_WIDTH = 1920;
   const auto SCREEN_HEIGHT = 1080;
-  const auto PIXEL_SCALE = 1;
+  const auto PIXEL_SCALE = 4;
   const auto TILE_WIDTH = 8 * PIXEL_SCALE;
   const auto TILES_PER_ROW = SCREEN_WIDTH / TILE_WIDTH;
 
@@ -128,24 +128,5 @@ void Rom::renderCHR() {
     }
 
     EndDrawing();
-  }
-  return; // TODO delete
-
-  for (int tileNumber = 0; tileNumber < n; tileNumber++) {
-  std:
-    size_t tileOffset = tileNumber * (TILE_SIZE);
-    for (int byteOffset = 0; byteOffset < 8; byteOffset++) {
-      uint8_t plane0Byte = this->chrBlob[tileOffset + byteOffset];
-      uint8_t plane1Byte = this->chrBlob[tileOffset + byteOffset + 8];
-
-      // Since we're printing from least sig to most sig
-      for (int bitOffset = 7; bitOffset >= 0; bitOffset--) {
-        uint8_t lowerBit = (plane0Byte >> bitOffset) & 0x1;
-        uint8_t upperBit = (plane1Byte >> bitOffset) & 0x1;
-        uint8_t bit = lowerBit | (upperBit << 1);
-        printf("%s", colorMatrix[bit]);
-      }
-      printf("\n");
-    }
   }
 }

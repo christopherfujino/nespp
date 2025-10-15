@@ -42,4 +42,6 @@ private:
 
   inline std::size_t prgStart();
   inline std::size_t chrStart();
+
+  void renderTile(int i);
 };
