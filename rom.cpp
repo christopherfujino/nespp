@@ -87,46 +87,59 @@ void Rom::renderCHR() {
   // Decode n tiles
   const int n = this->chrSize / TILE_SIZE;
 
-  const auto SCREEN_WIDTH = 1920;
-  const auto SCREEN_HEIGHT = 1080;
-  const auto PIXEL_SCALE = 4;
-  const auto TILE_WIDTH = 8 * PIXEL_SCALE;
-  const auto TILES_PER_ROW = SCREEN_WIDTH / TILE_WIDTH;
-
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "NES");
+  SetTargetFPS(10);
+
+  const int MESSAGE_MAX = 100;
+  char msg[MESSAGE_MAX] = {0};
+
+  int tileNumber = 0;
   while (!WindowShouldClose()) {
     BeginDrawing();
 
-    for (int tileNumber = 0; tileNumber < n; tileNumber++) {
-      std::size_t tileOffset = tileNumber * (TILE_SIZE);
-      for (int byteOffset = 0; byteOffset < 8; byteOffset++) {
-        uint8_t plane0Byte = this->chrBlob[tileOffset + byteOffset];
-        uint8_t plane1Byte = this->chrBlob[tileOffset + byteOffset + 8];
+    ClearBackground(BLACK);
 
-        for (int bitOffset = 0; bitOffset < 8; bitOffset++) {
-          uint8_t lowerBit = plane0Byte >> (7 - bitOffset) & 0x1;
-          uint8_t upperBit = plane1Byte >> (7 - bitOffset) & 0x1;
-          uint8_t bit = lowerBit | (upperBit << 1);
+    renderTile(tileNumber);
 
-          int yOffset = (tileNumber / TILES_PER_ROW) * 8 * PIXEL_SCALE;
-          DrawRectangleV(
-              // position
-              (Vector2){
-                  .x = (float)(((tileNumber % TILES_PER_ROW) * 8 + bitOffset) *
-                               PIXEL_SCALE),
-                  .y = (float)(yOffset + (byteOffset * PIXEL_SCALE))},
-              // size
-              (Vector2){.x = PIXEL_SCALE, .y = PIXEL_SCALE},
-              (Color){
-                  .r = 0xFF,
-                  .g = 0xFF,
-                  .b = 0xFF,
-                  .a = (unsigned char)(0xFF / 3 * bit),
-              });
-        }
-      }
-    }
+    snprintf(msg, MESSAGE_MAX, "%d", tileNumber);
+    DrawText(msg, 5 * PIXEL_SCALE, 20 * PIXEL_SCALE, 96, WHITE);
 
     EndDrawing();
+    tileNumber += 1;
+    if (tileNumber >= n) {
+      tileNumber = 0;
+    }
+  }
+}
+
+void Rom::renderTile(int i) {
+  int x = 5;
+  int y = 5;
+
+  std::size_t tileOffset = i * (TILE_SIZE);
+  for (int byteOffset = 0; byteOffset < 8; byteOffset++) {
+    uint8_t plane0Byte = this->chrBlob[tileOffset + byteOffset];
+    uint8_t plane1Byte = this->chrBlob[tileOffset + byteOffset + 8];
+
+    for (int bitOffset = 0; bitOffset < 8; bitOffset++) {
+      uint8_t lowerBit = plane0Byte >> (7 - bitOffset) & 0x1;
+      uint8_t upperBit = plane1Byte >> (7 - bitOffset) & 0x1;
+      uint8_t bit = lowerBit | (upperBit << 1);
+
+      //int x = ((i % TILES_PER_ROW) * 8 + bitOffset);
+      //int y = ((i * 8 / TILES_PER_ROW) + byteOffset);
+      DrawRectangleV(
+          // position
+          (Vector2){.x = (float)((x + bitOffset) * PIXEL_SCALE),
+                    .y = (float)((y + byteOffset) * PIXEL_SCALE)},
+          // size
+          (Vector2){.x = PIXEL_SCALE, .y = PIXEL_SCALE},
+          (Color){
+              .r = 0xFF,
+              .g = 0xFF,
+              .b = 0xFF,
+              .a = (unsigned char)(0xFF / 3 * bit),
+          });
+    }
   }
 }

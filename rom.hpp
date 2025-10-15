@@ -40,6 +40,12 @@ private:
   // 8 bytes for plane 0, 8 bytes for plane 1
   static const std::size_t TILE_SIZE = 16;
 
+  static const int SCREEN_WIDTH = 1920;
+  static const int SCREEN_HEIGHT = 1080;
+  static const int PIXEL_SCALE = 8;
+  static const int TILE_WIDTH = 8 * PIXEL_SCALE;
+  static const int TILES_PER_ROW = SCREEN_WIDTH / TILE_WIDTH;
+
   inline std::size_t prgStart();
   inline std::size_t chrStart();
 
