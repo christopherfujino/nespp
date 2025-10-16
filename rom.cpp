@@ -95,6 +95,17 @@ void Rom::renderCHR() {
 
   int tileNumber = 0;
   while (!WindowShouldClose()) {
+    if (IsKeyDown(KEY_L)) {
+      tileNumber += 1;
+      if (tileNumber >= n) {
+        tileNumber = n - 1;
+      }
+    } else if (IsKeyDown(KEY_H)) {
+      tileNumber -= 1;
+      if (tileNumber < 0) {
+        tileNumber = 0;
+      }
+    }
     BeginDrawing();
 
     ClearBackground(BLACK);
@@ -105,10 +116,6 @@ void Rom::renderCHR() {
     DrawText(msg, 5 * PIXEL_SCALE, 20 * PIXEL_SCALE, 96, WHITE);
 
     EndDrawing();
-    tileNumber += 1;
-    if (tileNumber >= n) {
-      tileNumber = 0;
-    }
   }
 }
 
@@ -126,8 +133,8 @@ void Rom::renderTile(int i) {
       uint8_t upperBit = plane1Byte >> (7 - bitOffset) & 0x1;
       uint8_t bit = lowerBit | (upperBit << 1);
 
-      //int x = ((i % TILES_PER_ROW) * 8 + bitOffset);
-      //int y = ((i * 8 / TILES_PER_ROW) + byteOffset);
+      // int x = ((i % TILES_PER_ROW) * 8 + bitOffset);
+      // int y = ((i * 8 / TILES_PER_ROW) + byteOffset);
       DrawRectangleV(
           // position
           (Vector2){.x = (float)((x + bitOffset) * PIXEL_SCALE),
