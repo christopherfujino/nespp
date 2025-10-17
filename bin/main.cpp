@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <unistd.h>
 
-#include "rom.hpp"
+#include "../include/rom.hpp"
 
 int main(int argc, char **argv) {
   if (argc == 1) {
@@ -15,5 +15,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Caught %s!\n", msg);
     return 1;
   }
-  rom.renderCHR();
+
+  printf("mapper = %d\n", rom.mapper);
+  printf("Successfully loaded %s\n", argv[1]);
 }

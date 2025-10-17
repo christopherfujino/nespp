@@ -11,7 +11,6 @@
 // rippers put their name across bytes 7-15)
 
 #include "rom.hpp"
-#include "raylib.h"
 #include <cstdio>
 #include <cstring>
 
@@ -48,7 +47,6 @@ Rom Rom::fromPath(const char *path) {
   }
   uint8_t upperNibbleOfMapper = flags7 & 0b11110000;
   rom.mapper = upperNibbleOfMapper | lowerNibbleOfMapper;
-  printf("mapper = %d\n", rom.mapper);
 
   // TODO parse flags 8-10
 
@@ -66,87 +64,55 @@ inline std::size_t Rom::prgStart() { return HEADER_SIZE; }
 
 inline std::size_t Rom::chrStart() { return this->prgStart() + this->prgSize; }
 
-void Rom::renderCHR() {
-  //   RGB(0,0,0)
-  // const char black[] = "\033[30m\u2588\033[0m";
-  const char black[] = " ";
-  // RGB(85,85,85)
-  const char brightBlack[] = "\033[90m\u2588\033[0m";
-  // RGB(170,170,170)
-  const char white[] = "\033[37m\u2588\033[0m";
-  // RGB(255,255,255)
-  const char brightWhite[] = "\033[97m\u2588\033[0m";
-
-  const char *colorMatrix[] = {
-      black,
-      brightBlack,
-      white,
-      brightWhite,
-  };
-
-  // Decode n tiles
-  const int n = this->chrSize / TILE_SIZE;
-
-  InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "NES");
-  SetTargetFPS(10);
-
-  const int MESSAGE_MAX = 100;
-  char msg[MESSAGE_MAX] = {0};
-
-  int tileNumber = 0;
-  while (!WindowShouldClose()) {
-    if (IsKeyDown(KEY_L)) {
-      tileNumber += 1;
-      if (tileNumber >= n) {
-        tileNumber = n - 1;
-      }
-    } else if (IsKeyDown(KEY_H)) {
-      tileNumber -= 1;
-      if (tileNumber < 0) {
-        tileNumber = 0;
-      }
-    }
-    BeginDrawing();
-
-    ClearBackground(BLACK);
-
-    renderTile(tileNumber);
-
-    snprintf(msg, MESSAGE_MAX, "%d/%d", tileNumber, n);
-    DrawText(msg, 5 * PIXEL_SCALE, 20 * PIXEL_SCALE, 96, WHITE);
-
-    EndDrawing();
-  }
-}
-
-void Rom::renderTile(int i) {
-  int x = 5;
-  int y = 5;
-
-  std::size_t tileOffset = i * (TILE_SIZE);
-  for (int byteOffset = 0; byteOffset < 8; byteOffset++) {
-    uint8_t plane0Byte = this->chrBlob[tileOffset + byteOffset];
-    uint8_t plane1Byte = this->chrBlob[tileOffset + byteOffset + 8];
-
-    for (int bitOffset = 0; bitOffset < 8; bitOffset++) {
-      uint8_t lowerBit = plane0Byte >> (7 - bitOffset) & 0x1;
-      uint8_t upperBit = plane1Byte >> (7 - bitOffset) & 0x1;
-      uint8_t bit = lowerBit | (upperBit << 1);
-
-      // int x = ((i % TILES_PER_ROW) * 8 + bitOffset);
-      // int y = ((i * 8 / TILES_PER_ROW) + byteOffset);
-      DrawRectangleV(
-          // position
-          (Vector2){.x = (float)((x + bitOffset) * PIXEL_SCALE),
-                    .y = (float)((y + byteOffset) * PIXEL_SCALE)},
-          // size
-          (Vector2){.x = PIXEL_SCALE, .y = PIXEL_SCALE},
-          (Color){
-              .r = 0xFF,
-              .g = 0xFF,
-              .b = 0xFF,
-              .a = (unsigned char)(0xFF / 3 * bit),
-          });
-    }
-  }
-}
+//void Rom::renderCHR() {
+//  //   RGB(0,0,0)
+//  // const char black[] = "\033[30m\u2588\033[0m";
+//  const char black[] = " ";
+//  // RGB(85,85,85)
+//  const char brightBlack[] = "\033[90m\u2588\033[0m";
+//  // RGB(170,170,170)
+//  const char white[] = "\033[37m\u2588\033[0m";
+//  // RGB(255,255,255)
+//  const char brightWhite[] = "\033[97m\u2588\033[0m";
+//
+//  const char *colorMatrix[] = {
+//      black,
+//      brightBlack,
+//      white,
+//      brightWhite,
+//  };
+//
+//  // Decode n tiles
+//  const int n = this->chrSize / TILE_SIZE;
+//
+//  InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "NES");
+//  SetTargetFPS(10);
+//
+//  const int MESSAGE_MAX = 100;
+//  char msg[MESSAGE_MAX] = {0};
+//
+//  int tileNumber = 0;
+//  while (!WindowShouldClose()) {
+//    if (IsKeyDown(KEY_L)) {
+//      tileNumber += 1;
+//      if (tileNumber >= n) {
+//        tileNumber = n - 1;
+//      }
+//    } else if (IsKeyDown(KEY_H)) {
+//      tileNumber -= 1;
+//      if (tileNumber < 0) {
+//        tileNumber = 0;
+//      }
+//    }
+//    BeginDrawing();
+//
+//    ClearBackground(BLACK);
+//
+//    renderTile(tileNumber);
+//
+//    snprintf(msg, MESSAGE_MAX, "%d/%d", tileNumber, n);
+//    DrawText(msg, 5 * PIXEL_SCALE, 20 * PIXEL_SCALE, 96, WHITE);
+//
+//    EndDrawing();
+//  }
+//}

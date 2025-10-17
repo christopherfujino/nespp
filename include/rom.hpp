@@ -3,8 +3,6 @@
 struct Rom {
   static Rom fromPath(const char *path);
 
-  void renderCHR();
-
   // Size of PRG ROM in 16 KB units
   int prgSize;
 
@@ -34,7 +32,6 @@ struct Rom {
   uint8_t *prgBlob;
   uint8_t *chrBlob;
 
-private:
   static const std::size_t HEADER_SIZE = 16;
 
   // 8 bytes for plane 0, 8 bytes for plane 1
@@ -46,8 +43,7 @@ private:
   static const int TILE_WIDTH = 8 * PIXEL_SCALE;
   static const int TILES_PER_ROW = SCREEN_WIDTH / TILE_WIDTH;
 
+private:
   inline std::size_t prgStart();
   inline std::size_t chrStart();
-
-  void renderTile(int i);
 };
