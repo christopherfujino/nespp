@@ -112,7 +112,7 @@ void Rom::renderCHR() {
 
     renderTile(tileNumber);
 
-    snprintf(msg, MESSAGE_MAX, "%d", tileNumber);
+    snprintf(msg, MESSAGE_MAX, "%d/%d", tileNumber, n);
     DrawText(msg, 5 * PIXEL_SCALE, 20 * PIXEL_SCALE, 96, WHITE);
 
     EndDrawing();
