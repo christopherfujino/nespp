@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <unistd.h>
 
-#include "../include/rom.hpp"
+#include "../include/rom.h"
 
 int main(int argc, char **argv) {
   if (argc == 1) {

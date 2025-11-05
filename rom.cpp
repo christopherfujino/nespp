@@ -10,7 +10,7 @@
 // extension) 11-15	Unused padding (should be filled with zero, but some
 // rippers put their name across bytes 7-15)
 
-#include "rom.hpp"
+#include "rom.h"
 #include <cstdio>
 #include <cstring>
 
@@ -60,9 +60,9 @@ Rom Rom::fromPath(const char *path) {
   return rom;
 }
 
-inline std::size_t Rom::prgStart() { return HEADER_SIZE; }
+inline size_t Rom::prgStart() { return HEADER_SIZE; }
 
-inline std::size_t Rom::chrStart() { return this->prgStart() + this->prgSize; }
+inline size_t Rom::chrStart() { return this->prgStart() + this->prgSize; }
 
 //void Rom::renderCHR() {
 //  //   RGB(0,0,0)

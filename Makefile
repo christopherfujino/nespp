@@ -18,19 +18,19 @@ all: $(BUILD)/tileBrowser $(BUILD)/main
 	@echo "Done"
 
 $(BUILD)/tileBrowser: $(BUILD)/tileBrowser.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libraylib.a
-	clang++ $(LDFLAGS) $(BUILD)/tileBrowser.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libraylib.a -o $@
+	$(CXX) $(LDFLAGS) $(BUILD)/tileBrowser.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libraylib.a -o $@
 
 $(BUILD)/main: $(BUILD)/main.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libraylib.a
-	clang++ $(LDFLAGS) $(BUILD)/main.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libraylib.a -o $@
+	$(CXX) $(LDFLAGS) $(BUILD)/main.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libraylib.a -o $@
 
-$(BUILD)/rom.o: rom.cpp $(INCLUDE_DIR)/rom.hpp $(RAYLIB_INCLUDE)/raylib.h
-	clang++ $(CXXFLAGS) -c $< -o $@
+$(BUILD)/rom.o: rom.cpp $(INCLUDE_DIR)/rom.h $(RAYLIB_INCLUDE)/raylib.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(BUILD)/tileBrowser.o: $(BIN_DIR)/tileBrowser.cpp $(INCLUDE_DIR)/rom.hpp
-	clang++ $(CXXFLAGS) -c $< -o $@
+$(BUILD)/tileBrowser.o: $(BIN_DIR)/tileBrowser.cpp $(INCLUDE_DIR)/rom.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(BUILD)/main.o: $(BIN_DIR)/main.cpp $(INCLUDE_DIR)/rom.hpp
-	clang++ $(CXXFLAGS) -c $< -o $@
+$(BUILD)/main.o: $(BIN_DIR)/main.cpp $(INCLUDE_DIR)/rom.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 rom.nes:
 	curl -L http://nickmass.com/images/nestest.nes -o ./rom.nes

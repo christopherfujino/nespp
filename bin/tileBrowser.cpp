@@ -1,7 +1,7 @@
 #include <cstdio>
 
 #include "../THIRD_PARTY/raylib-5.5/out/raylib/include/raylib.h"
-#include "../include/rom.hpp"
+#include "../include/rom.h"
 
 void render(Rom *rom);
 void renderTile(Rom *rom, int i);

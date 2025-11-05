@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <stddef.h>
 
 struct Rom {
   static Rom fromPath(const char *path);
@@ -32,10 +33,10 @@ struct Rom {
   uint8_t *prgBlob;
   uint8_t *chrBlob;
 
-  static const std::size_t HEADER_SIZE = 16;
+  static const size_t HEADER_SIZE = 16;
 
   // 8 bytes for plane 0, 8 bytes for plane 1
-  static const std::size_t TILE_SIZE = 16;
+  static const size_t TILE_SIZE = 16;
 
   static const int SCREEN_WIDTH = 1920;
   static const int SCREEN_HEIGHT = 1080;
@@ -44,6 +45,6 @@ struct Rom {
   static const int TILES_PER_ROW = SCREEN_WIDTH / TILE_WIDTH;
 
 private:
-  inline std::size_t prgStart();
-  inline std::size_t chrStart();
+  inline size_t prgStart();
+  inline size_t chrStart();
 };
