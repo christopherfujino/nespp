@@ -13,6 +13,10 @@ CXXFLAGS = -std=c++20 -I$(RAYLIB_INCLUDE) -I$(INCLUDE_DIR)
 run: $(BUILD)/tileBrowser rom.nes
 	$< ./rom.nes
 
+.PHONY: headless
+headless: $(BUILD)/main rom.nes
+	$< ./rom.nes
+
 .PHONY: all
 all: $(BUILD)/tileBrowser $(BUILD)/main
 	@echo "Done"
