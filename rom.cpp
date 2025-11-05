@@ -10,12 +10,13 @@
 // extension) 11-15	Unused padding (should be filled with zero, but some
 // rippers put their name across bytes 7-15)
 
-#include "rom.h"
+#include <cassert>
 #include <cstdio>
 #include <cstring>
 
-Rom Rom::fromPath(const char *path) {
-  Rom rom;
+#include "rom.h"
+
+void Rom::fromPath(Rom **romPtr, const char *path) {
   uint8_t headerBytes[HEADER_SIZE];
 
   FILE *f = fopen(path, "rb");
@@ -26,13 +27,16 @@ Rom Rom::fromPath(const char *path) {
     throw "Unknown ROM format!";
   }
 
-  rom.prgSize = (int)headerBytes[4] * 1024 * 16;
-  rom.chrSize = (int)headerBytes[5] * 1024 * 8;
+  Rom *rom = *romPtr;
+  assert(rom != 0);
+
+  rom->prgSize = (int)headerBytes[4] * 1024 * 16;
+  rom->chrSize = (int)headerBytes[5] * 1024 * 8;
   uint8_t flags6 = headerBytes[6];
-  rom.nameTableArrangement = flags6 & 1;
-  rom.batteryBackedPRGRam = flags6 & 1 << 1;
-  rom.trainer = flags6 & 1 << 2;
-  rom.alternativeNametableLayout = flags6 & 1 << 3;
+  rom->nameTableArrangement = flags6 & 1;
+  rom->batteryBackedPRGRam = flags6 & 1 << 1;
+  rom->trainer = flags6 & 1 << 2;
+  rom->alternativeNametableLayout = flags6 & 1 << 3;
   uint8_t lowerNibbleOfMapper = (flags6 & 0b11110000) >> 4;
 
   uint8_t flags7 = headerBytes[7];
@@ -46,73 +50,24 @@ Rom Rom::fromPath(const char *path) {
     throw "TODO: implement NES2.0";
   }
   uint8_t upperNibbleOfMapper = flags7 & 0b11110000;
-  rom.mapper = upperNibbleOfMapper | lowerNibbleOfMapper;
+  rom->mapper = upperNibbleOfMapper | lowerNibbleOfMapper;
 
   // TODO parse flags 8-10
 
-  rom.prgBlob = new uint8_t[rom.prgSize];
-  fread(rom.prgBlob, rom.prgSize, 1, f);
+  rom->prgBlob = new uint8_t[rom->prgSize]; // TODO free
+  fread(rom->prgBlob, rom->prgSize, 1, f);
 
-  rom.chrBlob = new uint8_t[rom.chrSize];
-  fread(rom.chrBlob, rom.chrSize, 1, f);
+  rom->chrBlob = new uint8_t[rom->chrSize]; // TODO free
+  fread(rom->chrBlob, rom->chrSize, 1, f);
 
   fclose(f);
-  return rom;
+}
+
+Rom::~Rom() {
+  delete prgBlob;
+  delete chrBlob;
 }
 
 inline size_t Rom::prgStart() { return HEADER_SIZE; }
 
 inline size_t Rom::chrStart() { return this->prgStart() + this->prgSize; }
-
-//void Rom::renderCHR() {
-//  //   RGB(0,0,0)
-//  // const char black[] = "\033[30m\u2588\033[0m";
-//  const char black[] = " ";
-//  // RGB(85,85,85)
-//  const char brightBlack[] = "\033[90m\u2588\033[0m";
-//  // RGB(170,170,170)
-//  const char white[] = "\033[37m\u2588\033[0m";
-//  // RGB(255,255,255)
-//  const char brightWhite[] = "\033[97m\u2588\033[0m";
-//
-//  const char *colorMatrix[] = {
-//      black,
-//      brightBlack,
-//      white,
-//      brightWhite,
-//  };
-//
-//  // Decode n tiles
-//  const int n = this->chrSize / TILE_SIZE;
-//
-//  InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "NES");
-//  SetTargetFPS(10);
-//
-//  const int MESSAGE_MAX = 100;
-//  char msg[MESSAGE_MAX] = {0};
-//
-//  int tileNumber = 0;
-//  while (!WindowShouldClose()) {
-//    if (IsKeyDown(KEY_L)) {
-//      tileNumber += 1;
-//      if (tileNumber >= n) {
-//        tileNumber = n - 1;
-//      }
-//    } else if (IsKeyDown(KEY_H)) {
-//      tileNumber -= 1;
-//      if (tileNumber < 0) {
-//        tileNumber = 0;
-//      }
-//    }
-//    BeginDrawing();
-//
-//    ClearBackground(BLACK);
-//
-//    renderTile(tileNumber);
-//
-//    snprintf(msg, MESSAGE_MAX, "%d/%d", tileNumber, n);
-//    DrawText(msg, 5 * PIXEL_SCALE, 20 * PIXEL_SCALE, 96, WHITE);
-//
-//    EndDrawing();
-//  }
-//}

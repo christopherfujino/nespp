@@ -1,8 +1,12 @@
+#pragma once
+
 #include <cstdint>
 #include <stddef.h>
 
 struct Rom {
-  static Rom fromPath(const char *path);
+  static void fromPath(Rom **romPtr, const char *path);
+
+  ~Rom();
 
   // Size of PRG ROM in 16 KB units
   int prgSize;

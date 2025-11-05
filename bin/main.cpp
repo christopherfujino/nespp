@@ -8,14 +8,16 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Usage: bin.exe path-to-rom.nes\n");
     return 1;
   }
-  Rom rom;
+  Rom *rom = new Rom();
   try {
-    rom = Rom::fromPath(argv[1]);
+    Rom::fromPath(&rom, argv[1]);
   } catch (const char *msg) {
     fprintf(stderr, "Caught %s!\n", msg);
     return 1;
   }
 
-  printf("mapper = %d\n", rom.mapper);
+  printf("mapper = %d\n", rom->mapper);
   printf("Successfully loaded %s\n", argv[1]);
+
+  delete rom;
 }

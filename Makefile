@@ -7,7 +7,7 @@ BINARY = $(BUILD)/a.out
 BIN_DIR = ./bin
 LIB_IR = ./lib
 INCLUDE_DIR = ./include
-CXXFLAGS = -std=c++20 -I$(RAYLIB_INCLUDE) -I$(INCLUDE_DIR)
+CXXFLAGS = -g -std=c++20 -I$(RAYLIB_INCLUDE) -I$(INCLUDE_DIR)
 
 .PHONY: headless
 headless: $(BUILD)/main rom.nes
