@@ -9,12 +9,12 @@ LIB_IR = ./lib
 INCLUDE_DIR = ./include
 CXXFLAGS = -std=c++20 -I$(RAYLIB_INCLUDE) -I$(INCLUDE_DIR)
 
-.PHONY: run
-run: $(BUILD)/tileBrowser rom.nes
-	$< ./rom.nes
-
 .PHONY: headless
 headless: $(BUILD)/main rom.nes
+	$< ./rom.nes
+
+.PHONY: run
+run: $(BUILD)/tileBrowser rom.nes
 	$< ./rom.nes
 
 .PHONY: all
