@@ -1,0 +1,28 @@
+#!/usr/bin/env sloth
+
+let remote = 'https://github.com/retroenv/nesgodisasm.git'
+let localPath = './THIRD_PARTY/disassembler'
+let binary = File("${localPath}/nesgodisasm")
+
+if $argv.length != 1 {
+  throw "Usage: ./disassemble $ROM"
+}
+
+let input = $argv[0]
+
+with ($cwd = $scriptDir) {
+  if not binary.exists() {
+    let localRepo = Directory(localPath)
+    if not localRepo.exists() {
+      ['git', 'clone', remote,
+        # HEAD at ec322f52e3cc51bd8f2a1ab403225598964f6d28 is broken
+        '-b', 'v0.2.3',
+        localPath]!
+    }
+    with ($cwd = localRepo.path) {
+      'go build .'!
+    }
+  }
+
+  [binary.path, input]!
+}

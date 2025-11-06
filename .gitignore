@@ -1,5 +1,6 @@
 *.nes
 a.out
+*.asm
 *.o
 
 ## Ignore Visual Studio temporary files, build results, and
