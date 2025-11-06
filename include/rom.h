@@ -8,10 +8,14 @@ struct Rom {
 
   ~Rom();
 
-  // Size of PRG ROM in 16 KB units
+  // Size of PRG ROM in bytes
+  //
+  // Parsed from 16 KB units.
   int prgSize;
 
-  // Size of CHR ROM in 8 KB units (value 0 means the board uses CHR RAM)
+  // Size of CHR ROM in bytes (value 0 means the board uses CHR RAM)
+  //
+  // Parsed from 8 KB units.
   int chrSize;
 
   // 6	Flags 6 – Mapper, mirroring, battery, trainer

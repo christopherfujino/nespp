@@ -54,10 +54,10 @@ void Rom::fromPath(Rom **romPtr, const char *path) {
 
   // TODO parse flags 8-10
 
-  rom->prgBlob = new uint8_t[rom->prgSize]; // TODO free
+  rom->prgBlob = new uint8_t[rom->prgSize];
   fread(rom->prgBlob, rom->prgSize, 1, f);
 
-  rom->chrBlob = new uint8_t[rom->chrSize]; // TODO free
+  rom->chrBlob = new uint8_t[rom->chrSize];
   fread(rom->chrBlob, rom->chrSize, 1, f);
 
   fclose(f);
