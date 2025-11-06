@@ -16,6 +16,8 @@ with ($cwd = $scriptDir) {
     if not localRepo.exists() {
       ['git', 'clone', remote,
         # HEAD at ec322f52e3cc51bd8f2a1ab403225598964f6d28 is broken
+        # We can roll forward if/when
+        # https://github.com/retroenv/nesgodisasm/pull/93/files is merged
         '-b', 'v0.2.3',
         localPath]!
     }
