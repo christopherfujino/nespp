@@ -14,7 +14,7 @@
 #include <cstdio>
 #include <cstring>
 
-#include "rom.h"
+#include "../include/rom.h"
 
 void Rom::fromPath(Rom **romPtr, const char *path) {
   uint8_t headerBytes[HEADER_SIZE];
