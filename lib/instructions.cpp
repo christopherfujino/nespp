@@ -36,6 +36,11 @@ std::pair<Instruction, int> _makeImmediatePair(uint8_t opCode, uint8_t byte) {
       Instruction{.opCode = (OpCode)opCode, .operand = {.immediate = byte}}, 2);
 }
 
+std::pair<Instruction, int> _makeZeropagePair(uint8_t opCode, uint8_t byte) {
+  return std::make_pair(
+      Instruction{.opCode = (OpCode)opCode, .operand = {.zeropage = byte}}, 2);
+}
+
 std::pair<Instruction, int> _makeRelativePair(uint8_t opCode, uint8_t byte) {
   return std::make_pair(
       Instruction{.opCode = (OpCode)opCode, .operand = {.relative = byte}}, 2);
@@ -52,17 +57,28 @@ std::pair<Instruction, int> decodeInstruction(uint8_t *src, int idx) {
   case LDA_ABS:
   case JMP_ABS:
   case STA_ABS:
+  case STX_ABS:
+  case LDA_ABS_X:
     return _makeAbsolutePair(*src, *(src + 1), *(src + 2));
   case BPL_REL:
+  case BNE_REL:
     return _makeRelativePair(*src, *(src + 1));
+  case CLD:
+  case DEX:
+  case DEY:
+  case INX:
+  case INY:
   case RTS:
   case SEI:
-  case CLD:
   case TXS:
     return _makeImpliedPair(*src);
+  case CPX_IMM:
   case LDA_IMM:
   case LDX_IMM:
+  case LDY_IMM:
     return _makeImmediatePair(*src, *(src + 1));
+  case STA_ZERO:
+    return _makeZeropagePair(*src, *(src + 1));
   default:
     // This is never freed
     char *msg = new char[256];

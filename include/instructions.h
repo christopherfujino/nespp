@@ -11,12 +11,22 @@ enum OpCode : uint8_t {
   JMP_ABS = 0x4C,
   LDA_ABS = 0xAD,
   STA_ABS = 0x8D,
+  STX_ABS = 0x8E,
+  LDA_ABS_X = 0xBD,
+  CPX_IMM = 0xE0, // Compare X with memory (X - M)
   LDA_IMM = 0xA9,
   LDX_IMM = 0xA2,
+  LDY_IMM = 0xA0,
   BPL_REL = 0x10,
+  BNE_REL = 0xD0, // Branch on not equal to zero
+  STA_ZERO = 0x85,
+  CLD = 0xD8, // Clear decimal
+  DEX = 0xCA, // Decrement X by one
+  DEY = 0x88, // Decrement Y by one
+  INX = 0xE8, // Increment X by one
+  INY = 0xC8, // Increment Y by one
   RTS = 0x60, // return from subroutine
   SEI = 0x78, // set interrupt disable
-  CLD = 0xD8, // Clear decimal
   TXS = 0x9A, // Transfer index X to stack register
 };
 
@@ -32,6 +42,7 @@ struct Instruction {
     uint8_t immediate;
     void *implied;
     uint8_t relative;
+    uint8_t zeropage;
   } operand;
 };
 
