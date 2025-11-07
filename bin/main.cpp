@@ -15,7 +15,21 @@ void debugPrg(Rom *rom) {
     }
     printf("\n");
   }
-  //printf("%X\n", rom->prgBlob[0]);
+  // printf("%X\n", rom->prgBlob[0]);
+}
+
+int run(char *path) {
+  Rom *rom = new Rom();
+
+  Rom::fromPath(&rom, path);
+
+  printf("mapper = %d\n", rom->mapper);
+  printf("Successfully loaded %s\n", path);
+
+  // debugPrg(rom);
+  auto foo = Instructions::deserialize(rom->prgBlob, rom->prgSize);
+  delete rom;
+  return 0;
 }
 
 int main(int argc, char **argv) {
@@ -23,18 +37,11 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Usage: bin.exe path-to-rom.nes\n");
     return 1;
   }
-  Rom *rom = new Rom();
+
   try {
-    Rom::fromPath(&rom, argv[1]);
-  } catch (const char *msg) {
+    return run(argv[1]);
+  } catch (char *msg) {
     fprintf(stderr, "Caught %s!\n", msg);
     return 1;
   }
-
-  printf("mapper = %d\n", rom->mapper);
-  printf("Successfully loaded %s\n", argv[1]);
-
-  //debugPrg(rom);
-  auto foo = Instructions::deserialize(rom->prgBlob, rom->prgSize);
-  delete rom;
 }

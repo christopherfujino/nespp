@@ -7,7 +7,7 @@ BINARY = $(BUILD)/a.out
 BIN_DIR = ./bin
 LIB_IR = ./lib
 INCLUDE_DIR = ./include
-CXXFLAGS = -g -std=c++20 -I$(RAYLIB_INCLUDE) -I$(INCLUDE_DIR)
+CXXFLAGS = -g -std=c++20 -Werror -I$(RAYLIB_INCLUDE) -I$(INCLUDE_DIR)
 CXX = clang++
 
 .PHONY: headless
@@ -26,7 +26,7 @@ $(BUILD)/tileBrowser: $(BUILD)/tileBrowser.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libr
 	$(CXX) $(LDFLAGS) $(BUILD)/tileBrowser.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libraylib.a -o $@
 
 # Headless
-$(BUILD)/main: $(BUILD)/main.o $(BUILD)/rom.o $(BUILD)/instructions.o
+$(BUILD)/main: $(BUILD)/main.o $(BUILD)/rom.o $(BUILD)/instructions.o $(BUILD)/debug.o
 	$(CXX) $^ -o $@
 
 $(BUILD)/rom.o: lib/rom.cpp $(INCLUDE_DIR)/rom.h
@@ -38,7 +38,10 @@ $(BUILD)/tileBrowser.o: $(BIN_DIR)/tileBrowser.cpp $(INCLUDE_DIR)/rom.h
 $(BUILD)/main.o: $(BIN_DIR)/main.cpp $(INCLUDE_DIR)/rom.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(BUILD)/instructions.o: lib/instructions.cpp $(INCLUDE_DIR)/instructions.h
+$(BUILD)/instructions.o: lib/instructions.cpp $(INCLUDE_DIR)/instructions.h $(INCLUDE_DIR)/debug.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD)/debug.o: lib/debug.cpp $(INCLUDE_DIR)/debug.h $(INCLUDE_DIR)/instructions.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 rom.nes:

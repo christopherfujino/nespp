@@ -1,0 +1,7 @@
+#!/usr/bin/env sloth
+
+let headerSize = 16
+
+with ($cwd = $scriptDir) {
+  "xxd -seek ${ headerSize } -g 1 -o -${ headerSize } ./rom.nes" | 'head'!
+}
