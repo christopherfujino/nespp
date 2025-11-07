@@ -1,7 +1,7 @@
 RAYLIB_VERSION = 5.5
 RAYLIB_INCLUDE = ./THIRD_PARTY/raylib-$(RAYLIB_VERSION)/out/raylib/include
 RAYLIB_BUILD = ./THIRD_PARTY/raylib-$(RAYLIB_VERSION)/out/raylib
-LDFLAGS = -L$(RAYLIB_BUILD)
+#LDFLAGS = -L$(RAYLIB_BUILD)
 BUILD = ./build
 BINARY = $(BUILD)/a.out
 BIN_DIR = ./bin
@@ -24,10 +24,10 @@ all: $(BUILD)/tileBrowser $(BUILD)/main
 $(BUILD)/tileBrowser: $(BUILD)/tileBrowser.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libraylib.a
 	$(CXX) $(LDFLAGS) $(BUILD)/tileBrowser.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libraylib.a -o $@
 
-$(BUILD)/main: $(BUILD)/main.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libraylib.a
-	$(CXX) $(LDFLAGS) $(BUILD)/main.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libraylib.a -o $@
+$(BUILD)/main: $(BUILD)/main.o $(BUILD)/rom.o
+	$(CXX) $(BUILD)/main.o $(BUILD)/rom.o -o $@
 
-$(BUILD)/rom.o: rom.cpp $(INCLUDE_DIR)/rom.h $(RAYLIB_INCLUDE)/raylib.h
+$(BUILD)/rom.o: lib/rom.cpp $(INCLUDE_DIR)/rom.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BUILD)/tileBrowser.o: $(BIN_DIR)/tileBrowser.cpp $(INCLUDE_DIR)/rom.h
