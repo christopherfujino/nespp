@@ -8,6 +8,7 @@ BIN_DIR = ./bin
 LIB_IR = ./lib
 INCLUDE_DIR = ./include
 CXXFLAGS = -g -std=c++20 -I$(RAYLIB_INCLUDE) -I$(INCLUDE_DIR)
+CXX = clang++
 
 .PHONY: headless
 headless: $(BUILD)/main rom.nes
@@ -24,8 +25,9 @@ all: $(BUILD)/tileBrowser $(BUILD)/main
 $(BUILD)/tileBrowser: $(BUILD)/tileBrowser.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libraylib.a
 	$(CXX) $(LDFLAGS) $(BUILD)/tileBrowser.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libraylib.a -o $@
 
-$(BUILD)/main: $(BUILD)/main.o $(BUILD)/rom.o
-	$(CXX) $(BUILD)/main.o $(BUILD)/rom.o -o $@
+# Headless
+$(BUILD)/main: $(BUILD)/main.o $(BUILD)/rom.o $(BUILD)/instructions.o
+	$(CXX) $^ -o $@
 
 $(BUILD)/rom.o: lib/rom.cpp $(INCLUDE_DIR)/rom.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -34,6 +36,9 @@ $(BUILD)/tileBrowser.o: $(BIN_DIR)/tileBrowser.cpp $(INCLUDE_DIR)/rom.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BUILD)/main.o: $(BIN_DIR)/main.cpp $(INCLUDE_DIR)/rom.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD)/instructions.o: lib/instructions.cpp $(INCLUDE_DIR)/instructions.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 rom.nes:

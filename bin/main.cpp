@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <unistd.h>
 
+#include "../include/instructions.h"
 #include "../include/rom.h"
 
 void debugPrg(Rom *rom) {
@@ -33,6 +34,7 @@ int main(int argc, char **argv) {
   printf("mapper = %d\n", rom->mapper);
   printf("Successfully loaded %s\n", argv[1]);
 
-  debugPrg(rom);
+  //debugPrg(rom);
+  auto foo = Instructions::deserialize(rom->prgBlob, rom->prgSize);
   delete rom;
 }
