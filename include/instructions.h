@@ -9,9 +9,11 @@ namespace Instructions {
 
 enum OpCode : uint8_t {
   JMP_ABS = 0x4C,
+  JSR_ABS = 0x20,
   LDA_ABS = 0xAD,
   STA_ABS = 0x8D,
   STX_ABS = 0x8E,
+  STY_ABS = 0x8C,
   LDA_ABS_X = 0xBD,
   CPX_IMM = 0xE0, // Compare X with memory (X - M)
   LDA_IMM = 0xA9,
@@ -19,6 +21,7 @@ enum OpCode : uint8_t {
   LDY_IMM = 0xA0,
   BPL_REL = 0x10,
   BNE_REL = 0xD0, // Branch on not equal to zero
+  LDA_ZERO = 0xA5,
   STA_ZERO = 0x85,
   CLD = 0xD8, // Clear decimal
   DEX = 0xCA, // Decrement X by one

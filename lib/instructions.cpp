@@ -56,8 +56,10 @@ std::pair<Instruction, int> decodeInstruction(uint8_t *src, int idx) {
   switch (*src) {
   case LDA_ABS:
   case JMP_ABS:
+  case JSR_ABS:
   case STA_ABS:
   case STX_ABS:
+  case STY_ABS:
   case LDA_ABS_X:
     return _makeAbsolutePair(*src, *(src + 1), *(src + 2));
   case BPL_REL:
@@ -77,6 +79,7 @@ std::pair<Instruction, int> decodeInstruction(uint8_t *src, int idx) {
   case LDX_IMM:
   case LDY_IMM:
     return _makeImmediatePair(*src, *(src + 1));
+  case LDA_ZERO:
   case STA_ZERO:
     return _makeZeropagePair(*src, *(src + 1));
   default:

@@ -60,17 +60,26 @@ void instruction(Instructions::Instruction instruction) {
   case Instructions::OpCode::JMP_ABS:
     _printAbsoluteInstruction("JMP", instruction);
     break;
+  case Instructions::OpCode::JSR_ABS:
+    _printAbsoluteInstruction("JSR", instruction);
+    break;
   case Instructions::OpCode::STA_ABS:
     _printAbsoluteInstruction("STA", instruction);
     break;
   case Instructions::OpCode::STX_ABS:
     _printAbsoluteInstruction("STX", instruction);
     break;
+  case Instructions::OpCode::STY_ABS:
+    _printAbsoluteInstruction("STY", instruction);
+    break;
   case Instructions::OpCode::BPL_REL:
     _printRelativeInstruction("BPL", instruction);
     break;
   case Instructions::OpCode::BNE_REL:
     _printRelativeInstruction("BNE", instruction);
+    break;
+  case Instructions::OpCode::LDA_ZERO:
+    _printZeropageInstruction("LDA", instruction);
     break;
   case Instructions::OpCode::STA_ZERO:
     _printZeropageInstruction("STA", instruction);
