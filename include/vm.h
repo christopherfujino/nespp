@@ -32,6 +32,7 @@ public:
   VM(Rom *rom);
   ~VM();
 
+  // Methods
   uint8_t peek(Address::Absolute address);
   uint8_t peek8(uint8_t offset);
   uint8_t peek16(uint16_t address);
@@ -49,10 +50,52 @@ private:
   Mapper *mapper;
 
   // registers
-  uint16_t pc = 0;
+  uint16_t PC = 0;
+  uint8_t A = 0;
+  uint8_t X = 0;
+  uint8_t Y = 0;
+
+  /// Status
+  ///
+  /// 7  bit  0
+  /// ---- ----
+  /// NV1B DIZC
+  /// |||| ||||
+  /// |||| |||+- Carry
+  /// |||| ||+-- Zero
+  /// |||| |+--- Interrupt Disable
+  /// |||| +---- Decimal (NES no-op)
+  /// |||+------ (CPU no-op; observable on the stack, though)
+  /// ||+------- (no-op; always pushed as 1)
+  /// |+-------- Overflow
+  /// +--------- Negative
+  uint8_t S = 0;
+
+  /// Negative bitmask
+  const uint8_t _N = 1 << 7;
+  const uint8_t _NNot = ~_N;
+
+  /// Overflow bitmask
+  const uint8_t _V = 1 << 6;
+
+  /// Interrupt bitmask
+  const uint8_t _I = 1 << 2;
+
+  /// Zero bitmask
+  const uint8_t _Z = 1 << 1;
+  const uint8_t _ZNot = ~_Z;
+
+  /// Carry bitmask
+  const uint8_t _C = 1 << 0;
+  const uint8_t _CNot = ~_C;
 
   // Methods
-  Instructions::Instruction decodeInstruction(uint16_t address);
+  Instructions::Instruction decodeInstruction();
+  void execute(Instructions::Instruction instruction);
+
+  void inline _setN(uint8_t other);
+  void inline _setZ(uint8_t other);
+  void inline _setC(bool didCarry);
 };
 
 } // namespace VM
