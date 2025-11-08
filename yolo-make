@@ -1,0 +1,12 @@
+#!/usr/bin/env sloth
+
+with (
+  $cwd = $scriptDir,
+  $env = {'MAKEFILE_WARNINGS': ''},
+) {
+  # TODO use $argv
+  "make"! catch (e) do {
+    # Make will print an error message
+    exit(1)
+  }
+}

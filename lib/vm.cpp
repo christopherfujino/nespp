@@ -242,24 +242,42 @@ void VM::execute(Instructions::Instruction instruction) {
     _setN(value);
     _setZ(value);
     A += value;
-    return;
+    break;
   case ASL_A:
     value = A;
     _setN(value);
     _setZ(value);
     _setC(value & (1 << 7) ? true : false);
     A = value << 1;
-    return;
+    break;
   case BPL_REL:
     // if not negative...
     if ((S & _N) == 0) {
       // TODO: is the operand signed?
       PC += instruction.operand.relative;
     }
-    return;
+    break;
   case JMP_ABS:
     PC = peek(instruction.operand.absolute);
-    return;
+    break;
+  case LDA_IMM:
+    value = instruction.operand.immediate;
+    _setN(value);
+    _setZ(value);
+    A = value;
+    break;
+  case LDX_IMM:
+    value = instruction.operand.immediate;
+    _setN(value);
+    _setZ(value);
+    X = value;
+    break;
+  case LDY_IMM:
+    value = instruction.operand.immediate;
+    _setN(value);
+    _setZ(value);
+    Y = value;
+    break;
   }
 }
 

@@ -7,7 +7,9 @@ BINARY = $(BUILD)/a.out
 BIN_DIR = ./bin
 LIB_IR = ./lib
 INCLUDE_DIR = ./include
-CXXFLAGS = -g -std=c++20 -Werror -I$(RAYLIB_INCLUDE) -I$(INCLUDE_DIR)
+INCLUDES = -I$(RAYLIB_INCLUDE) -I$(INCLUDE_DIR)
+MAKEFILE_WARNINGS ?= -Wall -Werror
+CXXFLAGS = -g -std=c++20 $(MAKEFILE_WARNINGS) $(INCLUDES)
 CXX = clang++
 
 .PHONY: headless

@@ -1,5 +1,7 @@
 CompileFlags:
   Add:
+    - -Wall
+    - -Werror
     - -std=c++20
     - -I./include
     - -I./THIRD_PARTY/raylib-5.5/out/raylib/include
