@@ -5,6 +5,8 @@
 #include <utility>
 #include <vector>
 
+#include "address.h"
+
 namespace Instructions {
 
 enum OpCode : uint8_t {
@@ -45,21 +47,16 @@ enum OpCode : uint8_t {
   TXS = 0x9A, // Transfer index X to stack register
 };
 
-struct AbsoluteAddress {
-  uint8_t low;
-  uint8_t high;
-};
-
 struct Instruction {
   OpCode opCode;
   union {
-    AbsoluteAddress absolute;
+    Address::Absolute absolute;
     uint8_t immediate;
     void *implied;
     void *accumulator;
     uint8_t relative;
     uint8_t zeropage;
-    AbsoluteAddress indirect;
+    Address::Absolute indirect;
   } operand;
 };
 

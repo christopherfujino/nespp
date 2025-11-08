@@ -56,9 +56,11 @@ void Rom::fromPath(Rom **romPtr, const char *path) {
 
   rom->prgBlob = new uint8_t[rom->prgSize];
   fread(rom->prgBlob, rom->prgSize, 1, f);
+  printf("read %d bytes of PRG ROM.\n", rom->prgSize);
 
   rom->chrBlob = new uint8_t[rom->chrSize];
   fread(rom->chrBlob, rom->chrSize, 1, f);
+  printf("read %d bytes of CHR ROM.\n", rom->chrSize);
 
   fclose(f);
 }

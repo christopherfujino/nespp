@@ -26,8 +26,8 @@ std::pair<Instruction, int> _makeAbsolutePair(uint8_t opCode, uint8_t lowByte,
                                               uint8_t highByte) {
   return std::make_pair(
       Instruction{.opCode = (OpCode)opCode,
-                  .operand = {.absolute = AbsoluteAddress{.low = lowByte,
-                                                          .high = highByte}}},
+                  .operand = {.absolute = Address::Absolute{.low = lowByte,
+                                                            .high = highByte}}},
       3);
 }
 
@@ -35,8 +35,8 @@ std::pair<Instruction, int> _makeIndirectPair(uint8_t opCode, uint8_t lowByte,
                                               uint8_t highByte) {
   return std::make_pair(
       Instruction{.opCode = (OpCode)opCode,
-                  .operand = {.indirect = AbsoluteAddress{.low = lowByte,
-                                                          .high = highByte}}},
+                  .operand = {.indirect = Address::Absolute{.low = lowByte,
+                                                            .high = highByte}}},
       3);
 }
 
@@ -56,8 +56,9 @@ std::pair<Instruction, int> _makeRelativePair(uint8_t opCode, uint8_t byte) {
 }
 
 std::pair<Instruction, int> _makeAccumulatorPair(uint8_t opCode) {
-  return std::make_pair(
-      Instruction{.opCode = (OpCode)opCode, .operand = {.accumulator = nullptr}}, 1);
+  return std::make_pair(Instruction{.opCode = (OpCode)opCode,
+                                    .operand = {.accumulator = nullptr}},
+                        1);
 }
 
 std::pair<Instruction, int> _makeImpliedPair(uint8_t opCode) {
