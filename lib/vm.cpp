@@ -45,6 +45,21 @@ uint8_t Mapper0::peek16(uint16_t address) {
   throw "Unreachable";
 }
 
+void Mapper0::poke16(uint16_t address, uint8_t value) {
+  if (address < 0x6000) {
+    throw "Unreachable";
+  } else if (address < 0x8000) {
+    // unbanked PRG-RAM
+    throw "TODO: implement PRG-RAM";
+  } else if (address <= 0xFFFF) {
+    // either continuation of PRG or mirror
+    uint16_t offset = address - 0x8000;
+    prg[offset] = value;
+  }
+
+  throw "Unreachable";
+}
+
 VM::VM(Rom *rom) {
   printf("Constructing a VM...\n");
   switch (rom->mapper) {
@@ -69,8 +84,9 @@ void VM::start() {
   Instructions::Instruction current;
   while (1) {
     current = decodeInstruction();
-
+    printf("$%02X: ", PC);
     Debug::instruction(current);
+    execute(current);
   }
 }
 
@@ -118,6 +134,44 @@ uint8_t VM::peek16(uint16_t address) {
     return mapper->peek16(address);
   }
   throw "Unreachable";
+}
+
+void VM::poke(Address::Absolute address, uint8_t value) {
+  poke16(address.low | (address.high << 8), value);
+}
+
+void VM::poke16(uint16_t address, uint8_t value) {
+  // first 2KiB
+  if (address < 0x0800) {
+    // printf("DEBUG RAM address: 0x%04X = 0x%02X\n", idx, ram[idx]);
+    ram[address] = value;
+  } else if (address < 0x1000) {
+    uint16_t normalizedIdx = address - 0x800;
+    ram[normalizedIdx] = value;
+  } else if (address < 0x1800) {
+    uint16_t normalizedIdx = address - 0x1000;
+    ram[normalizedIdx] = value;
+  } else if (address < 0x2000) {
+    uint16_t normalizedIdx = address - 0x1800;
+    ram[normalizedIdx] = value;
+  } else if (address < 0x2008) {
+    uint8_t offset = address - 0x2000;
+    ppuRegisters[offset] = value;
+  } else if (address < 0x4000) {
+    throw "TODO implement PPU register repeats";
+  } else if (address < 0x4018) {
+    uint8_t offset = address - 0x4000;
+    apuAndIoRegisters[offset] = value;
+  } else if (address < 0x4020) {
+    throw "TODO: implement APU & I/O functionality that is normally disabled";
+  } else if (address <= 0xFFFF) {
+    // mapper
+    mapper->poke16(address, value);
+  } else {
+    char *msg = new char[256];
+    snprintf(msg, 256, "Invalid address 0x%04X", address);
+    throw msg;
+  }
 }
 
 Instructions::Instruction VM::decodeInstruction() {
@@ -243,43 +297,71 @@ void VM::execute(Instructions::Instruction instruction) {
     _setN(value);
     _setZ(value);
     A += value;
-    break;
+    return;
   case ASL_A:
     value = A;
     _setN(value);
     _setZ(value);
     _setC(value & (1 << 7) ? true : false);
     A = value << 1;
-    break;
+    return;
   case BPL_REL:
     // if not negative...
     if ((S & _N) == 0) {
       // TODO: is the operand signed?
       PC += instruction.operand.relative;
     }
-    break;
+    return;
+  case CLD:
+    S &= _DNot;
+    return;
   case JMP_ABS:
     PC = peek(instruction.operand.absolute);
-    break;
+    return;
+  case LDA_ABS:
+    value = peek(instruction.operand.absolute);
+    _setN(value);
+    _setZ(value);
+    A = value;
+    return;
   case LDA_IMM:
     value = instruction.operand.immediate;
     _setN(value);
     _setZ(value);
     A = value;
-    break;
+    return;
   case LDX_IMM:
     value = instruction.operand.immediate;
     _setN(value);
     _setZ(value);
     X = value;
-    break;
+    return;
   case LDY_IMM:
     value = instruction.operand.immediate;
     _setN(value);
     _setZ(value);
     Y = value;
-    break;
+    return;
+  case PHA:
+    poke16(0x0100 + SP, A);
+    // I *think* this behaves identically to 6502 wrapping since SP is unsigned
+    --SP;
+    return;
+  case SEI:
+    S |= _I;
+    return;
+  case STA_ABS:
+    poke(instruction.operand.absolute, A);
+    return;
+  case TXS:
+    SP = X;
+    return;
   }
+  // This is never freed
+  char *msg = new char[256];
+  snprintf(msg, 256, "TODO: implement instruction 0x%02X in `VM::execute()`",
+           (uint8_t)instruction.opCode);
+  throw msg;
 }
 
 } // namespace VM

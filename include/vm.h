@@ -12,6 +12,7 @@ class Mapper {
 public:
   virtual ~Mapper() {}
   virtual uint8_t peek16(uint16_t address) = 0;
+  virtual void poke16(uint16_t address, uint8_t value) = 0;
 };
 
 class Mapper0 : public Mapper {
@@ -19,6 +20,7 @@ public:
   Mapper0(Rom *rom);
   virtual ~Mapper0();
   virtual uint8_t peek16(uint16_t address);
+  virtual void poke16(uint16_t address, uint8_t value);
 
   Rom *rom;
 
@@ -31,11 +33,6 @@ class VM {
 public:
   VM(Rom *rom);
   ~VM();
-
-  // Methods
-  uint8_t peek(Address::Absolute address);
-  uint8_t peek8(uint8_t offset);
-  uint8_t peek16(uint16_t address);
 
   void start();
 
@@ -54,6 +51,11 @@ private:
   uint8_t A = 0;
   uint8_t X = 0;
   uint8_t Y = 0;
+
+  /// Stack pointer
+  ///
+  /// Grows down from $FF to $00. These are offsets from CPU RAM map $0100.
+  uint8_t SP = 0xFF;
 
   /// Status
   ///
@@ -76,10 +78,13 @@ private:
   const uint8_t _NNot = ~_N;
 
   ///// Overflow bitmask
-  //const uint8_t _V = 1 << 6;
+  // const uint8_t _V = 1 << 6;
 
-  ///// Interrupt bitmask
-  //const uint8_t _I = 1 << 2;
+  const uint8_t _D = 1 << 3;
+  const uint8_t _DNot = ~_D;
+
+  // Interrupt bitmask
+  const uint8_t _I = 1 << 2;
 
   /// Zero bitmask
   const uint8_t _Z = 1 << 1;
@@ -92,6 +97,13 @@ private:
   // Methods
   Instructions::Instruction decodeInstruction();
   void execute(Instructions::Instruction instruction);
+
+  uint8_t peek(Address::Absolute address);
+  uint8_t peek8(uint8_t offset);
+  uint8_t peek16(uint16_t address);
+
+  void poke(Address::Absolute address, uint8_t value);
+  void poke16(uint16_t address, uint8_t value);
 
   void inline _setN(uint8_t other);
   void inline _setZ(uint8_t other);

@@ -2,7 +2,7 @@
 
 with (
   $cwd = $scriptDir,
-  $env = {'MAKEFILE_WARNINGS': ''},
+  $env = $env.merge({'MAKEFILE_WARNINGS': ''}),
 ) {
   # TODO use $argv
   "make"! catch (e) do {

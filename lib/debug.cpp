@@ -4,49 +4,49 @@ namespace Debug {
 
 void _printAbsoluteInstruction(const char *name,
                                Instructions::Instruction instruction) {
-  printf("%s (%02X)  %02X %02X\n", name, instruction.opCode,
+  printf("%s (%02X)  %02X %02X\n", name, (uint8_t)instruction.opCode,
          instruction.operand.absolute.low, instruction.operand.absolute.high);
 }
 
 void _printAbsoluteXInstruction(const char *name,
                                 Instructions::Instruction instruction) {
-  printf("%s (%02X)  %02X %02X,X\n", name, instruction.opCode,
+  printf("%s (%02X)  %02X %02X,X\n", name, (uint8_t)instruction.opCode,
          instruction.operand.absolute.low, instruction.operand.absolute.high);
 }
 
 void _printIndirectInstruction(const char *name,
                                Instructions::Instruction instruction) {
-  printf("%s (%02X) (%02X %02X)\n", name, instruction.opCode,
+  printf("%s (%02X) (%02X %02X)\n", name, (uint8_t)instruction.opCode,
          instruction.operand.absolute.low, instruction.operand.absolute.high);
 }
 
 
 void _printImmediateInstruction(const char *name,
                                 Instructions::Instruction instruction) {
-  printf("%s (%02X) #%02X\n", name, instruction.opCode,
+  printf("%s (%02X) #%02X\n", name, (uint8_t)instruction.opCode,
          instruction.operand.immediate);
 }
 
 void _printAccumulatorInstruction(const char *name,
                                   Instructions::Instruction instruction) {
-  printf("%s (%02X)  A\n", name, instruction.opCode);
+  printf("%s (%02X)  A\n", name, (uint8_t)instruction.opCode);
 }
 
 void _printZeropageInstruction(const char *name,
                                Instructions::Instruction instruction) {
-  printf("%s (%02X)  %02X\n", name, instruction.opCode,
+  printf("%s (%02X)  %02X\n", name, (uint8_t)instruction.opCode,
          instruction.operand.zeropage);
 }
 
 void _printRelativeInstruction(const char *name,
                                Instructions::Instruction instruction) {
-  printf("%s (%02X)  %02X\n", name, instruction.opCode,
+  printf("%s (%02X)  %02X\n", name, (uint8_t)instruction.opCode,
          instruction.operand.relative);
 }
 
 void _printImpliedInstruction(const char *name,
                               Instructions::Instruction instruction) {
-  printf("%s (%02X)\n", name, instruction.opCode);
+  printf("%s (%02X)\n", name, (uint8_t)instruction.opCode);
 }
 
 void instruction(Instructions::Instruction instruction) {
