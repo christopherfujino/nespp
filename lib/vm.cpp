@@ -121,16 +121,17 @@ uint8_t VM::peek16(uint16_t address) {
 }
 
 Instructions::Instruction VM::decodeInstruction() {
-  uint8_t zero = peek16(PC);
+  using enum Instructions::OpCode;
+  Instructions::OpCode zero = (Instructions::OpCode) peek16(PC);
   switch (zero) {
-  case Instructions::AND_ABS:
-  case Instructions::LDA_ABS:
-  case Instructions::JMP_ABS:
-  case Instructions::JSR_ABS:
-  case Instructions::STA_ABS:
-  case Instructions::STX_ABS:
-  case Instructions::STY_ABS:
-  case Instructions::LDA_ABS_X:
+  case AND_ABS:
+  case LDA_ABS:
+  case JMP_ABS:
+  case JSR_ABS:
+  case STA_ABS:
+  case STX_ABS:
+  case STY_ABS:
+  case LDA_ABS_X:
     PC += 3;
     return Instructions::Instruction{
         .opCode = (Instructions::OpCode)zero,
@@ -143,39 +144,39 @@ Instructions::Instruction VM::decodeInstruction() {
                     },
             },
     };
-  case Instructions::BCC_REL:
-  case Instructions::BCS_REL:
-  case Instructions::BEQ_REL:
-  case Instructions::BNE_REL:
-  case Instructions::BPL_REL:
+  case BCC_REL:
+  case BCS_REL:
+  case BEQ_REL:
+  case BNE_REL:
+  case BPL_REL:
     PC += 2;
     return Instructions::Instruction{
         .opCode = (Instructions::OpCode)zero,
         .operand = {.relative = peek16(PC + 1)},
     };
-  case Instructions::ASL_A:
-  case Instructions::LSR_A:
+  case ASL_A:
+  case LSR_A:
     PC += 1;
     return Instructions::Instruction{
         .opCode = (Instructions::OpCode)zero,
         .operand = {.accumulator = nullptr},
     };
-  case Instructions::CLD:
-  case Instructions::DEX:
-  case Instructions::DEY:
-  case Instructions::INX:
-  case Instructions::INY:
-  case Instructions::PHA:
-  case Instructions::RTS:
-  case Instructions::SEI:
-  case Instructions::TAX:
-  case Instructions::TXS:
+  case CLD:
+  case DEX:
+  case DEY:
+  case INX:
+  case INY:
+  case PHA:
+  case RTS:
+  case SEI:
+  case TAX:
+  case TXS:
     PC += 1;
     return Instructions::Instruction{
         .opCode = (Instructions::OpCode)zero,
         .operand = {.implied = nullptr},
     };
-  case Instructions::JMP_INDIRECT:
+  case JMP_INDIRECT:
     PC += 3;
     return Instructions::Instruction{
         .opCode = (Instructions::OpCode)zero,
@@ -188,20 +189,20 @@ Instructions::Instruction VM::decodeInstruction() {
                     },
             },
     };
-  case Instructions::CMP_IMM:
-  case Instructions::CPX_IMM:
-  case Instructions::LDA_IMM:
-  case Instructions::LDX_IMM:
-  case Instructions::LDY_IMM:
+  case CMP_IMM:
+  case CPX_IMM:
+  case LDA_IMM:
+  case LDX_IMM:
+  case LDY_IMM:
     PC += 2;
     return Instructions::Instruction{
         .opCode = (Instructions::OpCode)zero,
         .operand = {.immediate = peek16(PC + 1)},
     };
-  case Instructions::DEC_ZERO:
-  case Instructions::INC_ZERO:
-  case Instructions::LDA_ZERO:
-  case Instructions::STA_ZERO:
+  case DEC_ZERO:
+  case INC_ZERO:
+  case LDA_ZERO:
+  case STA_ZERO:
     PC += 2;
     return Instructions::Instruction{
         .opCode = (Instructions::OpCode)zero,
@@ -234,28 +235,29 @@ void inline VM::_setC(bool didCarry) {
 
 void VM::execute(Instructions::Instruction instruction) {
   switch (instruction.opCode) {
+    using enum Instructions::OpCode;
     uint8_t value;
-  case Instructions::AND_ABS:
+  case AND_ABS:
     value = peek(instruction.operand.absolute);
     _setN(value);
     _setZ(value);
     A += value;
     return;
-  case Instructions::ASL_A:
+  case ASL_A:
     value = A;
     _setN(value);
     _setZ(value);
     _setC(value & (1 << 7) ? true : false);
     A = value << 1;
     return;
-  case Instructions::BPL_REL:
+  case BPL_REL:
     // if not negative...
     if ((S & _N) == 0) {
       // TODO: is the operand signed?
       PC += instruction.operand.relative;
     }
     return;
-  case Instructions::JMP_ABS:
+  case JMP_ABS:
     PC = peek(instruction.operand.absolute);
     return;
   }

@@ -9,7 +9,7 @@
 
 namespace Instructions {
 
-enum OpCode : uint8_t {
+enum class OpCode : uint8_t {
   AND_ABS = 0x2D, // A & M -> A
   JMP_ABS = 0x4C,
   JSR_ABS = 0x20,

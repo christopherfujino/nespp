@@ -68,7 +68,8 @@ std::pair<Instruction, int> _makeImpliedPair(uint8_t opCode) {
 }
 
 std::pair<Instruction, int> decodeInstruction(uint8_t *src, int idx) {
-  switch (*src) {
+  using enum OpCode;
+  switch ((OpCode)*src) {
   case AND_ABS:
   case LDA_ABS:
   case JMP_ABS:
