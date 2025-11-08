@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include "address.h"
+#include "instructions.h"
 #include "rom.h"
 
 namespace VM {
@@ -36,6 +37,7 @@ public:
   uint8_t peek16(uint16_t address);
 
   void start();
+
 private:
   /// Mapped from $0000-$07FF, with 3 mirrors from $0800-$1FF
   uint8_t ram[2048] = {0};
@@ -48,6 +50,9 @@ private:
 
   // registers
   uint16_t pc = 0;
+
+  // Methods
+  Instructions::Instruction decodeInstruction(uint16_t address);
 };
 
 } // namespace VM

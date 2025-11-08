@@ -1,7 +1,6 @@
 #include <cstring>
 #include <stdio.h>
 
-#include "../include/instructions.h"
 #include "../include/vm.h"
 
 namespace VM {
@@ -66,9 +65,10 @@ void VM::start() {
     pc = addressLow | (addressHigh << 8);
   }
 
-  //while (1) {
-  //  std::pair p = Instructions::decodeInstruction(pc);
-  //}
+  Instructions::Instruction current;
+  while (1) {
+    current = decodeInstruction(pc);
+  }
 }
 
 uint8_t VM::peek(Address::Absolute address) {
@@ -115,6 +115,59 @@ uint8_t VM::peek16(uint16_t address) {
     return mapper->peek16(address);
   }
   throw "Unreachable";
+}
+
+Instructions::Instruction VM::decodeInstruction(uint16_t address) {
+  uint8_t zero = peek16(address);
+  switch (zero) {
+  case AND_ABS:
+  case LDA_ABS:
+  case JMP_ABS:
+  case JSR_ABS:
+  case STA_ABS:
+  case STX_ABS:
+  case STY_ABS:
+  case LDA_ABS_X:
+    return _makeAbsolutePair(*src, *(src + 1), *(src + 2));
+  case BCC_REL:
+  case BCS_REL:
+  case BEQ_REL:
+  case BNE_REL:
+  case BPL_REL:
+    return _makeRelativePair(*src, *(src + 1));
+  case ASL_A:
+  case LSR_A:
+    return _makeAccumulatorPair(*src);
+  case CLD:
+  case DEX:
+  case DEY:
+  case INX:
+  case INY:
+  case PHA:
+  case RTS:
+  case SEI:
+  case TAX:
+  case TXS:
+    return _makeImpliedPair(*src);
+  case JMP_INDIRECT:
+    return _makeIndirectPair(*src, *(src + 1), *(src + 2));
+  case CMP_IMM:
+  case CPX_IMM:
+  case LDA_IMM:
+  case LDX_IMM:
+  case LDY_IMM:
+    return _makeImmediatePair(*src, *(src + 1));
+  case DEC_ZERO:
+  case INC_ZERO:
+  case LDA_ZERO:
+  case STA_ZERO:
+    return _makeZeropagePair(*src, *(src + 1));
+  default:
+    // This is never freed
+    char *msg = new char[256];
+    snprintf(msg, 256, "Unimplemented instruction 0x%02X at 0x%04X", *src, idx);
+    throw msg;
+  }
 }
 
 } // namespace VM

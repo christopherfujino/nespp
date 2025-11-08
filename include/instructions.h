@@ -64,4 +64,5 @@ std::vector<Instruction> deserialize(uint8_t *data, int len);
 
 std::pair<Instruction, int> decodeInstruction(uint8_t *src, int idx);
 
+    Instructions::Instruction current;
 } // namespace Instructions
