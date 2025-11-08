@@ -8,7 +8,7 @@ BIN_DIR = ./bin
 LIB_IR = ./lib
 INCLUDE_DIR = ./include
 INCLUDES = -I$(RAYLIB_INCLUDE) -I$(INCLUDE_DIR)
-MAKEFILE_WARNINGS ?= -Wall -Werror
+MAKEFILE_WARNINGS ?= -Wall -Werror -Wpedantic
 CXXFLAGS = -g -std=c++20 $(MAKEFILE_WARNINGS) $(INCLUDES)
 CXX = clang++
 

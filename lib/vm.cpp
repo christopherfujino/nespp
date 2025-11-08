@@ -122,7 +122,7 @@ uint8_t VM::peek16(uint16_t address) {
 
 Instructions::Instruction VM::decodeInstruction() {
   using enum Instructions::OpCode;
-  Instructions::OpCode zero = (Instructions::OpCode) peek16(PC);
+  Instructions::OpCode zero = (Instructions::OpCode)peek16(PC);
   switch (zero) {
   case AND_ABS:
   case LDA_ABS:
@@ -211,7 +211,8 @@ Instructions::Instruction VM::decodeInstruction() {
   default:
     // This is never freed
     char *msg = new char[256];
-    snprintf(msg, 256, "Unimplemented instruction 0x%02X at 0x%04X", zero, PC);
+    snprintf(msg, 256, "Unimplemented instruction 0x%02X at 0x%04X",
+             (uint8_t)zero, PC);
     throw msg;
   }
 }

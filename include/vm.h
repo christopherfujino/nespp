@@ -75,11 +75,11 @@ private:
   const uint8_t _N = 1 << 7;
   const uint8_t _NNot = ~_N;
 
-  /// Overflow bitmask
-  const uint8_t _V = 1 << 6;
+  ///// Overflow bitmask
+  //const uint8_t _V = 1 << 6;
 
-  /// Interrupt bitmask
-  const uint8_t _I = 1 << 2;
+  ///// Interrupt bitmask
+  //const uint8_t _I = 1 << 2;
 
   /// Zero bitmask
   const uint8_t _Z = 1 << 1;
