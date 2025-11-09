@@ -26,9 +26,9 @@ enum class OpCode : uint8_t {
   LDY_IMM = 0xA0,
   BCC_REL = 0x90, // Branch on carry clear
   BCS_REL = 0xB0, // Branch on carry set
-  BEQ_REL = 0xF0, // Branch on result equal to zero (Z = 1)
+  BEQ_REL = 0xF0, // Branch on result equal to zero (Z == 1)
   BNE_REL = 0xD0, // Branch on not equal to zero
-  BPL_REL = 0x10,
+  BPL_REL = 0x10, // Branch on result plus (N == 0)
   INC_ZERO = 0xE6, // Increment memory by one
   DEC_ZERO = 0xC6, // Decrement memory by one
   LDA_ZERO = 0xA5,

@@ -59,7 +59,7 @@ public:
   /// ||+------- (no-op; always pushed as 1)
   /// |+-------- Overflow
   /// +--------- Negative
-  uint8_t S = 0;
+  uint8_t S = 1 << 5;
 
   // Memory
 
