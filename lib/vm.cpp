@@ -55,9 +55,9 @@ void Mapper0::poke16(uint16_t address, uint8_t value) {
     // either continuation of PRG or mirror
     uint16_t offset = address - 0x8000;
     prg[offset] = value;
+  } else {
+    throw "Unreachable";
   }
-
-  throw "Unreachable";
 }
 
 VM::VM(Rom *rom) {
@@ -82,11 +82,22 @@ void VM::start() {
   }
 
   Instructions::Instruction current;
+  char inputLine[1024] = {0};
+  char *inputLinePtr = inputLine;
+  size_t inputSize = 0;
   while (1) {
-    current = decodeInstruction();
     printf("$%02X: ", PC);
+    current = decodeInstruction();
     Debug::instruction(current);
     execute(current);
+
+    printf("? ");
+    int nread = getline(&inputLinePtr, &inputSize, stdin);
+    if (nread == EOF) {
+      printf("\n");
+      exit(0);
+    }
+    printf("[%ld] You typed: %s\n", inputSize, inputLine);
   }
 }
 
@@ -177,6 +188,7 @@ void VM::poke16(uint16_t address, uint8_t value) {
 Instructions::Instruction VM::decodeInstruction() {
   using enum Instructions::OpCode;
   Instructions::OpCode zero = (Instructions::OpCode)peek16(PC);
+  Instructions::Instruction instruction;
   switch (zero) {
   case AND_ABS:
   case LDA_ABS:
@@ -186,8 +198,7 @@ Instructions::Instruction VM::decodeInstruction() {
   case STX_ABS:
   case STY_ABS:
   case LDA_ABS_X:
-    PC += 3;
-    return Instructions::Instruction{
+    instruction = Instructions::Instruction{
         .opCode = (Instructions::OpCode)zero,
         .operand =
             {
@@ -198,23 +209,27 @@ Instructions::Instruction VM::decodeInstruction() {
                     },
             },
     };
+    PC += 3;
+    break;
   case BCC_REL:
   case BCS_REL:
   case BEQ_REL:
   case BNE_REL:
   case BPL_REL:
-    PC += 2;
-    return Instructions::Instruction{
+    instruction = Instructions::Instruction{
         .opCode = (Instructions::OpCode)zero,
         .operand = {.relative = peek16(PC + 1)},
     };
+    PC += 2;
+    break;
   case ASL_A:
   case LSR_A:
-    PC += 1;
-    return Instructions::Instruction{
+    instruction = Instructions::Instruction{
         .opCode = (Instructions::OpCode)zero,
         .operand = {.accumulator = nullptr},
     };
+    PC += 1;
+    break;
   case CLD:
   case DEX:
   case DEY:
@@ -225,14 +240,14 @@ Instructions::Instruction VM::decodeInstruction() {
   case SEI:
   case TAX:
   case TXS:
-    PC += 1;
-    return Instructions::Instruction{
+    instruction = Instructions::Instruction{
         .opCode = (Instructions::OpCode)zero,
         .operand = {.implied = nullptr},
     };
+    PC += 1;
+    break;
   case JMP_INDIRECT:
-    PC += 3;
-    return Instructions::Instruction{
+    instruction = Instructions::Instruction{
         .opCode = (Instructions::OpCode)zero,
         .operand =
             {
@@ -243,25 +258,29 @@ Instructions::Instruction VM::decodeInstruction() {
                     },
             },
     };
+    PC += 3;
+    break;
   case CMP_IMM:
   case CPX_IMM:
   case LDA_IMM:
   case LDX_IMM:
   case LDY_IMM:
-    PC += 2;
-    return Instructions::Instruction{
+    instruction = Instructions::Instruction{
         .opCode = (Instructions::OpCode)zero,
         .operand = {.immediate = peek16(PC + 1)},
     };
+    PC += 2;
+    break;
   case DEC_ZERO:
   case INC_ZERO:
   case LDA_ZERO:
   case STA_ZERO:
-    PC += 2;
-    return Instructions::Instruction{
+    instruction = Instructions::Instruction{
         .opCode = (Instructions::OpCode)zero,
         .operand = {.zeropage = peek16(PC + 1)},
     };
+    PC += 2;
+    break;
   default:
     // This is never freed
     char *msg = new char[256];
@@ -269,17 +288,19 @@ Instructions::Instruction VM::decodeInstruction() {
              (uint8_t)zero, PC);
     throw msg;
   }
+
+  return instruction;
 }
 
 void inline VM::_setN(uint8_t other) { S = (S & _NNot) | (_N & other); }
 
 void inline VM::_setZ(uint8_t other) {
-  if (other) {
-    // not zero
-    S = S & _ZNot;
-  } else {
+  if (other == 0x0) {
     // is zero
     S = (S & _ZNot) | (_Z);
+  } else {
+    // not zero
+    S = S & _ZNot;
   }
 }
 
@@ -292,6 +313,7 @@ void VM::execute(Instructions::Instruction instruction) {
   switch (instruction.opCode) {
     using enum Instructions::OpCode;
     uint8_t value;
+    uint16_t address;
   case AND_ABS:
     value = peek(instruction.operand.absolute);
     _setN(value);
@@ -305,21 +327,49 @@ void VM::execute(Instructions::Instruction instruction) {
     _setC(value & (1 << 7) ? true : false);
     A = value << 1;
     return;
+  case BNE_REL:
+    if (_Z == 0) {
+      PC += instruction.operand.relative;
+    }
+    return;
   case BPL_REL:
     // if not negative...
     if ((S & _N) == 0) {
-      // TODO: is the operand signed?
-      PC += instruction.operand.relative;
+      // treat as signed
+      PC += (int8_t)instruction.operand.relative;
+      printf("Jumping to %04X\n", PC);
     }
     return;
   case CLD:
     S &= _DNot;
+    return;
+  case DEX:
+    X -= 1;
+    // Is this handled correctly even though X is unsigned?
+    _setN(X);
+    _setZ(X);
+    return;
+  case DEY:
+    Y -= 1;
+    // Is this handled correctly even though X is unsigned?
+    _setN(Y);
+    _setZ(Y);
     return;
   case JMP_ABS:
     PC = peek(instruction.operand.absolute);
     return;
   case LDA_ABS:
     value = peek(instruction.operand.absolute);
+    _setN(value);
+    _setZ(value);
+    A = value;
+    return;
+  case LDA_ABS_X:
+    // operand is address; effective address is address incremented by X with
+    // carry **
+    // TODO: Do we add _C?!?!??!
+    address = instruction.operand.absolute.to16() + X;
+    value = peek16(address);
     _setN(value);
     _setZ(value);
     A = value;
@@ -352,6 +402,9 @@ void VM::execute(Instructions::Instruction instruction) {
     return;
   case STA_ABS:
     poke(instruction.operand.absolute, A);
+    return;
+  case STX_ABS:
+    poke(instruction.operand.absolute, X);
     return;
   case TXS:
     SP = X;

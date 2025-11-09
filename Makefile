@@ -28,7 +28,7 @@ $(BUILD)/tileBrowser: $(BUILD)/tileBrowser.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libr
 	$(CXX) $(LDFLAGS) $(BUILD)/tileBrowser.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libraylib.a -o $@
 
 # Headless
-$(BUILD)/main: $(BUILD)/main.o $(BUILD)/rom.o $(BUILD)/instructions.o $(BUILD)/debug.o $(BUILD)/vm.o
+$(BUILD)/main: $(BUILD)/main.o $(BUILD)/rom.o $(BUILD)/instructions.o $(BUILD)/debug.o $(BUILD)/vm.o $(BUILD)/address.o
 	$(CXX) $^ -o $@
 
 $(BUILD)/rom.o: lib/rom.cpp $(INCLUDE_DIR)/rom.h
@@ -47,6 +47,9 @@ $(BUILD)/debug.o: lib/debug.cpp $(INCLUDE_DIR)/debug.h $(INCLUDE_DIR)/instructio
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BUILD)/vm.o: lib/vm.cpp $(INCLUDE_DIR)/vm.h $(INCLUDE_DIR)/address.h $(INCLUDE_DIR)/rom.h $(INCLUDE_DIR)/instructions.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD)/address.o: lib/address.cpp $(INCLUDE_DIR)/address.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 rom.nes:
