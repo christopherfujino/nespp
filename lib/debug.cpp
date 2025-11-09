@@ -167,13 +167,13 @@ void Debugger::start() {
     vm->PC = addressLow | (addressHigh << 8);
   }
 
-  printf("%04X: Start\n", vm->PC);
   Instructions::Instruction ins;
   while (1) {
     printf("%04X: ", vm->PC);
     ins = vm->decodeInstruction();
     instruction(ins);
     vm->execute(ins);
+    printRegisters();
 
     // TODO: this is sus, since getline expects this to be malloc allocated
     char inputLine[1024] = {0};
@@ -190,7 +190,11 @@ void Debugger::start() {
       // step into
       continue;
     } else if (strncmp(inputLine, "setppu2", 5) == 0) {
-
+      // TODO: is this right?
+      // we're branching on if the zero flag is set, so don't branch
+      vm->ppuRegisters[2] = 1 << 7;
+      printf("Setting PPU[2] = #%02X\n", vm->ppuRegisters[2]);
+      continue;
     } else {
       printf("strncmp() = %d\n", strncmp(inputLine, "A = ", 4));
       printf("nread = %d\t\"%02X %02X\"\n", nread, inputLine[0], inputLine[1]);
@@ -198,6 +202,11 @@ void Debugger::start() {
     }
     printf("[%d | %ld] You typed: \"%s\"\n", nread, inputSize, inputLine);
   }
+}
+
+void Debugger::printRegisters() {
+  printf("PC   A  X  Y  SP NV-BDIZC\n");
+  printf("%04X %02X %02X %02X %02X %08b\n\n", vm->PC, vm->A, vm->X, vm->Y, vm->SP, vm->S);
 }
 
 } // namespace Debug

@@ -61,6 +61,15 @@ public:
   /// +--------- Negative
   uint8_t S = 0;
 
+  // Memory
+
+  /// Mapped from $0000-$07FF, with 3 mirrors from $0800-$1FF
+  uint8_t ram[2048] = {0};
+
+  /// Mapped from $2000-$2007
+  uint8_t ppuRegisters[8] = {0};
+  uint8_t apuAndIoRegisters[24] = {0};
+
   // Methods
   void start();
 
@@ -75,13 +84,6 @@ public:
   void execute(Instructions::Instruction instruction);
 private:
   Rom *rom = nullptr;
-
-  /// Mapped from $0000-$07FF, with 3 mirrors from $0800-$1FF
-  uint8_t ram[2048] = {0};
-
-  /// Mapped from $2000-$2007
-  uint8_t ppuRegisters[8] = {0};
-  uint8_t apuAndIoRegisters[24] = {0};
 
   Mapper *mapper;
 

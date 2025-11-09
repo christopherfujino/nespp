@@ -283,7 +283,9 @@ Instructions::Instruction VM::decodeInstruction() {
   return instruction;
 }
 
-void inline VM::_setN(uint8_t other) { S = (S & _NNot) | (_N & other); }
+void inline VM::_setN(uint8_t other) {
+  S = (S & _NNot) | (_N & other);
+}
 
 void inline VM::_setZ(uint8_t other) {
   if (other == 0x0) {
