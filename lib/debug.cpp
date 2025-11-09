@@ -20,7 +20,6 @@ void _printIndirectInstruction(const char *name,
          instruction.operand.absolute.low, instruction.operand.absolute.high);
 }
 
-
 void _printImmediateInstruction(const char *name,
                                 Instructions::Instruction instruction) {
   printf("%s (%02X) #%02X\n", name, (uint8_t)instruction.opCode,
@@ -157,6 +156,20 @@ void instruction(Instructions::Instruction instruction) {
     _printImpliedInstruction("TXS", instruction);
     break;
   }
+}
+
+void Debugger::input() {
+  char inputLine[1024] = {0};
+  char *inputLinePtr = inputLine;
+  size_t inputSize = 0;
+
+  printf("? ");
+  int nread = getline(&inputLinePtr, &inputSize, stdin);
+  if (nread == EOF) {
+    printf("\n");
+    exit(0);
+  }
+  printf("[%ld] You typed: %s\n", inputSize, inputLine);
 }
 
 } // namespace Debug

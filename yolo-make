@@ -4,8 +4,15 @@ with (
   $cwd = $scriptDir,
   $env = $env.merge({'MAKEFILE_WARNINGS': ''}),
 ) {
-  # TODO use $argv
-  "make"! catch (e) do {
+  let cmd = ['echo']
+  print(cmd)
+  for arg in $argv {
+    cmd.push(cmd)
+    print("push ${arg}")
+  }
+  print(cmd)
+  cmd! catch (e) do {
+    print(e)
     # Make will print an error message
     exit(1)
   }

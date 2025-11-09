@@ -61,10 +61,13 @@ void Mapper0::poke16(uint16_t address, uint8_t value) {
 }
 
 VM::VM(Rom *rom) {
-  printf("Constructing a VM...\n");
+  this->rom = rom;
+
   switch (rom->mapper) {
   case 0:
     mapper = new Mapper0(rom);
+  default:
+    throw "Oops!";
   }
 }
 
@@ -81,23 +84,14 @@ void VM::start() {
     PC = addressLow | (addressHigh << 8);
   }
 
+  Debug::Debugger debugger = {.rom = rom};
   Instructions::Instruction current;
-  char inputLine[1024] = {0};
-  char *inputLinePtr = inputLine;
-  size_t inputSize = 0;
   while (1) {
     printf("$%02X: ", PC);
     current = decodeInstruction();
     Debug::instruction(current);
     execute(current);
-
-    printf("? ");
-    int nread = getline(&inputLinePtr, &inputSize, stdin);
-    if (nread == EOF) {
-      printf("\n");
-      exit(0);
-    }
-    printf("[%ld] You typed: %s\n", inputSize, inputLine);
+    debugger.input();
   }
 }
 

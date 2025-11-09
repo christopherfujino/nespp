@@ -36,7 +36,17 @@ public:
 
   void start();
 
+  // Methods
+  uint8_t peek(Address::Absolute address);
+  uint8_t peek8(uint8_t offset);
+  uint8_t peek16(uint16_t address);
+
+  void poke(Address::Absolute address, uint8_t value);
+  void poke16(uint16_t address, uint8_t value);
+
 private:
+  Rom *rom = nullptr;
+
   /// Mapped from $0000-$07FF, with 3 mirrors from $0800-$1FF
   uint8_t ram[2048] = {0};
 
@@ -97,13 +107,6 @@ private:
   // Methods
   Instructions::Instruction decodeInstruction();
   void execute(Instructions::Instruction instruction);
-
-  uint8_t peek(Address::Absolute address);
-  uint8_t peek8(uint8_t offset);
-  uint8_t peek16(uint16_t address);
-
-  void poke(Address::Absolute address, uint8_t value);
-  void poke16(uint16_t address, uint8_t value);
 
   void inline _setN(uint8_t other);
   void inline _setZ(uint8_t other);
