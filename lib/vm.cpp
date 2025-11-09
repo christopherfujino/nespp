@@ -1,7 +1,6 @@
 #include <cstring>
 #include <stdio.h>
 
-#include "../include/debug.h"
 #include "../include/vm.h"
 
 namespace VM {
@@ -85,14 +84,11 @@ void VM::start() {
     PC = addressLow | (addressHigh << 8);
   }
 
-  Debug::Debugger debugger = {.rom = rom};
   Instructions::Instruction current;
   while (1) {
     printf("$%02X: ", PC);
     current = decodeInstruction();
-    Debug::instruction(current);
     execute(current);
-    debugger.input();
   }
 }
 

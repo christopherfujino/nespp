@@ -3,16 +3,14 @@
 #include <stdio.h>
 
 #include "instructions.h"
-#include "rom.h"
+#include "vm.h"
 
 namespace Debug {
 
-void instruction(Instructions::Instruction instruction);
+struct Debugger {
+  VM::VM *vm;
 
-class Debugger {
-public:
-  Rom *rom;
-  void input();
+  void start();
 };
 
 } // namespace Debug

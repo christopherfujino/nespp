@@ -37,7 +37,7 @@ $(BUILD)/rom.o: lib/rom.cpp $(INCLUDE_DIR)/rom.h
 $(BUILD)/tileBrowser.o: $(BIN_DIR)/tileBrowser.cpp $(INCLUDE_DIR)/rom.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(BUILD)/main.o: $(BIN_DIR)/main.cpp $(INCLUDE_DIR)/rom.h $(INCLUDE_DIR)/vm.h $(INCLUDE_DIR)/address.h
+$(BUILD)/main.o: $(BIN_DIR)/main.cpp $(INCLUDE_DIR)/rom.h $(INCLUDE_DIR)/vm.h $(INCLUDE_DIR)/address.h $(INCLUDE_DIR)/debug.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BUILD)/instructions.o: lib/instructions.cpp $(INCLUDE_DIR)/instructions.h $(INCLUDE_DIR)/debug.h $(INCLUDE_DIR)/address.h

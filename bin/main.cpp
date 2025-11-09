@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 // #include "../include/instructions.h"
+#include "../include/debug.h"
 #include "../include/rom.h"
 #include "../include/vm.h"
 
@@ -27,12 +28,9 @@ int run(char *path) {
   printf("mapper = %d\n", rom->mapper);
   printf("Successfully loaded %s\n", path);
 
+  Debug::Debugger debugger = {.vm = &vm};
 
-  // debug(rom->chrBlob, rom->chrSize);
-  //  debug(rom->prgBlob, rom->prgSize);
-  //  auto foo = Instructions::deserialize(rom->prgBlob, rom->prgSize);
-  //  delete rom;
-  vm.start();
+  debugger.start();
   return 0;
 }
 

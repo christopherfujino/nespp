@@ -5,23 +5,6 @@
 
 namespace Instructions {
 
-std::vector<Instruction> deserialize(uint8_t *src, int len) {
-  int index = 0;
-  uint8_t *dataPtr = src;
-  std::vector<Instruction> instructions;
-
-  while (index < len) {
-    std::pair<Instruction, int> pair =
-        decodeInstruction(dataPtr + index, index);
-    instructions.push_back(pair.first);
-    printf("%04X: ", index);
-    Debug::instruction(pair.first);
-    index += pair.second;
-  }
-  // TODO: this will copy
-  return instructions;
-}
-
 std::pair<Instruction, int> _makeAbsolutePair(uint8_t opCode, uint8_t lowByte,
                                               uint8_t highByte) {
   return std::make_pair(

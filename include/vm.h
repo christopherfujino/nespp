@@ -34,28 +34,6 @@ public:
   VM(Rom *rom);
   ~VM();
 
-  void start();
-
-  // Methods
-  uint8_t peek(Address::Absolute address);
-  uint8_t peek8(uint8_t offset);
-  uint8_t peek16(uint16_t address);
-
-  void poke(Address::Absolute address, uint8_t value);
-  void poke16(uint16_t address, uint8_t value);
-
-private:
-  Rom *rom = nullptr;
-
-  /// Mapped from $0000-$07FF, with 3 mirrors from $0800-$1FF
-  uint8_t ram[2048] = {0};
-
-  /// Mapped from $2000-$2007
-  uint8_t ppuRegisters[8] = {0};
-  uint8_t apuAndIoRegisters[24] = {0};
-
-  Mapper *mapper;
-
   // registers
   uint16_t PC = 0;
   uint8_t A = 0;
@@ -83,6 +61,30 @@ private:
   /// +--------- Negative
   uint8_t S = 0;
 
+  // Methods
+  void start();
+
+  uint8_t peek(Address::Absolute address);
+  uint8_t peek8(uint8_t offset);
+  uint8_t peek16(uint16_t address);
+
+  void poke(Address::Absolute address, uint8_t value);
+  void poke16(uint16_t address, uint8_t value);
+
+  Instructions::Instruction decodeInstruction();
+  void execute(Instructions::Instruction instruction);
+private:
+  Rom *rom = nullptr;
+
+  /// Mapped from $0000-$07FF, with 3 mirrors from $0800-$1FF
+  uint8_t ram[2048] = {0};
+
+  /// Mapped from $2000-$2007
+  uint8_t ppuRegisters[8] = {0};
+  uint8_t apuAndIoRegisters[24] = {0};
+
+  Mapper *mapper;
+
   /// Negative bitmask
   const uint8_t _N = 1 << 7;
   const uint8_t _NNot = ~_N;
@@ -105,8 +107,6 @@ private:
   const uint8_t _CNot = ~_C;
 
   // Methods
-  Instructions::Instruction decodeInstruction();
-  void execute(Instructions::Instruction instruction);
 
   void inline _setN(uint8_t other);
   void inline _setZ(uint8_t other);

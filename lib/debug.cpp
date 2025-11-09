@@ -1,4 +1,5 @@
 #include "../include/debug.h"
+#include <cstring> // for strcmp()
 
 namespace Debug {
 
@@ -158,18 +159,45 @@ void instruction(Instructions::Instruction instruction) {
   }
 }
 
-void Debugger::input() {
-  char inputLine[1024] = {0};
-  char *inputLinePtr = inputLine;
-  size_t inputSize = 0;
+void Debugger::start() {
+  {
+    uint8_t addressLow = vm->peek16(0xFFFC);
+    uint8_t addressHigh = vm->peek16(0xFFFD);
 
-  printf("? ");
-  int nread = getline(&inputLinePtr, &inputSize, stdin);
-  if (nread == EOF) {
-    printf("\n");
-    exit(0);
+    vm->PC = addressLow | (addressHigh << 8);
   }
-  printf("[%ld] You typed: %s\n", inputSize, inputLine);
+
+  printf("%04X: Start\n", vm->PC);
+  Instructions::Instruction ins;
+  while (1) {
+    printf("%04X: ", vm->PC);
+    ins = vm->decodeInstruction();
+    instruction(ins);
+    vm->execute(ins);
+
+    // TODO: this is sus, since getline expects this to be malloc allocated
+    char inputLine[1024] = {0};
+    char *inputLinePtr = inputLine;
+    size_t inputSize = 1024;
+
+    printf("? ");
+    int nread = getline(&inputLinePtr, &inputSize, stdin);
+    if (nread == EOF) {
+      printf("\n\nExiting debugger.\n");
+      exit(0);
+    }
+    if (nread == 1) {
+      // step into
+      continue;
+    } else if (strncmp(inputLine, "setppu2", 5) == 0) {
+
+    } else {
+      printf("strncmp() = %d\n", strncmp(inputLine, "A = ", 4));
+      printf("nread = %d\t\"%02X %02X\"\n", nread, inputLine[0], inputLine[1]);
+      throw "Unrecognized debugger input";
+    }
+    printf("[%d | %ld] You typed: \"%s\"\n", nread, inputSize, inputLine);
+  }
 }
 
 } // namespace Debug
