@@ -1,0 +1,8 @@
+#!/usr/bin/env sloth
+
+with ($cwd = $scriptDir) {
+  let bin = './build/main'
+  "./yolo-make ${bin}"!
+
+  "lldb ${bin} ./rom.nes"!
+}

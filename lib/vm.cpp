@@ -66,6 +66,7 @@ VM::VM(Rom *rom) {
   switch (rom->mapper) {
   case 0:
     mapper = new Mapper0(rom);
+    break;
   default:
     throw "Oops!";
   }

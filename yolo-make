@@ -4,15 +4,13 @@ with (
   $cwd = $scriptDir,
   $env = $env.merge({'MAKEFILE_WARNINGS': ''}),
 ) {
-  let cmd = ['echo']
-  print(cmd)
+  print("Warning: YOLO mode!\n")
+  let cmd = ['make']
   for arg in $argv {
-    cmd.push(cmd)
-    print("push ${arg}")
+    cmd.push(arg)
   }
-  print(cmd)
   cmd! catch (e) do {
-    print(e)
+    print("error!")
     # Make will print an error message
     exit(1)
   }
