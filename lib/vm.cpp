@@ -200,6 +200,7 @@ Instructions::Instruction VM::decodeInstruction() {
                     },
             },
     };
+    //printf("Decoding PC %04X; instruction OpCode = %2X; operand = %04X\n", PC, (uint8_t)instruction.opCode, instruction.operand.absolute.to16());
     PC += 3;
     break;
   case BCC_REL:
@@ -308,7 +309,8 @@ void VM::execute(Instructions::Instruction instruction) {
     uint8_t value;
     uint16_t address;
   case AND_ABS:
-    value = peek(instruction.operand.absolute);
+    value = instruction.operand.absolute.to16();
+    // TODO: Should this be here?
     _setN(value);
     _setZ(value);
     A += value;
@@ -349,10 +351,10 @@ void VM::execute(Instructions::Instruction instruction) {
     _setZ(Y);
     return;
   case JMP_ABS:
-    PC = peek(instruction.operand.absolute);
+    PC = instruction.operand.absolute.to16();
     return;
   case LDA_ABS:
-    value = peek(instruction.operand.absolute);
+    value = instruction.operand.absolute.to16();
     _setN(value);
     _setZ(value);
     A = value;

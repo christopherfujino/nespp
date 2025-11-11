@@ -5,10 +5,7 @@ with (
   $env = $env.merge({'MAKEFILE_WARNINGS': ''}),
 ) {
   print("Warning: YOLO mode!\n")
-  let cmd = ['make']
-  for arg in $argv {
-    cmd.push(arg)
-  }
+  let cmd = ['make'].merge($argv)
   cmd! catch (e) do {
     print("error!")
     # Make will print an error message

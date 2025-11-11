@@ -1,8 +1,14 @@
 #!/usr/bin/env sloth
 
+if $argv.length != 1 {
+  throw "Usage: ./debug-binary.sloth /path/to/rom.nes"
+}
+
+let rom = $argv[0]
+
 with ($cwd = $scriptDir) {
   let bin = './build/main'
   "./yolo-make ${bin}"!
 
-  "lldb ${bin} ./rom.nes"!
+  "lldb ${bin} ${rom}"!
 }
