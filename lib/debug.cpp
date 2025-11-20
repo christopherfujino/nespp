@@ -206,7 +206,8 @@ void Debugger::start() {
 
 void Debugger::printRegisters() {
   printf("PC   A  X  Y  SP NV-BDIZC\n");
-  printf("%04X %02X %02X %02X %02X %08b\n\n", vm->PC, vm->A, vm->X, vm->Y, vm->SP, vm->S);
+  printf("%04X %02X %02X %02X %02X %08b\n\n", vm->PC, vm->A, vm->X, vm->Y,
+         vm->SP, vm->S);
 }
 
 } // namespace Debug
