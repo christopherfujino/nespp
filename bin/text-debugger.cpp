@@ -1,5 +1,6 @@
 #include <cstdio>
 
+#include "../include/debug.h"
 #include "../include/rom.h"
 #include "../include/vm.h"
 
@@ -13,4 +14,6 @@ int main(int argc, char **argv) {
 
   Rom::fromPath(&rom, argv[1]);
   VM::VM vm = VM::VM(rom);
+
+  Debug::Debugger debugger;
 }
