@@ -200,7 +200,8 @@ Instructions::Instruction VM::decodeInstruction() {
                     },
             },
     };
-    //printf("Decoding PC %04X; instruction OpCode = %2X; operand = %04X\n", PC, (uint8_t)instruction.opCode, instruction.operand.absolute.to16());
+    // printf("Decoding PC %04X; instruction OpCode = %2X; operand = %04X\n",
+    // PC, (uint8_t)instruction.opCode, instruction.operand.absolute.to16());
     PC += 3;
     break;
   case BCC_REL:
@@ -284,9 +285,7 @@ Instructions::Instruction VM::decodeInstruction() {
   return instruction;
 }
 
-void inline VM::_setN(uint8_t other) {
-  S = (S & _NNot) | (_N & other);
-}
+void inline VM::_setN(uint8_t other) { S = (S & _NNot) | (_N & other); }
 
 void inline VM::_setZ(uint8_t other) {
   if (other == 0x0) {
