@@ -1,5 +1,6 @@
 #include "../include/debug.h"
 #include <cstring> // for strcmp()
+#include <cstdlib> // for exit()
 
 namespace Debug {
 

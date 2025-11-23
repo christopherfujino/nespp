@@ -76,17 +76,15 @@ VM::~VM() { delete mapper; }
 void VM::start() {
   {
     uint8_t addressLow = peek16(0xFFFC);
-    printf("Peeking 0xFFFC = %02X\n", addressLow);
 
     uint8_t addressHigh = peek16(0xFFFD);
-    printf("Peeking 0xFFFD = %02X\n", addressHigh);
 
     PC = addressLow | (addressHigh << 8);
   }
 
   Instructions::Instruction current;
   while (1) {
-    printf("$%02X: ", PC);
+    //printf("$%02X: ", PC);
     current = decodeInstruction();
     execute(current);
   }
@@ -105,18 +103,18 @@ uint8_t VM::peek16(uint16_t address) {
     return ram[address];
   } else if (address < 0x1000) {
     uint16_t normalizedIdx = address - 0x800;
-    printf("DEBUG 1st RAM mirror address: 0x%02X -> 0x%02X\n", address,
-           normalizedIdx);
+    //printf("DEBUG 1st RAM mirror address: 0x%02X -> 0x%02X\n", address,
+    //       normalizedIdx);
     return ram[normalizedIdx];
   } else if (address < 0x1800) {
     uint16_t normalizedIdx = address - 0x1000;
-    printf("DEBUG 2nd RAM mirror address: 0x%02X -> 0x%02X\n", address,
-           normalizedIdx);
+    //printf("DEBUG 2nd RAM mirror address: 0x%02X -> 0x%02X\n", address,
+    //       normalizedIdx);
     return ram[normalizedIdx];
   } else if (address < 0x2000) {
     uint16_t normalizedIdx = address - 0x1800;
-    printf("DEBUG 3nd RAM mirror address: 0x%02X -> 0x%02X\n", address,
-           normalizedIdx);
+    //printf("DEBUG 3nd RAM mirror address: 0x%02X -> 0x%02X\n", address,
+    //       normalizedIdx);
     return ram[normalizedIdx];
   } else if (address < 0x2008) {
     uint8_t offset = address - 0x2000;
@@ -331,7 +329,7 @@ void VM::execute(Instructions::Instruction instruction) {
     if ((S & _N) == 0) {
       // treat as signed
       PC += (int8_t)instruction.operand.relative;
-      printf("Jumping to %04X\n", PC);
+      //printf("Jumping to %04X\n", PC);
     }
     return;
   case CLD:
