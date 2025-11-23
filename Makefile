@@ -1,7 +1,6 @@
 RAYLIB_VERSION = 5.5
 RAYLIB_INCLUDE = ./THIRD_PARTY/raylib-$(RAYLIB_VERSION)/out/raylib/include
 RAYLIB_BUILD = ./THIRD_PARTY/raylib-$(RAYLIB_VERSION)/out/raylib
-#LDFLAGS = -L$(RAYLIB_BUILD)
 BUILD = ./build
 BINARY = $(BUILD)/a.out
 BIN_DIR = ./bin
@@ -12,12 +11,18 @@ MAKEFILE_WARNINGS ?= -Wall -Werror -Wpedantic
 CXXFLAGS = -g -std=c++20 $(MAKEFILE_WARNINGS) $(INCLUDES)
 CXX = clang++
 
+ROM ?= rom.nes
+
+.PHONY: text-debugger
+text-debugger: $(BUILD)/text-debugger $(ROM)
+	./$< ./$(ROM)
+
 .PHONY: headless
 headless: $(BUILD)/main rom.nes
 	$< ./rom.nes
 
-.PHONY: run
-run: $(BUILD)/tileBrowser rom.nes
+.PHONY: tileBrowser
+tileBrowser: $(BUILD)/tileBrowser rom.nes
 	$< ./rom.nes
 
 .PHONY: all
@@ -31,10 +36,16 @@ $(BUILD)/tileBrowser: $(BUILD)/tileBrowser.o $(BUILD)/rom.o $(RAYLIB_BUILD)/libr
 $(BUILD)/main: $(BUILD)/main.o $(BUILD)/rom.o $(BUILD)/instructions.o $(BUILD)/debug.o $(BUILD)/vm.o $(BUILD)/address.o
 	$(CXX) $^ -o $@
 
+$(BUILD)/text-debugger: $(BUILD)/text-debugger.o $(BUILD)/rom.o $(BUILD)/instructions.o $(BUILD)/debug.o $(BUILD)/vm.o $(BUILD)/address.o
+	$(CXX) $^ -o $@
+
 $(BUILD)/rom.o: lib/rom.cpp $(INCLUDE_DIR)/rom.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BUILD)/tileBrowser.o: $(BIN_DIR)/tileBrowser.cpp $(INCLUDE_DIR)/rom.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD)/text-debugger.o: $(BIN_DIR)/text-debugger.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BUILD)/main.o: $(BIN_DIR)/main.cpp $(INCLUDE_DIR)/rom.h $(INCLUDE_DIR)/vm.h $(INCLUDE_DIR)/address.h $(INCLUDE_DIR)/debug.h
