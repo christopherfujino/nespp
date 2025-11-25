@@ -1,0 +1,7 @@
+#!/usr/bin/env sloth
+
+# apt install iwyu
+
+with ($cwd = $scriptDir) {
+  'make -k CXX=iwyu'!
+}

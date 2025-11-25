@@ -1,6 +1,12 @@
+#include <stdint.h>        // for uint8_t
+#include <stdio.h>         // for printf, getline, EOF, stdin
+#include <cstdlib>         // for exit, size_t
+#include <cstring>         // for strncmp
+#include "../include/address.h"       // for Absolute
 #include "../include/debug.h"
-#include <cstring> // for strcmp()
-#include <cstdlib> // for exit()
+#include "../include/instructions.h"  // for Instruction, OpCode
+#include "../include/vm.h"            // for VM
+
 
 namespace Debug {
 

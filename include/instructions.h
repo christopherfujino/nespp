@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <utility>
-#include <vector>
 
 #include "address.h"
 

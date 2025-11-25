@@ -12,7 +12,7 @@
 
 #include <cassert>
 #include <cstdio>
-#include <cstring>
+#include <cstdint>
 
 #include "../include/rom.h"
 
