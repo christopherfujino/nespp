@@ -7,13 +7,44 @@
 
 namespace Instructions {
 
-enum class OpCode : uint8_t {
-  ASL_A = 0x0A, // arithmetic shift left accumulator
-  BPL_REL = 0x10, // Branch on result plus (N == 0)
-  JSR_ABS = 0x20,
-  AND_ABS = 0x2D, // A & M -> A
-  PHA = 0x48, // Push accumulator on stack
-  LSR_A = 0x4A, // logical shift right accumulator
+enum class OpCodeType {
+  AND, /// & accumulator
+  ASL, // arithmetic shift left
+  BCC, // branch on carry clear
+  BPL, // branch on result plus (N == 0)
+  DEC, // Decrement value at operand address
+  DEX, // Decrement X
+  DEY, // Decrement Y
+  JSR,
+  LSR, // Logical shift right
+  PHA, // Push accumulator onto stack
+  STA,
+  STX,
+  STY,
+};
+
+enum class AddressingMode {
+  absolute,
+  accumulator,
+  immediate,
+  implied,
+  indirect,
+  relative,
+  zeropage,
+};
+
+struct OpCode {
+  OpCodeType type;
+  AddressingMode addressing;
+};
+
+enum class _OpCode : uint8_t {
+  //ASL_A = 0x0A, // arithmetic shift left accumulator
+  //BPL_REL = 0x10, // Branch on result plus (N == 0)
+  //JSR_ABS = 0x20,
+  //AND_ABS = 0x2D, // A & M -> A
+  //PHA = 0x48, // Push accumulator on stack
+  //LSR_A = 0x4A, // logical shift right accumulator
   JMP_ABS = 0x4C,
   RTS = 0x60, // return from subroutine
   JMP_INDIRECT = 0x6C,
@@ -58,6 +89,7 @@ struct Instruction {
   } operand;
 };
 
-std::pair<Instruction, int> decodeInstruction(uint8_t *src, int idx);
+// TODO: pointer -> pointer
+Instruction decodeInstruction(uint8_t *src, int idx);
 
 } // namespace Instructions
