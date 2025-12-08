@@ -3,5 +3,5 @@
 # apt install iwyu
 
 with ($cwd = $scriptDir) {
-  'make -k CXX=iwyu'!
+  'make --keep-going CXX=iwyu'!
 }

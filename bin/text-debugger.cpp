@@ -15,5 +15,6 @@ int main(int argc, char **argv) {
   Rom::fromPath(&rom, argv[1]);
   VM::VM vm = VM::VM(rom);
 
-  Debug::Debugger debugger;
+  Debug::Debugger debugger = {.vm = &vm};
+  debugger.start();
 }
