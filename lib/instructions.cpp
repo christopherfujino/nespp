@@ -53,36 +53,14 @@ Instruction _make(OpCode opCode, uint8_t **src) {
   }
 }
 
-Instruction
-decodeInstruction(uint8_t **src,
-                  int idx /* TODO remove and handle error at higher level */) {
+// TODO remove this
+Instruction decodeInstruction(uint8_t **src,
+                              // TODO remove and handle error at higher level
+                              int idx) {
   using enum OpCodeType;
   using enum AddressingMode;
 
   return _make(opCodeLookup[**src], src);
-  // switch (**src) {
-  // case 0x0A:
-  //   // ASL_A
-  //   return _make(ASL, accumulator, src);
-  // case 0x10:
-  //   return _make(BPL, relative, src);
-  // case 0x20:
-  //   return _make(JSR, absolute, src);
-  // case 0x2D:
-  //   return _make(AND, absolute, src);
-  // case 0x48:
-  //   return _make(PHA, implied, src);
-  // case 0x4A:
-  //   return _make(LSR, accumulator, src);
-  // case 0x90:
-  //   return _make(BCC, relative, src);
-  // default:
-  //   // This is never freed
-  //   char *msg = new char[256];
-  //   snprintf(msg, 256, "Unimplemented instruction 0x%02X at 0x%04X", **src,
-  //            idx);
-  //   throw msg;
-  // }
 }
 
 } // namespace Instructions

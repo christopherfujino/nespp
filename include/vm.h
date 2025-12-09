@@ -109,10 +109,11 @@ private:
   const uint8_t _CNot = ~_C;
 
   // Methods
-
   void inline _setN(uint8_t other);
   void inline _setZ(uint8_t other);
   void inline _setC(bool didCarry);
+
+  uint8_t _dereferenceOperand(Instructions::Instruction);
 };
 
 } // namespace VM

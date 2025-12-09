@@ -1,10 +1,10 @@
-#include <stdint.h>         // for uint8_t, uint16_t, int8_t
-#include <stdio.h>          // for snprintf, printf
-#include <cstring>          // for memcpy
-#include "../include/vm.h"  // for VM, Mapper0, Mapper
-#include "../include/address.h"        // for Absolute
-#include "../include/instructions.h"   // for OpCode, Instruction, OpCode::AND_ABS, OpC...
-#include "../include/rom.h"            // for Rom
+#include "../include/vm.h"      // for VM, Mapper0, Mapper
+#include "../include/address.h" // for Absolute
+#include "../include/instructions.h" // for OpCode, Instruction, OpCode::AND_ABS, OpC...
+#include "../include/rom.h"          // for Rom
+#include <cstring>                   // for memcpy
+#include <stdint.h>                  // for uint8_t, uint16_t, int8_t
+#include <stdio.h>                   // for snprintf, printf
 
 namespace VM {
 
@@ -87,7 +87,7 @@ void VM::start() {
 
   Instructions::Instruction current;
   while (1) {
-    //printf("$%02X: ", PC);
+    // printf("$%02X: ", PC);
     current = decodeInstruction();
     execute(current);
   }
@@ -106,18 +106,18 @@ uint8_t VM::peek16(uint16_t address) {
     return ram[address];
   } else if (address < 0x1000) {
     uint16_t normalizedIdx = address - 0x800;
-    //printf("DEBUG 1st RAM mirror address: 0x%02X -> 0x%02X\n", address,
-    //       normalizedIdx);
+    // printf("DEBUG 1st RAM mirror address: 0x%02X -> 0x%02X\n", address,
+    //        normalizedIdx);
     return ram[normalizedIdx];
   } else if (address < 0x1800) {
     uint16_t normalizedIdx = address - 0x1000;
-    //printf("DEBUG 2nd RAM mirror address: 0x%02X -> 0x%02X\n", address,
-    //       normalizedIdx);
+    // printf("DEBUG 2nd RAM mirror address: 0x%02X -> 0x%02X\n", address,
+    //        normalizedIdx);
     return ram[normalizedIdx];
   } else if (address < 0x2000) {
     uint16_t normalizedIdx = address - 0x1800;
-    //printf("DEBUG 3nd RAM mirror address: 0x%02X -> 0x%02X\n", address,
-    //       normalizedIdx);
+    // printf("DEBUG 3nd RAM mirror address: 0x%02X -> 0x%02X\n", address,
+    //        normalizedIdx);
     return ram[normalizedIdx];
   } else if (address < 0x2008) {
     uint8_t offset = address - 0x2000;
@@ -178,99 +178,62 @@ void VM::poke16(uint16_t address, uint8_t value) {
 }
 
 Instructions::Instruction VM::decodeInstruction() {
-  using enum Instructions::OpCode;
-  Instructions::OpCode zero = (Instructions::OpCode)peek16(PC);
   Instructions::Instruction instruction;
-  switch (zero) {
-  case AND_ABS:
-  case LDA_ABS:
-  case JMP_ABS:
-  case JSR_ABS:
-  case STA_ABS:
-  case STX_ABS:
-  case STY_ABS:
-  case LDA_ABS_X:
+  Instructions::OpCode code = Instructions::opCodeLookup[peek16(PC)];
+  switch (code.addressing) {
+  case Instructions::AddressingMode::absolute:
     instruction = Instructions::Instruction{
-        .opCode = (Instructions::OpCode)zero,
-        .operand =
-            {
-                .absolute =
-                    Address::Absolute{
-                        .low = peek16(PC + 1),
-                        .high = peek16(PC + 2),
-                    },
-            },
+        .opCode = code,
+        .operand = {.absolute =
+                        Address::Absolute{
+                            .low = peek16(PC + 1),
+                            .high = peek16(PC + 2),
+                        }},
     };
-    // printf("Decoding PC %04X; instruction OpCode = %2X; operand = %04X\n",
-    // PC, (uint8_t)instruction.opCode, instruction.operand.absolute.to16());
     PC += 3;
     break;
-  case BCC_REL:
-  case BCS_REL:
-  case BEQ_REL:
-  case BNE_REL:
-  case BPL_REL:
+  case Instructions::AddressingMode::relative:
     instruction = Instructions::Instruction{
-        .opCode = (Instructions::OpCode)zero,
+        .opCode = code,
         .operand = {.relative = peek16(PC + 1)},
     };
     PC += 2;
     break;
-  case ASL_A:
-  case LSR_A:
+  case Instructions::AddressingMode::accumulator:
     instruction = Instructions::Instruction{
-        .opCode = (Instructions::OpCode)zero,
+        .opCode = code,
         .operand = {.accumulator = nullptr},
     };
     PC += 1;
     break;
-  case CLD:
-  case DEX:
-  case DEY:
-  case INX:
-  case INY:
-  case PHA:
-  case RTS:
-  case SEI:
-  case TAX:
-  case TXS:
+  case Instructions::AddressingMode::implied:
     instruction = Instructions::Instruction{
-        .opCode = (Instructions::OpCode)zero,
+        .opCode = code,
         .operand = {.implied = nullptr},
     };
     PC += 1;
     break;
-  case JMP_INDIRECT:
+  case Instructions::AddressingMode::indirect:
     instruction = Instructions::Instruction{
-        .opCode = (Instructions::OpCode)zero,
-        .operand =
-            {
-                .indirect =
-                    Address::Absolute{
-                        .low = peek16(PC + 1),
-                        .high = peek16(PC + 2),
-                    },
-            },
+        .opCode = code,
+        .operand = {.indirect =
+                        Address::Absolute{
+                            .low = peek16(PC + 1),
+                            .high = peek16(PC + 2),
+                        }},
     };
     PC += 3;
     break;
-  case CMP_IMM:
-  case CPX_IMM:
-  case LDA_IMM:
-  case LDX_IMM:
-  case LDY_IMM:
+  case Instructions::AddressingMode::immediate:
     instruction = Instructions::Instruction{
-        .opCode = (Instructions::OpCode)zero,
+        .opCode = code,
         .operand = {.immediate = peek16(PC + 1)},
     };
     PC += 2;
     break;
-  case DEC_ZERO:
-  case INC_ZERO:
-  case LDA_ZERO:
-  case STA_ZERO:
+  case Instructions::AddressingMode::zeropage:
     instruction = Instructions::Instruction{
-        .opCode = (Instructions::OpCode)zero,
+        .opCode = code,
         .operand = {.zeropage = peek16(PC + 1)},
     };
     PC += 2;
@@ -279,7 +242,7 @@ Instructions::Instruction VM::decodeInstruction() {
     // This is never freed
     char *msg = new char[256];
     snprintf(msg, 256, "Unimplemented instruction 0x%02X at 0x%04X",
-             (uint8_t)zero, PC);
+             (uint8_t)code.type, PC);
     throw msg;
   }
 
@@ -304,12 +267,12 @@ void inline VM::_setC(bool didCarry) {
 }
 
 void VM::execute(Instructions::Instruction instruction) {
-  switch (instruction.opCode) {
-    using enum Instructions::OpCode;
+  switch (instruction.opCode.type) {
+    using enum Instructions::OpCodeType;
     uint8_t value;
     uint16_t address;
-  case AND_ABS:
-    value = instruction.operand.absolute.to16();
+  case AND:
+    value = _dereferenceOperand(instruction);
     // TODO: Should this be here?
     _setN(value);
     _setZ(value);
@@ -332,7 +295,7 @@ void VM::execute(Instructions::Instruction instruction) {
     if ((S & _N) == 0) {
       // treat as signed
       PC += (int8_t)instruction.operand.relative;
-      //printf("Jumping to %04X\n", PC);
+      // printf("Jumping to %04X\n", PC);
     }
     return;
   case CLD:
@@ -410,6 +373,28 @@ void VM::execute(Instructions::Instruction instruction) {
   snprintf(msg, 256, "TODO: implement instruction 0x%02X in `VM::execute()`",
            (uint8_t)instruction.opCode);
   throw msg;
+}
+
+uint8_t VM::_dereferenceOperand(Instructions::Instruction instruction) {
+  using enum Instructions::AddressingMode;
+  switch (instruction.opCode.addressing) {
+  case absolute:
+    return peek(instruction.operand.absolute);
+  case accumulator:
+    return A;
+  case immediate:
+    return instruction.operand.immediate;
+  case implied:
+    throw "Unreachable";
+  case indirect:
+    return peek(instruction.operand.indirect);
+  case relative:
+    // This is an offset from the PC
+    return instruction.operand.relative;
+  case zeropage:
+    // Full address is this cast to 16-bits
+    return instruction.operand.zeropage;
+  }
 }
 
 } // namespace VM
