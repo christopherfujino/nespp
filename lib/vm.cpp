@@ -272,7 +272,7 @@ void VM::execute(Instructions::Instruction instruction) {
     uint8_t value;
     uint16_t address;
   case AND:
-    value = _dereferenceOperand(instruction);
+    value = _operandToValue(instruction);
     // TODO: Should this be here?
     _setN(value);
     _setZ(value);
@@ -375,21 +375,37 @@ void VM::execute(Instructions::Instruction instruction) {
   throw msg;
 }
 
-uint8_t VM::_dereferenceOperand(Instructions::Instruction instruction) {
+uint8_t VM::_operandToValue(Instructions::Instruction instruction) {
   using enum Instructions::AddressingMode;
   switch (instruction.opCode.addressing) {
-  case absolute:
-    return peek(instruction.operand.absolute);
   case accumulator:
     return A;
   case immediate:
     return instruction.operand.immediate;
+
+  case relative:
+  case zeropage:
+  case absolute:
+  case implied:
+  case indirect:
+    throw "Unreachable";
+  }
+}
+
+Address::Absolute VM::_operandToAddress(Instructions::Instruction instruction) {
+  using enum Instructions::AddressingMode;
+  switch (instruction.opCode.addressing) {
+  case absolute:
+    return instruction.operand.absolute;
+  case accumulator:
+  case immediate:
   case implied:
     throw "Unreachable";
   case indirect:
-    return peek(instruction.operand.indirect);
+    return peek(instruction.operand.indirect); // TODO need a new `peekWord` call
   case relative:
     // This is an offset from the PC
+    PC;
     return instruction.operand.relative;
   case zeropage:
     // Full address is this cast to 16-bits

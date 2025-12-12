@@ -35,7 +35,7 @@ public:
   ~VM();
 
   // registers
-  uint16_t PC = 0;
+  Address::Absolute PC = Address::Absolute(0);
   uint8_t A = 0;
   uint8_t X = 0;
   uint8_t Y = 0;
@@ -82,6 +82,7 @@ public:
 
   Instructions::Instruction decodeInstruction();
   void execute(Instructions::Instruction instruction);
+
 private:
   Rom *rom = nullptr;
 
@@ -113,7 +114,8 @@ private:
   void inline _setZ(uint8_t other);
   void inline _setC(bool didCarry);
 
-  uint8_t _dereferenceOperand(Instructions::Instruction);
+  uint8_t _operandToValue(Instructions::Instruction);
+  Address::Absolute _operandToAddress(Instructions::Instruction);
 };
 
 } // namespace VM

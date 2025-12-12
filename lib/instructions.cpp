@@ -17,9 +17,11 @@ Instruction _make(OpCode opCode, uint8_t **src) {
   };
   switch (opCode.addressing) {
   case absolute:
-    instruction.operand = {.absolute = Address::Absolute{
-                               .low = *(*src + 1),
-                               .high = *(*src + 2),
+    instruction.operand = {.absolute = {
+                               // high
+                               *(*src + 2),
+                               // low
+                               *(*src + 1),
                            }};
     src += 3;
     return instruction;
@@ -36,9 +38,9 @@ Instruction _make(OpCode opCode, uint8_t **src) {
     src += 1;
     return instruction;
   case indirect:
-    instruction.operand = {.absolute = Address::Absolute{
-                               .low = *(*src + 1),
-                               .high = *(*src + 2),
+    instruction.operand = {.absolute = {
+                               *(*src + 2),
+                               *(*src + 1),
                            }};
     src += 3;
     return instruction;

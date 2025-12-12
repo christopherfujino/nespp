@@ -4,8 +4,13 @@
 
 namespace Address {
 
-// TODO remove
+// TODO: rename this a Word
 struct Absolute {
+  /// $HHLL
+  Absolute(uint16_t);
+  Absolute(uint8_t high, uint8_t low);
+  Absolute();
+
   uint8_t low;
   uint8_t high;
 
