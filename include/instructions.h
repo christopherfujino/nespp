@@ -56,6 +56,9 @@ enum class AddressingMode {
 struct OpCode {
   OpCodeType type = OpCodeType::unimplemented;
   AddressingMode addressing = AddressingMode::implied;
+
+  std::string toString();
+  bool operator==(OpCode other);
 };
 
 consteval std::array<OpCode, 256> _buildOpCodeLookup() {

@@ -169,7 +169,7 @@ namespace Debug {
 // }
 
 void _renderInstruction(Instructions::Instruction &ins) {
-  printf("TODO %s\n", __FILE__);
+  printf("TODO implement _renderInstruction() %s\n", __FILE__);
 }
 
 void Debugger::start() {

@@ -3,6 +3,8 @@
 #include "../include/instructions.h" // for OpCode, Instruction, OpCode::AND_ABS, OpC...
 #include "../include/rom.h"          // for Rom
 #include <cstring>                   // for memcpy
+#include <format>                    // std::format
+#include <stdexcept>                 // std::runtime_except
 #include <stdint.h>                  // for uint8_t, uint16_t, int8_t
 #include <stdio.h>                   // for snprintf, printf
 
@@ -275,101 +277,101 @@ void VM::execute(Instructions::Instruction instruction) {
     _setZ(value);
     A += value;
     return;
-  //case ASL_A:
-  //  value = A;
-  //  _setN(value);
-  //  _setZ(value);
-  //  _setC(value & (1 << 7) ? true : false);
-  //  A = value << 1;
-  //  return;
-  //case BNE_REL:
-  //  if (_Z == 0) {
-  //    PC += instruction.operand.relative;
-  //  }
-  //  return;
-  //case BPL_REL:
-  //  // if not negative...
-  //  if ((S & _N) == 0) {
-  //    // treat as signed
-  //    PC += (int8_t)instruction.operand.relative;
-  //    // printf("Jumping to %04X\n", PC);
-  //  }
-  //  return;
-  //case CLD:
-  //  S &= _DNot;
-  //  return;
-  //case DEX:
-  //  X -= 1;
-  //  // Is this handled correctly even though X is unsigned?
-  //  _setN(X);
-  //  _setZ(X);
-  //  return;
-  //case DEY:
-  //  Y -= 1;
-  //  // Is this handled correctly even though X is unsigned?
-  //  _setN(Y);
-  //  _setZ(Y);
-  //  return;
-  //case JMP_ABS:
-  //  PC = instruction.operand.absolute.to16();
-  //  return;
-  //case LDA_ABS:
-  //  value = instruction.operand.absolute.to16();
-  //  _setN(value);
-  //  _setZ(value);
-  //  A = value;
-  //  return;
-  //case LDA_ABS_X:
-  //  // operand is address; effective address is address incremented by X with
-  //  // carry **
-  //  // TODO: Do we add _C?!?!??!
-  //  address = instruction.operand.absolute.to16() + X;
-  //  value = peek16(address);
-  //  _setN(value);
-  //  _setZ(value);
-  //  A = value;
-  //  return;
-  //case LDA_IMM:
-  //  value = instruction.operand.immediate;
-  //  _setN(value);
-  //  _setZ(value);
-  //  A = value;
-  //  return;
-  //case LDX_IMM:
-  //  value = instruction.operand.immediate;
-  //  _setN(value);
-  //  _setZ(value);
-  //  X = value;
-  //  return;
-  //case LDY_IMM:
-  //  value = instruction.operand.immediate;
-  //  _setN(value);
-  //  _setZ(value);
-  //  Y = value;
-  //  return;
-  //case PHA:
-  //  poke16(0x0100 + SP, A);
-  //  // I *think* this behaves identically to 6502 wrapping since SP is unsigned
-  //  --SP;
-  //  return;
-  //case SEI:
-  //  S |= _I;
-  //  return;
-  //case STA_ABS:
-  //  poke(instruction.operand.absolute, A);
-  //  return;
-  //case STX_ABS:
-  //  poke(instruction.operand.absolute, X);
-  //  return;
-  //case TXS:
-  //  SP = X;
-  //  return;
+    // case ASL_A:
+    //   value = A;
+    //   _setN(value);
+    //   _setZ(value);
+    //   _setC(value & (1 << 7) ? true : false);
+    //   A = value << 1;
+    //   return;
+    // case BNE_REL:
+    //   if (_Z == 0) {
+    //     PC += instruction.operand.relative;
+    //   }
+    //   return;
+    // case BPL_REL:
+    //   // if not negative...
+    //   if ((S & _N) == 0) {
+    //     // treat as signed
+    //     PC += (int8_t)instruction.operand.relative;
+    //     // printf("Jumping to %04X\n", PC);
+    //   }
+    //   return;
+    // case CLD:
+    //   S &= _DNot;
+    //   return;
+    // case DEX:
+    //   X -= 1;
+    //   // Is this handled correctly even though X is unsigned?
+    //   _setN(X);
+    //   _setZ(X);
+    //   return;
+    // case DEY:
+    //   Y -= 1;
+    //   // Is this handled correctly even though X is unsigned?
+    //   _setN(Y);
+    //   _setZ(Y);
+    //   return;
+    // case JMP_ABS:
+    //   PC = instruction.operand.absolute.to16();
+    //   return;
+    // case LDA_ABS:
+    //   value = instruction.operand.absolute.to16();
+    //   _setN(value);
+    //   _setZ(value);
+    //   A = value;
+    //   return;
+    // case LDA_ABS_X:
+    //   // operand is address; effective address is address incremented by X
+    //   with
+    //   // carry **
+    //   // TODO: Do we add _C?!?!??!
+    //   address = instruction.operand.absolute.to16() + X;
+    //   value = peek16(address);
+    //   _setN(value);
+    //   _setZ(value);
+    //   A = value;
+    //   return;
+    // case LDA_IMM:
+    //   value = instruction.operand.immediate;
+    //   _setN(value);
+    //   _setZ(value);
+    //   A = value;
+    //   return;
+    // case LDX_IMM:
+    //   value = instruction.operand.immediate;
+    //   _setN(value);
+    //   _setZ(value);
+    //   X = value;
+    //   return;
+    // case LDY_IMM:
+    //   value = instruction.operand.immediate;
+    //   _setN(value);
+    //   _setZ(value);
+    //   Y = value;
+    //   return;
+    // case PHA:
+    //   poke16(0x0100 + SP, A);
+    //   // I *think* this behaves identically to 6502 wrapping since SP is
+    //   unsigned
+    //   --SP;
+    //   return;
+    // case SEI:
+    //   S |= _I;
+    //   return;
+    // case STA_ABS:
+    //   poke(instruction.operand.absolute, A);
+    //   return;
+    // case STX_ABS:
+    //   poke(instruction.operand.absolute, X);
+    //   return;
+    // case TXS:
+    //   SP = X;
+    //   return;
   }
-  // This is never freed
-  char *msg = new char[256];
-  snprintf(msg, 256, "TODO: implement instruction 0x%02X in `VM::execute()`",
-           instruction.opCode.toString());
-  throw msg;
+  throw std::runtime_error(
+      std::format("TODO: implement instruction {} in `VM::execute()`",
+                  instruction.toString()));
 }
 
 uint8_t VM::_operandToValue(Instructions::Instruction instruction) {
