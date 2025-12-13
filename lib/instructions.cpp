@@ -1,6 +1,6 @@
 #include "../include/instructions.h" // for OpCode, Instruction, OpCode::AN...
-#include "../include/address.h"      // for Absolute
 #include <stdio.h>                   // for snprintf
+#include <string>
 
 namespace Instructions {
 
@@ -63,6 +63,10 @@ Instruction decodeInstruction(uint8_t **src,
   using enum AddressingMode;
 
   return _make(opCodeLookup[**src], src);
+}
+
+std::string Instruction::toString() {
+  return "TODO: implement Instruction::toString()";
 }
 
 } // namespace Instructions

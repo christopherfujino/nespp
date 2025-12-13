@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstdint>
+#include <string>
 #include <utility>
 
 #include "address.h"
@@ -201,6 +202,8 @@ public:
 
   OpCode opCode;
   InstructionOperandUnion operand;
+
+  std::string toString();
 };
 
 // TODO: do we even need this anymore?
