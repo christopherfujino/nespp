@@ -179,62 +179,59 @@ void VM::poke16(uint16_t address, uint8_t value) {
 
 Instructions::Instruction VM::decodeInstruction() {
   Instructions::Instruction instruction;
-  Instructions::OpCode code = Instructions::opCodeLookup[peek16(PC)];
+  Instructions::OpCode code = Instructions::opCodeLookup[peek(PC)];
   switch (code.addressing) {
   case Instructions::AddressingMode::absolute:
-    instruction = Instructions::Instruction{
-        .opCode = code,
-        .operand = {.absolute =
-                        Address::Absolute{
-                            .low = peek16(PC + 1),
-                            .high = peek16(PC + 2),
-                        }},
+    instruction = {
+        code,
+        {.absolute =
+             {
+                 peek(PC + 2),
+                 peek(PC + 1),
+             }},
     };
     PC += 3;
     break;
   case Instructions::AddressingMode::relative:
-    instruction = Instructions::Instruction{
-        .opCode = code,
-        .operand = {.relative = peek16(PC + 1)},
+    instruction = {
+        code,
+        {.relative = peek(PC + 1)},
     };
     PC += 2;
     break;
   case Instructions::AddressingMode::accumulator:
-    instruction = Instructions::Instruction{
-        .opCode = code,
-        .operand = {.accumulator = nullptr},
+    instruction = {
+        code,
+        {.accumulator = nullptr},
     };
     PC += 1;
     break;
   case Instructions::AddressingMode::implied:
-    instruction = Instructions::Instruction{
-        .opCode = code,
-        .operand = {.implied = nullptr},
+    instruction = {
+        code,
+        {.implied = nullptr},
     };
     PC += 1;
     break;
   case Instructions::AddressingMode::indirect:
-    instruction = Instructions::Instruction{
-        .opCode = code,
-        .operand = {.indirect =
-                        Address::Absolute{
-                            .low = peek16(PC + 1),
-                            .high = peek16(PC + 2),
-                        }},
+    instruction = {
+        code,
+        // TODO is this right?!
+        {.indirect = {peek(PC + 2), peek(PC + 1)}},
     };
     PC += 3;
     break;
   case Instructions::AddressingMode::immediate:
-    instruction = Instructions::Instruction{
-        .opCode = code,
-        .operand = {.immediate = peek16(PC + 1)},
+    instruction = {
+        code,
+        {.immediate = peek(PC + 1)},
     };
     PC += 2;
     break;
   case Instructions::AddressingMode::zeropage:
-    instruction = Instructions::Instruction{
-        .opCode = code,
-        .operand = {.zeropage = peek16(PC + 1)},
+    instruction = {
+        code,
+        {.zeropage = peek(PC + 1)},
     };
     PC += 2;
     break;
@@ -242,7 +239,7 @@ Instructions::Instruction VM::decodeInstruction() {
     // This is never freed
     char *msg = new char[256];
     snprintf(msg, 256, "Unimplemented instruction 0x%02X at 0x%04X",
-             (uint8_t)code.type, PC);
+             (uint8_t)code.type, PC.to16());
     throw msg;
   }
 
@@ -402,7 +399,8 @@ Address::Absolute VM::_operandToAddress(Instructions::Instruction instruction) {
   case implied:
     throw "Unreachable";
   case indirect:
-    return peek(instruction.operand.indirect); // TODO need a new `peekWord` call
+    return peek(
+        instruction.operand.indirect); // TODO need a new `peekWord` call
   case relative:
     // This is an offset from the PC
     PC;

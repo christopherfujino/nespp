@@ -53,8 +53,8 @@ enum class AddressingMode {
 };
 
 struct OpCode {
-  OpCodeType type;
-  AddressingMode addressing;
+  OpCodeType type = OpCodeType::unimplemented;
+  AddressingMode addressing = AddressingMode::implied;
 };
 
 consteval std::array<OpCode, 256> _buildOpCodeLookup() {
@@ -181,17 +181,26 @@ consteval std::array<OpCode, 256> _buildOpCodeLookup() {
 
 constexpr std::array<OpCode, 256> opCodeLookup = _buildOpCodeLookup();
 
-struct Instruction {
+union InstructionOperandUnion {
+  Address::Absolute absolute;
+  uint8_t immediate;
+  void *implied;
+  void *accumulator;
+  uint8_t relative;
+  uint8_t zeropage;
+  Address::Absolute indirect;
+};
+
+class Instruction {
+public:
+  // Default no-op
+  Instruction() : operand{.implied = nullptr} {}
+
+  Instruction(OpCode opCode, InstructionOperandUnion operand)
+      : opCode(opCode), operand(operand) {}
+
   OpCode opCode;
-  union {
-    Address::Absolute absolute;
-    uint8_t immediate;
-    void *implied;
-    void *accumulator;
-    uint8_t relative;
-    uint8_t zeropage;
-    Address::Absolute indirect;
-  } operand;
+  InstructionOperandUnion operand;
 };
 
 // TODO: do we even need this anymore?

@@ -12,9 +12,9 @@ Instruction _make(OpCode opCode, uint8_t **src) {
     snprintf(msg, 256, "Unimplemented instruction 0x%02X", **src);
     throw msg;
   }
-  Instruction instruction = {
-      .opCode = opCode,
-  };
+  Instruction instruction = {};
+  instruction.opCode = opCode;
+
   switch (opCode.addressing) {
   case absolute:
     instruction.operand = {.absolute = {
