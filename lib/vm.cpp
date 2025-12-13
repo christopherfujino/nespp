@@ -268,16 +268,17 @@ void inline VM::_setC(bool didCarry) {
 }
 
 void VM::execute(Instructions::Instruction instruction) {
+  Address::Absolute address;
   switch (instruction.opCode.type) {
     using enum Instructions::OpCodeType;
     uint8_t value;
-    uint16_t address;
   case AND:
-    value = _operandToValue(instruction);
+    address = _operandToAddress(instruction);
+    value = peek(address);
     // TODO: Should this be here?
     _setN(value);
     _setZ(value);
-    A += value;
+    A = A & value;
     return;
     // case ASL_A:
     //   value = A;
@@ -403,11 +404,10 @@ Address::Absolute VM::_operandToAddress(Instructions::Instruction instruction) {
   case implied:
     throw "Unreachable";
   case indirect:
-    return peek(
-        instruction.operand.indirect); // TODO need a new `peekWord` call
+    return peek(instruction.operand.indirect);
   case relative:
     // This is an offset from the PC
-    PC;
+    //PC;
     return instruction.operand.relative;
   case zeropage:
     // Full address is this cast to 16-bits
