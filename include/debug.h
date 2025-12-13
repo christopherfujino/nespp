@@ -4,6 +4,8 @@
 
 #include "vm.h"
 
+namespace NESPP {
+
 namespace Debug {
 
 struct Debugger {
@@ -14,3 +16,5 @@ struct Debugger {
 };
 
 } // namespace Debug
+
+} // namespace NESPP

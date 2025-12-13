@@ -8,6 +8,8 @@
 #include <stdint.h>                  // for uint8_t, uint16_t, int8_t
 #include <stdio.h>                   // for snprintf, printf
 
+namespace NESPP {
+
 namespace VM {
 
 Mapper0::Mapper0(Rom *rom) {
@@ -414,3 +416,5 @@ Address::Absolute VM::_operandToAddress(Instructions::Instruction instruction) {
 }
 
 } // namespace VM
+
+} // namespace NESPP

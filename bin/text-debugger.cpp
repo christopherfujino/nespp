@@ -4,6 +4,8 @@
 #include "../include/rom.h"
 #include "../include/vm.h"
 
+using namespace NESPP;
+
 int main(int argc, char **argv) {
   if (argc == 1) {
     fprintf(stderr, "Usage: bin.exe path-to-rom.nes\n");

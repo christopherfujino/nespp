@@ -6,6 +6,8 @@
 #include "instructions.h"
 #include "rom.h"
 
+namespace NESPP {
+
 namespace VM {
 
 class Mapper {
@@ -119,3 +121,5 @@ private:
 };
 
 } // namespace VM
+
+} // namespace NESPP

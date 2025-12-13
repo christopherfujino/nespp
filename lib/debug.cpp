@@ -7,6 +7,8 @@
 #include <stdint.h>                  // for uint8_t
 #include <stdio.h>                   // for printf, getline, EOF, stdin
 
+namespace NESPP {
+
 namespace Debug {
 
 // void _printAbsoluteInstruction(const char *name,
@@ -169,16 +171,14 @@ namespace Debug {
 // }
 
 void _renderInstruction(Instructions::Instruction &ins) {
-  printf("TODO implement _renderInstruction() %s\n", __FILE__);
+  printf("%s\n", ins.toString().data());
 }
 
 void Debugger::start() {
-  {
-    uint8_t addressLow = vm->peek16(0xFFFC);
-    uint8_t addressHigh = vm->peek16(0xFFFD);
-
-    vm->PC = addressLow | (addressHigh << 8);
-  }
+  vm->PC = {
+      vm->peek16(0xFFFD), // high
+      vm->peek16(0xFFFC), // low
+  };
 
   Instructions::Instruction ins;
   while (1) {
@@ -224,3 +224,5 @@ void Debugger::printRegisters() {
 }
 
 } // namespace Debug
+
+} // namespace NESPP
