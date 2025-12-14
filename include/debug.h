@@ -1,18 +1,21 @@
 #pragma once
 
-#include <stdio.h>
-
 #include "vm.h"
 
 namespace NESPP {
 
 namespace Debug {
 
-struct Debugger {
-  VM::VM *vm;
+class Debugger {
+public:
+  Debugger(VM::VM *);
+  ~Debugger();
 
   void start();
   void printRegisters();
+
+private:
+  VM::VM *vm;
 };
 
 } // namespace Debug

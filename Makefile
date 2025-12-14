@@ -13,6 +13,10 @@ CXX = clang++
 
 ROM ?= rom.nes
 
+.PHONY: cmake
+cmake:
+	./cmake.sloth all
+
 .PHONY: text-debugger
 text-debugger: $(BUILD)/text-debugger $(ROM)
 	./$< ./$(ROM)

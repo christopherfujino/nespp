@@ -89,9 +89,22 @@ Instruction decodeInstruction(uint8_t **src,
 std::string Instruction::toString() {
   using enum AddressingMode;
   switch (opCode.addressing) {
-    case absolute:
-      // TODO: is this the right order?
-      return std::format("{} {:2X} {:2X}", opCode.toString(), operand.absolute.low, operand.absolute.high);
+  case absolute:
+    // TODO: is this the right order?
+    return std::format("{} {:2X} {:2X}", opCode.toString(),
+                       operand.absolute.low, operand.absolute.high);
+  case accumulator:
+    return std::format("{}  A", opCode.toString());
+  case immediate:
+    return std::format("{} #{:2X}", opCode.toString(), operand.immediate);
+  case implied:
+    return opCode.toString();
+  case indirect:
+    return std::format("{}  ({:2X} {:2X})", opCode.toString(), operand.indirect.low, operand.indirect.high);
+  case relative:
+    return std::format("{}  {:2X}", opCode.toString(), operand.relative);
+  case zeropage:
+    return std::format("{}  {:2X}", opCode.toString(), operand.zeropage);
   }
   return std::format("{}", opCode.toString());
 }

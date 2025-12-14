@@ -11,7 +11,11 @@ add_executable(text-debugger
   bin/text-debugger.cpp
   lib/debug.cpp)
 
-target_link_libraries(text-debugger vm)
+# This is only required for the debugger
+find_package(Curses REQUIRED) # provides ${CURSES_LIBRARIES}
+target_link_libraries(text-debugger
+  ${CURSES_LIBRARIES}
+  vm)
 
 # Main code
 add_library(vm

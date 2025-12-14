@@ -287,11 +287,39 @@ void VM::execute(Instructions::Instruction instruction) {
     _setC(value & (1 << 7) ? true : false);
     A = value << 1;
     return;
+  case BPL:
+    // if not negative...
+    if ((S & _N) == 0) {
+      PC = _operandToAddress(instruction);
+      printf("Jumping to %04X\n", PC.to16());
+    }
+    return;
   case CLD:
     S &= _DNot;
     return;
+  case LDA:
+    value = _operandToValue(instruction);
+    _setN(value);
+    _setZ(value);
+    A = value;
+    return;
+  case LDX:
+    value = _operandToValue(instruction);
+    _setN(value);
+    _setZ(value);
+    X = value;
+    return;
+  case LDY:
+    value = _operandToValue(instruction);
+    _setN(value);
+    _setZ(value);
+    Y = value;
+    return;
   case SEI:
     S |= _I;
+    return;
+  case TXS:
+    SP = X;
     return;
 
   default:
@@ -299,14 +327,6 @@ void VM::execute(Instructions::Instruction instruction) {
     // case BNE_REL:
     //   if (_Z == 0) {
     //     PC += instruction.operand.relative;
-    //   }
-    //   return;
-    // case BPL_REL:
-    //   // if not negative...
-    //   if ((S & _N) == 0) {
-    //     // treat as signed
-    //     PC += (int8_t)instruction.operand.relative;
-    //     // printf("Jumping to %04X\n", PC);
     //   }
     //   return;
     // case DEX:
@@ -347,12 +367,6 @@ void VM::execute(Instructions::Instruction instruction) {
     //   _setZ(value);
     //   A = value;
     //   return;
-    // case LDX_IMM:
-    //   value = instruction.operand.immediate;
-    //   _setN(value);
-    //   _setZ(value);
-    //   X = value;
-    //   return;
     // case LDY_IMM:
     //   value = instruction.operand.immediate;
     //   _setN(value);
@@ -370,9 +384,6 @@ void VM::execute(Instructions::Instruction instruction) {
     //   return;
     // case STX_ABS:
     //   poke(instruction.operand.absolute, X);
-    //   return;
-    // case TXS:
-    //   SP = X;
     //   return;
   }
   throw std::runtime_error(
@@ -410,8 +421,7 @@ Address::Absolute VM::_operandToAddress(Instructions::Instruction instruction) {
     return peek(instruction.operand.indirect);
   case relative:
     // This is an offset from the PC
-    // PC;
-    return instruction.operand.relative;
+    return PC + static_cast<int8_t>(instruction.operand.relative);
   case zeropage:
     // Full address is this cast to 16-bits
     return instruction.operand.zeropage;
