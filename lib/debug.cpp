@@ -2,6 +2,7 @@
 #include "../include/address.h"      // for Absolute
 #include "../include/instructions.h" // for Instruction, OpCode
 #include "../include/vm.h"           // for VM
+#include <bitset>                    // std::bitset
 #include <cstdlib>                   // for exit, size_t
 #include <cstring>                   // for strncmp
 #include <stdint.h>                  // for uint8_t
@@ -219,8 +220,8 @@ void Debugger::start() {
 
 void Debugger::printRegisters() {
   printf("PC   A  X  Y  SP NV-BDIZC\n");
-  printf("%04X %02X %02X %02X %02X %08b\n\n", vm->PC.to16(), vm->A, vm->X,
-         vm->Y, vm->SP, vm->S);
+  printf("%04X %02X %02X %02X %02X %s\n\n", vm->PC.to16(), vm->A, vm->X, vm->Y,
+         vm->SP, std::bitset<8>{vm->S}.to_string().data());
 }
 
 } // namespace Debug

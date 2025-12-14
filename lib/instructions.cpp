@@ -25,35 +25,36 @@ Instruction _make(OpCode opCode, uint8_t **src) {
                                *(*src + 1),
                            }};
     src += 3;
-    return instruction;
+    break;
   case accumulator:
     instruction.operand = {.immediate = **src};
     src += 2;
-    return instruction;
+    break;
   case immediate:
     instruction.operand = {.immediate = **src};
     src += 2;
-    return instruction;
+    break;
   case implied:
     instruction.operand = {.implied = nullptr};
     src += 1;
-    return instruction;
+    break;
   case indirect:
     instruction.operand = {.absolute = {
                                *(*src + 2),
                                *(*src + 1),
                            }};
     src += 3;
-    return instruction;
+    break;
   case relative:
     instruction.operand = {.relative = **src};
     src += 2;
-    return instruction;
+    break;
   case zeropage:
     instruction.operand = {.zeropage = **src};
     src += 2;
-    return instruction;
+    break;
   }
+  return instruction;
 }
 
 bool OpCode::operator==(OpCode other) {

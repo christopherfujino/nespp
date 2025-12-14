@@ -280,6 +280,8 @@ void VM::execute(Instructions::Instruction instruction) {
     _setZ(value);
     A = A & value;
     return;
+  default:
+    throw "TODO";
     // case ASL_A:
     //   value = A;
     //   _setN(value);
@@ -392,6 +394,8 @@ uint8_t VM::_operandToValue(Instructions::Instruction instruction) {
   case indirect:
     throw "Unreachable";
   }
+  assert(false);
+  throw "Unreachable";
 }
 
 Address::Absolute VM::_operandToAddress(Instructions::Instruction instruction) {
@@ -399,20 +403,22 @@ Address::Absolute VM::_operandToAddress(Instructions::Instruction instruction) {
   switch (instruction.opCode.addressing) {
   case absolute:
     return instruction.operand.absolute;
-  case accumulator:
-  case immediate:
-  case implied:
-    throw "Unreachable";
   case indirect:
     return peek(instruction.operand.indirect);
   case relative:
     // This is an offset from the PC
-    //PC;
+    // PC;
     return instruction.operand.relative;
   case zeropage:
     // Full address is this cast to 16-bits
     return instruction.operand.zeropage;
+  case accumulator:
+  case immediate:
+  case implied:
+    throw "Unreachable";
   }
+  assert(false);
+  throw "Unreachable";
 }
 
 } // namespace VM
