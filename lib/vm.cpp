@@ -280,15 +280,22 @@ void VM::execute(Instructions::Instruction instruction) {
     _setZ(value);
     A = A & value;
     return;
+  case ASL:
+    value = _operandToValue(instruction);
+    _setN(value);
+    _setZ(value);
+    _setC(value & (1 << 7) ? true : false);
+    A = value << 1;
+    return;
+  case CLD:
+    S &= _DNot;
+    return;
+  case SEI:
+    S |= _I;
+    return;
+
   default:
-    throw "TODO";
-    // case ASL_A:
-    //   value = A;
-    //   _setN(value);
-    //   _setZ(value);
-    //   _setC(value & (1 << 7) ? true : false);
-    //   A = value << 1;
-    //   return;
+    throw std::runtime_error(std::format("TODO execute instruction: {}", instruction.toString()));
     // case BNE_REL:
     //   if (_Z == 0) {
     //     PC += instruction.operand.relative;
@@ -301,9 +308,6 @@ void VM::execute(Instructions::Instruction instruction) {
     //     PC += (int8_t)instruction.operand.relative;
     //     // printf("Jumping to %04X\n", PC);
     //   }
-    //   return;
-    // case CLD:
-    //   S &= _DNot;
     //   return;
     // case DEX:
     //   X -= 1;
@@ -361,9 +365,6 @@ void VM::execute(Instructions::Instruction instruction) {
     //   unsigned
     //   --SP;
     //   return;
-    // case SEI:
-    //   S |= _I;
-    //   return;
     // case STA_ABS:
     //   poke(instruction.operand.absolute, A);
     //   return;
@@ -386,10 +387,12 @@ uint8_t VM::_operandToValue(Instructions::Instruction instruction) {
     return A;
   case immediate:
     return instruction.operand.immediate;
-
-  case relative:
   case zeropage:
+    return peek8(instruction.operand.zeropage);
   case absolute:
+    return peek(instruction.operand.absolute);
+
+  case relative: // This is a branch target
   case implied:
   case indirect:
     throw "Unreachable";

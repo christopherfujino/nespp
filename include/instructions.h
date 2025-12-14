@@ -61,8 +61,10 @@ struct OpCode {
   bool operator==(OpCode other);
 };
 
-consteval std::array<OpCode, 256> _buildOpCodeLookup() {
-  std::array<OpCode, 256> table = {};
+consteval std::pair<std::array<const char *, 256>, std::array<OpCode, 256>>
+_buildOpCodeLookup() {
+  std::array<OpCode, 256> table2 = {};
+  std::array<const char *, 256> table1 = {};
 
   using enum OpCodeType;
   using enum AddressingMode;
@@ -70,120 +72,158 @@ consteval std::array<OpCode, 256> _buildOpCodeLookup() {
   for (int i = 0; i < 256; ++i) {
     switch (i) {
     case 0x0A:
-      table[i] = {.type = ASL, .addressing = accumulator};
+      table1[i] = "ASL";
+      table2[i] = {.type = ASL, .addressing = accumulator};
       break;
     case 0x10:
-      table[i] = {.type = BPL, .addressing = relative};
+      table1[i] = "BPL";
+      table2[i] = {.type = BPL, .addressing = relative};
       break;
     case 0x20:
-      table[i] = {.type = JSR, .addressing = absolute};
+      table1[i] = "JSR";
+      table2[i] = {.type = JSR, .addressing = absolute};
       break;
     case 0x2D:
-      table[i] = {.type = AND, .addressing = absolute};
+      table1[i] = "AND";
+      table2[i] = {.type = AND, .addressing = absolute};
       break;
     case 0x48:
-      table[i] = {.type = PHA, .addressing = implied};
+      table1[i] = "PHA";
+      table2[i] = {.type = PHA, .addressing = implied};
       break;
     case 0x4A:
-      table[i] = {.type = LSR, .addressing = accumulator};
+      table1[i] = "LSR";
+      table2[i] = {.type = LSR, .addressing = accumulator};
       break;
     case 0x4C:
-      table[i] = {.type = JMP, .addressing = absolute};
+      table1[i] = "JMP";
+      table2[i] = {.type = JMP, .addressing = absolute};
       break;
     case 0x60:
-      table[i] = {.type = RTS, .addressing = implied};
+      table1[i] = "RTS";
+      table2[i] = {.type = RTS, .addressing = implied};
       break;
     case 0x6C:
-      table[i] = {.type = JMP, .addressing = indirect};
+      table1[i] = "JMP";
+      table2[i] = {.type = JMP, .addressing = indirect};
       break;
     case 0x78:
-      table[i] = {.type = SEI, .addressing = implied};
+      table1[i] = "SEI";
+      table2[i] = {.type = SEI, .addressing = implied};
       break;
     case 0x85:
-      table[i] = {.type = STA, .addressing = zeropage};
+      table1[i] = "STA";
+      table2[i] = {.type = STA, .addressing = zeropage};
       break;
     case 0x88:
-      table[i] = {.type = DEY, .addressing = implied};
+      table1[i] = "DEY";
+      table2[i] = {.type = DEY, .addressing = implied};
       break;
     case 0x8C:
-      table[i] = {.type = STY, .addressing = absolute};
+      table1[i] = "STY";
+      table2[i] = {.type = STY, .addressing = absolute};
       break;
     case 0x8D:
-      table[i] = {.type = STA, .addressing = absolute};
+      table1[i] = "STA";
+      table2[i] = {.type = STA, .addressing = absolute};
       break;
     case 0x8E:
-      table[i] = {.type = STX, .addressing = absolute};
+      table1[i] = "STX";
+      table2[i] = {.type = STX, .addressing = absolute};
       break;
     case 0x90:
-      table[i] = {.type = BCC, .addressing = relative};
+      table1[i] = "BCC";
+      table2[i] = {.type = BCC, .addressing = relative};
       break;
     case 0x9A:
-      table[i] = {.type = TXS, .addressing = implied};
+      table1[i] = "TXS";
+      table2[i] = {.type = TXS, .addressing = implied};
       break;
     case 0xA0:
-      table[i] = {.type = LDY, .addressing = immediate};
+      table1[i] = "LDY";
+      table2[i] = {.type = LDY, .addressing = immediate};
       break;
     case 0xA2:
-      table[i] = {.type = LDX, .addressing = immediate};
+      table1[i] = "LDX";
+      table2[i] = {.type = LDX, .addressing = immediate};
       break;
     case 0xA5:
-      table[i] = {.type = LDA, .addressing = zeropage};
+      table1[i] = "LDA";
+      table2[i] = {.type = LDA, .addressing = zeropage};
       break;
     case 0xA9:
-      table[i] = {.type = LDA, .addressing = immediate};
+      table1[i] = "LDA";
+      table2[i] = {.type = LDA, .addressing = immediate};
       break;
     case 0xAA:
-      table[i] = {.type = TAX, .addressing = implied};
+      table1[i] = "TAX";
+      table2[i] = {.type = TAX, .addressing = implied};
       break;
     case 0xAD:
-      table[i] = {.type = LDA, .addressing = absolute};
+      table1[i] = "LDA";
+      table2[i] = {.type = LDA, .addressing = absolute};
       break;
     case 0xB0:
-      table[i] = {.type = BCS, .addressing = relative};
+      table1[i] = "BCS";
+      table2[i] = {.type = BCS, .addressing = relative};
       break;
     case 0xBD:
-      table[i] = {.type = LDA, .addressing = absolute};
+      table1[i] = "LDA";
+      table2[i] = {.type = LDA, .addressing = absolute};
       break;
     case 0xCA:
-      table[i] = {.type = DEX, .addressing = implied};
+      table1[i] = "DEX";
+      table2[i] = {.type = DEX, .addressing = implied};
       break;
     case 0xC6:
-      table[i] = {.type = DEC, .addressing = zeropage};
+      table1[i] = "DEC";
+      table2[i] = {.type = DEC, .addressing = zeropage};
       break;
     case 0xC8:
-      table[i] = {.type = INY, .addressing = zeropage};
+      table1[i] = "INY";
+      table2[i] = {.type = INY, .addressing = zeropage};
       break;
     case 0xC9:
-      table[i] = {.type = CMP, .addressing = immediate};
+      table1[i] = "CMP";
+      table2[i] = {.type = CMP, .addressing = immediate};
       break;
     case 0xD0:
-      table[i] = {.type = BNE, .addressing = relative};
+      table1[i] = "BNE";
+      table2[i] = {.type = BNE, .addressing = relative};
       break;
     case 0xD8:
-      table[i] = {.type = CLD, .addressing = implied};
+      table1[i] = "CLD";
+      table2[i] = {.type = CLD, .addressing = implied};
       break;
     case 0xE0:
-      table[i] = {.type = CPX, .addressing = immediate};
+      table1[i] = "CPX";
+      table2[i] = {.type = CPX, .addressing = immediate};
       break;
     case 0xE6:
-      table[i] = {.type = INC, .addressing = zeropage};
+      table1[i] = "INC";
+      table2[i] = {.type = INC, .addressing = zeropage};
       break;
     case 0xE8:
-      table[i] = {.type = INX, .addressing = implied};
+      table1[i] = "INX";
+      table2[i] = {.type = INX, .addressing = implied};
       break;
     case 0xF0:
-      table[i] = {.type = BEQ, .addressing = relative};
+      table1[i] = "BEQ";
+      table2[i] = {.type = BEQ, .addressing = relative};
       break;
     default:
-      table[i] = {.type = unimplemented, .addressing = implied};
+      table1[i] = "unimplemented";
+      table2[i] = {.type = unimplemented, .addressing = implied};
       break;
     }
   }
 
-  return table;
+  return std::pair{table1, table2};
 }
 
-constexpr std::array<OpCode, 256> opCodeLookup = _buildOpCodeLookup();
+constexpr auto opCodeLookupPair = _buildOpCodeLookup();
+constexpr auto opCodeNameLookup = opCodeLookupPair.first;
+constexpr auto opCodeLookup = opCodeLookupPair.second;
 
 union InstructionOperandUnion {
   Address::Absolute absolute;

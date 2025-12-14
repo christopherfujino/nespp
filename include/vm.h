@@ -91,25 +91,25 @@ private:
   Mapper *mapper;
 
   /// Negative bitmask
-  const uint8_t _N = 1 << 7;
-  const uint8_t _NNot = ~_N;
+  static constexpr uint8_t _N = 1 << 7;
+  static constexpr uint8_t _NNot = static_cast<uint8_t>(~_N);
 
   ///// Overflow bitmask
   // const uint8_t _V = 1 << 6;
 
-  const uint8_t _D = 1 << 3;
-  const uint8_t _DNot = ~_D;
+  static constexpr uint8_t _D = 1 << 3;
+  static constexpr uint8_t _DNot = ~_D;
 
   // Interrupt bitmask
-  const uint8_t _I = 1 << 2;
+  static constexpr uint8_t _I = 1 << 2;
 
   /// Zero bitmask
-  const uint8_t _Z = 1 << 1;
-  const uint8_t _ZNot = ~_Z;
+  static constexpr uint8_t _Z = 1 << 1;
+  static constexpr uint8_t _ZNot = ~_Z;
 
   /// Carry bitmask
-  const uint8_t _C = 1 << 0;
-  const uint8_t _CNot = ~_C;
+  static constexpr uint8_t _C = 1 << 0;
+  static constexpr uint8_t _CNot = ~_C;
 
   // Methods
   void inline _setN(uint8_t other);
