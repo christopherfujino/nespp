@@ -9,5 +9,9 @@ if not out.exists() {
 
 with($cwd = out.path) {
   let releaseVar = if debug {'Debug'} else {'Release'}
-  [ 'cmake', $scriptDir, "-DCMAKE_BUILD_TYPE=${releaseVar}" ]!
+  [
+    'cmake', $scriptDir,
+    "-DCMAKE_BUILD_TYPE=${releaseVar}",
+    '-G', 'Ninja',
+  ]!
 }
