@@ -1,11 +1,7 @@
-cmake_minimum_required(VERSION 3.31)
+cmake_minimum_required(VERSION 3.31) # Ubuntu 25.10 version
 
-project(xsynth-cmake-no-projucer
-  LANGUAGES CXX
-  VERSION 0.1)
-
+project(nespp LANGUAGES CXX VERSION 0.1)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 set(CMAKE_CXX_STANDARD 20)
 
 # project global
