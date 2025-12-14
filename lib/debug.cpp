@@ -14,14 +14,54 @@ namespace NESPP {
 
 namespace Debug {
 
-void _renderInstruction(Instructions::Instruction &ins) {
-  printw("%s\n", ins.toString().data());
+_Queue::_Queue(int _size) : size(_size) {}
+
+void _Queue::enqueue(std::string element) {
+  if (contents.size() == size) {
+    contents.pop_front();
+  }
+  contents.push_back(element);
+}
+
+void _Queue::renderLines(int y, int x, int height, int width) {
+  // TODO check if height < size
+  int currentY = y;
+  for (auto line : contents) {
+    mvaddnstr(currentY, x, line.data(), width);
+    currentY += 1;
+  }
+}
+
+void _renderBox(int y, int x, int height, int width) {
+  mvaddch(y, x, '+');
+  hline('-', width - 2);
+  mvaddch(y, x + width - 1, '+');
+  mvaddch(y + height - 1, x, '+');
+  hline('-', width - 2);
+  mvaddch(y + height - 1, x + width - 1, '+');
+  mvvline(y + 1, x, '|', height - 2);
+  mvvline(y + 1, x + width - 1, '|', height - 2);
+}
+
+void _renderInstruction(Debugger *dbg) {
+  constexpr int x = 30;
+  constexpr int y = 0;
+  constexpr int width = 25;
+  // TODO take a height as an argument
+  const int height = dbg->instructionQueue.size + 2;
+  _renderBox(y, x, height, width);
+  dbg->instructionQueue.renderLines(y + 1, x + 1, height - 2, width - 2);
 }
 
 void _renderRegisters(Debugger *dbg) {
-  printw("PC   A  X  Y  SP NV-BDIZC\n");
-  printw("%04X %02X %02X %02X %02X %s\n\n", dbg->PC.to16(), dbg->A, dbg->X, dbg->Y, dbg->SP,
-         std::bitset<8>{dbg->S}.to_string().data());
+  constexpr int x = 0;
+  constexpr int y = 0;
+  constexpr int width = 27;
+  constexpr int height = 4;
+  _renderBox(y, x, height, width);
+  mvprintw(y + 1, x + 1, "PC   A  X  Y  SP NV-BDIZC");
+  mvprintw(y + 2, x + 1, "%04X %02X %02X %02X %02X %s", dbg->PC.to16(), dbg->A,
+           dbg->X, dbg->Y, dbg->SP, std::bitset<8>{dbg->S}.to_string().data());
 }
 
 Debugger::Debugger(Rom *rom) : VM::VM(rom) { initscr(); }
@@ -41,16 +81,20 @@ void Debugger::start() {
   };
 
   while (1) {
-    printw("%04X: ", PC.to16());
+    auto insLoc = PC;
     Instructions::Instruction ins = decodeInstruction();
-    _renderInstruction(ins);
+    instructionQueue.enqueue(
+        std::format("{:4X}: {}", insLoc.to16(), ins.toString().data()));
+    clear();
+    _renderInstruction(this);
     execute(ins);
     _renderRegisters(this);
+    refresh();
 
     char inputLine[1024] = {0};
     size_t inputSize = 1024;
 
-    addstr("? ");
+    mvaddstr(6, 0, "? ");
     int result = wgetnstr(stdscr, inputLine, inputSize);
     // int nread = getline(&inputLinePtr, &inputSize, stdin);
     if (result == ERR) {
@@ -63,7 +107,7 @@ void Debugger::start() {
       // TODO: is this right?
       // we're branching on if the zero flag is set, so don't branch
       ppuRegisters[2] = 1 << 7;
-      printw("Setting PPU[2] = #%02X\n", ppuRegisters[2]);
+      debug(std::format("Setting PPU[2] = #{:2X}", ppuRegisters[2]));
       continue;
     } else {
       throw std::runtime_error(
@@ -73,7 +117,14 @@ void Debugger::start() {
 }
 
 void Debugger::debug(std::string msg) {
-  printw("%s", msg.data());
+  constexpr int y = 20;
+  constexpr int x = 0;
+  int height = debugQueue.size + 2;
+  constexpr int width = 40;
+  _renderBox(y, x, height, width);
+  debugQueue.enqueue(msg);
+  debugQueue.renderLines(y + 1, x + 1, height - 2, width - 2);
+  // mvprintw(y, x, "%s", msg.data());
 }
 
 } // namespace Debug

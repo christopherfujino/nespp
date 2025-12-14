@@ -123,14 +123,14 @@ uint8_t VM::peek16(uint16_t address) {
     return ram[normalizedIdx];
   } else if (address < 0x2008) {
     uint8_t offset = address - 0x2000;
-    debug(std::format("DEBUG PPU register: {} = 0x{:2X}\n", offset,
+    debug(std::format("DEBUG PPU register: {} = 0x{:2X}", offset,
                       ppuRegisters[offset]));
     return ppuRegisters[offset];
   } else if (address < 0x4000) {
     throw "TODO implement PPU register repeats";
   } else if (address < 0x4018) {
     uint8_t offset = address - 0x4000;
-    debug(std::format("DEBUG APU or I/O register: {} = 0x{:2X}\n", address,
+    debug(std::format("DEBUG APU or I/O register: {} = 0x{:2X}", address,
                       apuAndIoRegisters[offset]));
     return apuAndIoRegisters[offset];
   } else if (address < 0x4020) {
@@ -286,7 +286,7 @@ void VM::execute(Instructions::Instruction instruction) {
     // if not negative...
     if ((S & _N) == 0) {
       PC = _operandToAddress(instruction);
-      debug(std::format("Jumping to ${:4X}\n", PC.to16()));
+      debug(std::format("Jumping to ${:4X}", PC.to16()));
     }
     return;
   case CLD:
