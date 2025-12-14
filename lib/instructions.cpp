@@ -76,7 +76,7 @@ std::string OpCode::toString() {
   if (opcode == -1) {
     throw std::runtime_error("BUG");
   }
-  return std::format("{} ({:2X})", opCodeNameLookup[opcode], opcode);
+  return std::format("{} ({:02X})", opCodeNameLookup[opcode], opcode);
 }
 
 // TODO remove this
@@ -91,20 +91,20 @@ std::string Instruction::toString() {
   switch (opCode.addressing) {
   case absolute:
     // TODO: is this the right order?
-    return std::format("{} {:2X} {:2X}", opCode.toString(),
+    return std::format("{} {:02X} {:02X}", opCode.toString(),
                        operand.absolute.low, operand.absolute.high);
   case accumulator:
     return std::format("{}  A", opCode.toString());
   case immediate:
-    return std::format("{} #{:2X}", opCode.toString(), operand.immediate);
+    return std::format("{} #{:02X}", opCode.toString(), operand.immediate);
   case implied:
     return opCode.toString();
   case indirect:
-    return std::format("{}  ({:2X} {:2X})", opCode.toString(), operand.indirect.low, operand.indirect.high);
+    return std::format("{}  ({:02X} {:02X})", opCode.toString(), operand.indirect.low, operand.indirect.high);
   case relative:
-    return std::format("{}  {:2X}", opCode.toString(), operand.relative);
+    return std::format("{}  {:02X}", opCode.toString(), operand.relative);
   case zeropage:
-    return std::format("{}  {:2X}", opCode.toString(), operand.zeropage);
+    return std::format("{}  {:02X}", opCode.toString(), operand.zeropage);
   }
   return std::format("{}", opCode.toString());
 }

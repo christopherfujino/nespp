@@ -3,7 +3,7 @@
 ; Overall CRC32 checksum: 339ca253
 ; Code base address: $8000
 
-.setcpu "6502x"
+;.setcpu "6502x"
 .segment "HEADER"
 
 .byte "NES", $1a                 ; Magic string that always begins an iNES header
@@ -40,4 +40,9 @@ _label_8014:
 
 .segment "VECTORS"
 
-.addr 0, Reset, 0
+; nmi
+.word $00
+; Start point
+.word Reset
+; irq
+.word $00
