@@ -7,12 +7,16 @@ if not out.exists() {
   out.create()
 }
 
-with($cwd = out.path) {
-  let releaseVar = if debug {'Debug'} else {'Release'}
+func configure(release) {
   [
     'cmake', $scriptDir,
-    "-DCMAKE_BUILD_TYPE=${releaseVar}",
+    "-DCMAKE_BUILD_TYPE=${release}",
     '--toolchain', './tool/toolchain.cmake',
     '-G', 'Ninja',
   ]!
+}
+
+with($cwd = out.path) {
+  let release = if debug {'Debug'} else {'Release'}
+  configure(release)
 }
