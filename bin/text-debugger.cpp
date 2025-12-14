@@ -4,7 +4,6 @@
 
 #include "../include/debug.h"
 #include "../include/rom.h"
-#include "../include/vm.h"
 
 using namespace NESPP;
 
@@ -24,8 +23,7 @@ int main(int argc, char **argv) {
   Rom *rom = new Rom();
 
   Rom::fromPath(&rom, romPath);
-  VM::VM vm = VM::VM(rom);
 
-  Debug::Debugger debugger = {&vm};
+  Debug::Debugger debugger = {rom};
   debugger.start();
 }

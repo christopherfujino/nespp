@@ -6,7 +6,6 @@
 #include <format>                    // std::format
 #include <stdexcept>                 // std::runtime_except
 #include <stdint.h>                  // for uint8_t, uint16_t, int8_t
-#include <stdio.h>                   // for snprintf, printf
 
 namespace NESPP {
 
@@ -25,10 +24,8 @@ Mapper0::Mapper0(Rom *rom) {
     memcpy(prg, rom->prgBlob, 0x8000);
     break;
   default:
-    // This is never freed
-    char *msg = new char[256];
-    snprintf(msg, 256, "Unknown PRG size %04X\n", rom->prgSize);
-    throw msg;
+    throw std::runtime_error(
+        std::format("Unknown PRG size {:4X}", rom->prgSize));
   }
 }
 
@@ -125,14 +122,15 @@ uint8_t VM::peek16(uint16_t address) {
     return ram[normalizedIdx];
   } else if (address < 0x2008) {
     uint8_t offset = address - 0x2000;
-    printf("DEBUG PPU register: %d = 0x%02X\n", offset, ppuRegisters[offset]);
+    debug(std::format("DEBUG PPU register: {} = 0x{:2X}\n", offset,
+                      ppuRegisters[offset]));
     return ppuRegisters[offset];
   } else if (address < 0x4000) {
     throw "TODO implement PPU register repeats";
   } else if (address < 0x4018) {
     uint8_t offset = address - 0x4000;
-    printf("DEBUG APU or I/O register: %d = 0x%02X\n", address,
-           apuAndIoRegisters[offset]);
+    debug(std::format("DEBUG APU or I/O register: {} = 0x{:2X}\n", address,
+                      apuAndIoRegisters[offset]));
     return apuAndIoRegisters[offset];
   } else if (address < 0x4020) {
     throw "TODO: implement APU & I/O functionality that is normally disabled";
@@ -175,15 +173,14 @@ void VM::poke16(uint16_t address, uint8_t value) {
     // mapper
     mapper->poke16(address, value);
   } else {
-    char *msg = new char[256];
-    snprintf(msg, 256, "Invalid address 0x%04X", address);
-    throw msg;
+    throw std::runtime_error(std::format("Invalid address 0x{:4X}", address));
   }
 }
 
 Instructions::Instruction VM::decodeInstruction() {
   Instructions::Instruction instruction;
-  Instructions::OpCode code = Instructions::opCodeLookup[peek(PC)];
+  uint8_t _rawCode = peek(PC); // for debugging
+  Instructions::OpCode code = Instructions::opCodeLookup[_rawCode];
   switch (code.addressing) {
   case Instructions::AddressingMode::absolute:
     instruction = {
@@ -240,11 +237,8 @@ Instructions::Instruction VM::decodeInstruction() {
     PC += 2;
     break;
   default:
-    // This is never freed
-    char *msg = new char[256];
-    snprintf(msg, 256, "Unimplemented instruction 0x%02X at 0x%04X",
-             (uint8_t)code.type, PC.to16());
-    throw msg;
+    throw std::runtime_error(std::format(
+        "Unimplemented instruction 0x{:2X} at 0x{:4X}", _rawCode, PC.to16()));
   }
 
   return instruction;
@@ -291,7 +285,7 @@ void VM::execute(Instructions::Instruction instruction) {
     // if not negative...
     if ((S & _N) == 0) {
       PC = _operandToAddress(instruction);
-      printf("Jumping to %04X\n", PC.to16());
+      debug(std::format("Jumping to ${:4X}\n", PC.to16()));
     }
     return;
   case CLD:
@@ -323,7 +317,8 @@ void VM::execute(Instructions::Instruction instruction) {
     return;
 
   default:
-    throw std::runtime_error(std::format("TODO execute instruction: {}", instruction.toString()));
+    throw std::runtime_error(
+        std::format("TODO execute instruction: {}", instruction.toString()));
     // case BNE_REL:
     //   if (_Z == 0) {
     //     PC += instruction.operand.relative;

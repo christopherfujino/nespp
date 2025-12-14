@@ -1,21 +1,22 @@
 #pragma once
 
+#include "rom.h"
 #include "vm.h"
+
+#include <string>
 
 namespace NESPP {
 
 namespace Debug {
 
-class Debugger {
+class Debugger : public VM::VM {
 public:
-  Debugger(VM::VM *);
+  Debugger(Rom *rom);
   ~Debugger();
 
   void start();
 private:
-  VM::VM *vm;
-
-  void printRegisters();
+  virtual void debug(std::string) override;
 };
 
 } // namespace Debug
