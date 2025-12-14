@@ -43,10 +43,20 @@ void _renderBox(int y, int x, int height, int width) {
   mvvline(y + 1, x + width - 1, '|', height - 2);
 }
 
+void _renderDebug(Debugger *dbg) {
+  constexpr int y = 12;
+  constexpr int x = 0;
+  int height = dbg->debugQueue.size + 2;
+  constexpr int width = 40;
+  _renderBox(y, x, height, width);
+
+  dbg->debugQueue.renderLines(y + 1, x + 1, height - 2, width - 2);
+}
+
 void _renderInstruction(Debugger *dbg) {
-  constexpr int x = 30;
+  constexpr int x = 28;
   constexpr int y = 0;
-  constexpr int width = 25;
+  constexpr int width = 30;
   // TODO take a height as an argument
   const int height = dbg->instructionQueue.size + 2;
   _renderBox(y, x, height, width);
@@ -64,7 +74,10 @@ void _renderRegisters(Debugger *dbg) {
            dbg->X, dbg->Y, dbg->SP, std::bitset<8>{dbg->S}.to_string().data());
 }
 
-Debugger::Debugger(Rom *rom) : VM::VM(rom) { initscr(); }
+Debugger::Debugger(Rom *rom) : VM::VM(rom) {
+  initscr();
+  //noecho();
+}
 
 Debugger::~Debugger() {
   printw("about to call endwin()\n");
@@ -72,6 +85,17 @@ Debugger::~Debugger() {
   printf("called endwin()\n");
   fflush(stdout);
   VM::~VM();
+}
+
+void Debugger::render() {
+  clear();
+  _renderInstruction(this);
+  _renderRegisters(this);
+  _renderDebug(this);
+
+  // prompt
+  mvaddstr(instructionQueue.size + 3, 0, "> ");
+  refresh();
 }
 
 void Debugger::start() {
@@ -85,21 +109,17 @@ void Debugger::start() {
     Instructions::Instruction ins = decodeInstruction();
     instructionQueue.enqueue(
         std::format("{:4X}: {}", insLoc.to16(), ins.toString().data()));
-    clear();
-    _renderInstruction(this);
     execute(ins);
-    _renderRegisters(this);
-    refresh();
+    render();
 
-    char inputLine[1024] = {0};
-    size_t inputSize = 1024;
-
-    mvaddstr(6, 0, "? ");
-    int result = wgetnstr(stdscr, inputLine, inputSize);
-    // int nread = getline(&inputLinePtr, &inputSize, stdin);
+    constexpr size_t inputSize = 1024;
+    char inputLine[inputSize] = {0};
+    int result = getnstr(inputLine, inputSize);
     if (result == ERR) {
-      throw std::runtime_error("wgetnstr() hit an error...");
+      throw std::runtime_error("getnstr returned ERR");
     }
+    auto foo = std::format("inputLine = {}", inputLine);
+    debug(foo);
     if (strncmp(inputLine, "", 1) == 0) {
       // step into
       continue;
@@ -107,25 +127,16 @@ void Debugger::start() {
       // TODO: is this right?
       // we're branching on if the zero flag is set, so don't branch
       ppuRegisters[2] = 1 << 7;
-      debug(std::format("Setting PPU[2] = #{:2X}", ppuRegisters[2]));
+      debug(std::format("Setting PPU[2] = #{:02X}", ppuRegisters[2]));
       continue;
     } else {
       throw std::runtime_error(
-          std::format("Unrecognized debugger input: \"{}\"", inputLine));
+          std::format("Unrecognized debugger input: \"{}\" ({})", inputLine, strlen(inputLine)));
     }
   }
 }
 
-void Debugger::debug(std::string msg) {
-  constexpr int y = 20;
-  constexpr int x = 0;
-  int height = debugQueue.size + 2;
-  constexpr int width = 40;
-  _renderBox(y, x, height, width);
-  debugQueue.enqueue(msg);
-  debugQueue.renderLines(y + 1, x + 1, height - 2, width - 2);
-  // mvprintw(y, x, "%s", msg.data());
-}
+void Debugger::debug(std::string msg) { debugQueue.enqueue(msg); }
 
 } // namespace Debug
 

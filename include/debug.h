@@ -30,11 +30,12 @@ public:
   ~Debugger();
 
   _Queue instructionQueue = {5};
+  _Queue debugQueue = {8};
 
   void start();
 
 private:
-  _Queue debugQueue = {5};
+  void render();
   virtual void debug(std::string) override;
 };
 

@@ -123,14 +123,14 @@ uint8_t VM::peek16(uint16_t address) {
     return ram[normalizedIdx];
   } else if (address < 0x2008) {
     uint8_t offset = address - 0x2000;
-    debug(std::format("DEBUG PPU register: {} = 0x{:2X}", offset,
+    debug(std::format("DEBUG PPU register: {} = 0x{:02X}", offset,
                       ppuRegisters[offset]));
     return ppuRegisters[offset];
   } else if (address < 0x4000) {
     throw "TODO implement PPU register repeats";
   } else if (address < 0x4018) {
     uint8_t offset = address - 0x4000;
-    debug(std::format("DEBUG APU or I/O register: {} = 0x{:2X}", address,
+    debug(std::format("DEBUG APU or I/O register: {} = 0x{:02X}", address,
                       apuAndIoRegisters[offset]));
     return apuAndIoRegisters[offset];
   } else if (address < 0x4020) {
