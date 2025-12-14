@@ -12,7 +12,10 @@ add_executable(text-debugger
   lib/debug.cpp)
 
 # This is only required for the debugger
+set(CURSES_NEED_WIDE TRUE) # unicode
 find_package(Curses REQUIRED) # provides ${CURSES_LIBRARIES}
+target_include_directories(text-debugger PRIVATE
+  ${CURSES_INCLUDE_DIR})
 target_link_libraries(text-debugger
   ${CURSES_LIBRARIES}
   vm)

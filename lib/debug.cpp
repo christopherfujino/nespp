@@ -6,6 +6,7 @@
 #include <cstdlib>                   // for exit, size_t
 #include <cstring>                   // for strncmp
 #include <format>
+#include <locale.h>
 #include <ncurses.h>
 #include <stdexcept>
 #include <stdint.h> // for uint8_t
@@ -33,14 +34,14 @@ void _Queue::renderLines(int y, int x, int height, int width) {
 }
 
 void _renderBox(int y, int x, int height, int width) {
-  mvaddch(y, x, '+');
-  hline('-', width - 2);
-  mvaddch(y, x + width - 1, '+');
-  mvaddch(y + height - 1, x, '+');
-  hline('-', width - 2);
-  mvaddch(y + height - 1, x + width - 1, '+');
-  mvvline(y + 1, x, '|', height - 2);
-  mvvline(y + 1, x + width - 1, '|', height - 2);
+  mvaddch(y, x, A_ALTCHARSET | ACS_ULCORNER);
+  hline(A_ALTCHARSET | ACS_HLINE, width - 2);
+  mvaddch(y, x + width - 1, A_ALTCHARSET | ACS_URCORNER);
+  mvaddch(y + height - 1, x, A_ALTCHARSET | ACS_LLCORNER);
+  hline(A_ALTCHARSET | ACS_HLINE, width - 2);
+  mvaddch(y + height - 1, x + width - 1, A_ALTCHARSET | ACS_LRCORNER);
+  mvvline(y + 1, x, A_ALTCHARSET | ACS_VLINE, height - 2);
+  mvvline(y + 1, x + width - 1, A_ALTCHARSET | ACS_VLINE, height - 2);
 }
 
 void _renderDebug(Debugger *dbg) {
@@ -75,8 +76,9 @@ void _renderRegisters(Debugger *dbg) {
 }
 
 Debugger::Debugger(Rom *rom) : VM::VM(rom) {
+  setlocale(LC_ALL, "en_US.UTF-8");
   initscr();
-  //noecho();
+  // noecho();
 }
 
 Debugger::~Debugger() {
@@ -118,8 +120,6 @@ void Debugger::start() {
     if (result == ERR) {
       throw std::runtime_error("getnstr returned ERR");
     }
-    auto foo = std::format("inputLine = {}", inputLine);
-    debug(foo);
     if (strncmp(inputLine, "", 1) == 0) {
       // step into
       continue;
@@ -131,7 +131,8 @@ void Debugger::start() {
       continue;
     } else {
       throw std::runtime_error(
-          std::format("Unrecognized debugger input: \"{}\" ({})", inputLine, strlen(inputLine)));
+          std::format("Unrecognized debugger input: \"{}\" ({})", inputLine,
+                      strlen(inputLine)));
     }
   }
 }
