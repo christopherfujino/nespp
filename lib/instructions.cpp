@@ -63,7 +63,7 @@ bool OpCode::operator==(OpCode other) {
 
 std::string OpCode::toString() {
   int opcode = -1;
-  const char *operand = nullptr;
+  std::string operandString;
 
   for (int i = 0; i <= 0xFF; i++) {
     Instructions::OpCode current = opCodeLookup[i];
@@ -76,33 +76,7 @@ std::string OpCode::toString() {
   if (opcode == -1) {
     throw std::runtime_error("BUG");
   }
-
-  using enum AddressingMode;
-  switch (addressing) {
-  case absolute:
-    operand = "absolute";
-    break;
-  case accumulator:
-    operand = "accumulator";
-    break;
-  case immediate:
-    operand = "immediate";
-    break;
-  case implied:
-    operand = "implied";
-    break;
-  case indirect:
-    operand = "indirect";
-    break;
-  case relative:
-    operand = "relative";
-    break;
-  case zeropage:
-    operand = "zeropage";
-    break;
-  }
-
-  return std::format("0x{:2X} {}", opcode, operand);
+  return std::format("{} ({:2X})", opCodeNameLookup[opcode], opcode);
 }
 
 // TODO remove this
@@ -113,7 +87,12 @@ Instruction decodeInstruction(uint8_t **src,
 }
 
 std::string Instruction::toString() {
-  // TODO serialize operand
+  using enum AddressingMode;
+  switch (opCode.addressing) {
+    case absolute:
+      // TODO: is this the right order?
+      return std::format("{} {:2X} {:2X}", opCode.toString(), operand.absolute.low, operand.absolute.high);
+  }
   return std::format("{}", opCode.toString());
 }
 
