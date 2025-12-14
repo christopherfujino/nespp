@@ -12,10 +12,10 @@ public:
   ~Debugger();
 
   void start();
-  void printRegisters();
-
 private:
   VM::VM *vm;
+
+  void printRegisters();
 };
 
 } // namespace Debug

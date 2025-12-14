@@ -118,6 +118,8 @@ private:
 
   uint8_t _operandToValue(Instructions::Instruction);
   Address::Absolute _operandToAddress(Instructions::Instruction);
+
+  //void debug(std::string);
 };
 
 } // namespace VM
