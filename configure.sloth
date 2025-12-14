@@ -12,6 +12,7 @@ with($cwd = out.path) {
   [
     'cmake', $scriptDir,
     "-DCMAKE_BUILD_TYPE=${releaseVar}",
+    '--toolchain', './tool/toolchain.cmake',
     '-G', 'Ninja',
   ]!
 }

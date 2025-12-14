@@ -14,6 +14,7 @@ namespace VM {
 Mapper0::Mapper0(Rom *rom) {
   this->rom = rom;
 
+  // TODO: should we copy, or should this just be a light view into the ROM?
   switch (rom->prgSize) {
   case 0x4000: // 16KiB
     memcpy(prg, rom->prgBlob, 0x4000);
