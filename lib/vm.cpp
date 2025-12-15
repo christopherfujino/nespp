@@ -296,6 +296,8 @@ void VM::execute(Instructions::Instruction instruction) {
   case CLD:
     S &= _DNot;
     return;
+  //case CPX:
+  //  
   case DEX:
     X -= 1;
     // Is this handled correctly even though X is unsigned?
@@ -307,6 +309,11 @@ void VM::execute(Instructions::Instruction instruction) {
     // Is this handled correctly even though X is unsigned?
     _setN(Y);
     _setZ(Y);
+    return;
+  case INX:
+    X += 1;
+    _setN(X);
+    _setZ(X);
     return;
   case JMP:
     PC = _operandToAddress(instruction);
@@ -331,6 +338,12 @@ void VM::execute(Instructions::Instruction instruction) {
     _setZ(value);
     Y = value;
     return;
+  case PHA:
+    poke16(0x0100 + SP, A);
+    // I *think* this behaves identically to 6502 wrapping since SP is unsigned
+    --SP;
+    return;
+
   case SEI:
     S |= _I;
     return;
@@ -338,49 +351,18 @@ void VM::execute(Instructions::Instruction instruction) {
     address = _operandToAddress(instruction);
     poke(address, A);
     return;
+  case STX:
+    address = _operandToAddress(instruction);
+    poke(address, X);
+    return;
   case TXS:
     SP = X;
     return;
-
-  //default:
-  //  throw std::runtime_error(
-  //      std::format("TODO execute instruction: {}", instruction.toString()));
-    // case LDA_ABS_X:
-    //   // operand is address; effective address is address incremented by X
-    //   with
-    //   // carry **
-    //   // TODO: Do we add _C?!?!??!
-    //   address = instruction.operand.absolute.to16() + X;
-    //   value = peek16(address);
-    //   _setN(value);
-    //   _setZ(value);
-    //   A = value;
-    //   return;
-    // case LDA_IMM:
-    //   value = instruction.operand.immediate;
-    //   _setN(value);
-    //   _setZ(value);
-    //   A = value;
-    //   return;
-    // case LDY_IMM:
-    //   value = instruction.operand.immediate;
-    //   _setN(value);
-    //   _setZ(value);
-    //   Y = value;
-    //   return;
-    // case PHA:
-    //   poke16(0x0100 + SP, A);
-    //   // I *think* this behaves identically to 6502 wrapping since SP is
-    //   unsigned
-    //   --SP;
-    //   return;
-    // case STX_ABS:
-    //   poke(instruction.operand.absolute, X);
-    //   return;
+  default:
+    throw std::runtime_error(
+        std::format("TODO: implement instruction {} in `VM::execute()`",
+                    instruction.toString()));
   }
-  throw std::runtime_error(
-      std::format("TODO: implement instruction {} in `VM::execute()`",
-                  instruction.toString()));
 }
 
 uint8_t VM::_operandToValue(Instructions::Instruction instruction) {
