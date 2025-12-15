@@ -7,9 +7,10 @@ Absolute::Absolute(uint8_t high, uint8_t low) {
   this->high = high;
 }
 
-Absolute::Absolute(uint16_t raw) {
-  low = 0xFF & raw;
-  high = (0xFF00 & raw) >> 8;
+Absolute Absolute::from16(uint16_t raw) {
+  uint8_t low = 0xFF & raw;
+  uint8_t high = (0xFF00 & raw) >> 8;
+  return Absolute{high, low};
 }
 
 Absolute::Absolute() {

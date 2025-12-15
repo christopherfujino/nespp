@@ -37,7 +37,7 @@ public:
   ~VM();
 
   // registers
-  Address::Absolute PC = Address::Absolute(0);
+  Address::Absolute PC;
   uint8_t A = 0;
   uint8_t X = 0;
   uint8_t Y = 0;

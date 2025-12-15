@@ -80,11 +80,10 @@ VM::~VM() { delete mapper; }
 
 void VM::start() {
   {
-    uint8_t addressLow = peek16(0xFFFC);
+    uint8_t low = peek16(0xFFFC);
+    uint8_t high = peek16(0xFFFD);
 
-    uint8_t addressHigh = peek16(0xFFFD);
-
-    PC = addressLow | (addressHigh << 8);
+    PC = {high, low};
   }
 
   Instructions::Instruction current;
@@ -313,6 +312,10 @@ void VM::execute(Instructions::Instruction instruction) {
   case SEI:
     S |= _I;
     return;
+  case STA:
+    address = _operandToAddress(instruction);
+    poke(address, A);
+    return;
   case TXS:
     SP = X;
     return;
@@ -375,9 +378,6 @@ void VM::execute(Instructions::Instruction instruction) {
     //   unsigned
     //   --SP;
     //   return;
-    // case STA_ABS:
-    //   poke(instruction.operand.absolute, A);
-    //   return;
     // case STX_ABS:
     //   poke(instruction.operand.absolute, X);
     //   return;
@@ -400,8 +400,8 @@ uint8_t VM::_operandToValue(Instructions::Instruction instruction) {
     return peek(instruction.operand.absolute);
 
   case relative: // This is a branch target
-  case implied:
-  case indirect:
+  case implied:  // no operand
+  case indirect: // This is a jump target
     throw "Unreachable";
   }
   assert(false);
@@ -414,13 +414,18 @@ Address::Absolute VM::_operandToAddress(Instructions::Instruction instruction) {
   case absolute:
     return instruction.operand.absolute;
   case indirect:
-    return peek(instruction.operand.indirect);
+    return Address::Absolute{
+        // high
+        peek(instruction.operand.indirect + 1),
+        // low
+        peek(instruction.operand.indirect),
+    };
   case relative:
     // This is an offset from the PC
     return PC + static_cast<int8_t>(instruction.operand.relative);
   case zeropage:
     // Full address is this cast to 16-bits
-    return instruction.operand.zeropage;
+    return Address::Absolute(0x0, instruction.operand.zeropage);
   case accumulator:
   case immediate:
   case implied:

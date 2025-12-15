@@ -9,10 +9,11 @@ namespace Address {
 // TODO: make this a wrapper around a uint16_t?
 class Absolute {
 public:
-  /// $HHLL
-  Absolute(uint16_t);
   Absolute(uint8_t high, uint8_t low);
   Absolute();
+
+  /// $HHLL
+  static Absolute from16(uint16_t);
 
   uint8_t low;
   uint8_t high;
