@@ -9,8 +9,6 @@
 
 namespace NESPP {
 
-namespace VM {
-
 Mapper0::Mapper0(Rom *rom) {
   this->rom = rom;
 
@@ -455,7 +453,5 @@ Address::Absolute VM::_operandToAddress(Instructions::Instruction instruction) {
   assert(false);
   throw "Unreachable";
 }
-
-} // namespace VM
 
 } // namespace NESPP

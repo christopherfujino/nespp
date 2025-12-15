@@ -8,8 +8,6 @@
 
 namespace NESPP {
 
-namespace VM {
-
 class Mapper {
 public:
   virtual ~Mapper() {}
@@ -125,7 +123,5 @@ private:
 protected:
   virtual void debug(std::string) = 0;
 };
-
-} // namespace VM
 
 } // namespace NESPP
