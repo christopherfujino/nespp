@@ -291,6 +291,10 @@ void VM::execute(Instructions::Instruction instruction) {
   case CLD:
     S &= _DNot;
     return;
+  case JMP:
+    PC = _operandToAddress(instruction);
+    debug(std::format("Jumping to ${:4X}", PC.to16()));
+    return;
   case LDA:
     value = _operandToValue(instruction);
     _setN(value);
@@ -339,9 +343,6 @@ void VM::execute(Instructions::Instruction instruction) {
     //   // Is this handled correctly even though X is unsigned?
     //   _setN(Y);
     //   _setZ(Y);
-    //   return;
-    // case JMP_ABS:
-    //   PC = instruction.operand.absolute.to16();
     //   return;
     // case LDA_ABS:
     //   value = instruction.operand.absolute.to16();
