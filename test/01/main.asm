@@ -19,7 +19,6 @@ APU_PL1_LO = $4002
 APU_PL1_VOL = $4000
 APU_SND_CHN = $4015
 
-
 .segment "CODE"
 
 Reset:
@@ -36,7 +35,6 @@ _label_8014:
   jmp _label_8014                ; $8014  4C 14 80
 
 .segment "TILES"
-
 
 .segment "VECTORS"
 
