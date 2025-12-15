@@ -117,6 +117,8 @@ private:
   inline bool _getZ();
   inline bool _getC();
 
+  void _pushStack(uint8_t);
+
   uint8_t _operandToValue(Instruction);
   Word _operandToAddress(Instruction);
 

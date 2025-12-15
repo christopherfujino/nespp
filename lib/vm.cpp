@@ -232,7 +232,7 @@ Instruction VM::decodeInstruction() {
     break;
   default:
     throw std::runtime_error(std::format(
-        "Unimplemented instruction 0x{:2X} at 0x{:4X}", _rawCode, PC.to16()));
+        "Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode, PC.to16()));
   }
 
   return instruction;
@@ -258,6 +258,12 @@ inline void VM::_setC(bool didCarry) {
 }
 
 inline bool VM::_getC() { return ((S & _C) > 0); }
+
+void VM::_pushStack(uint8_t v) {
+  poke16(0x0100 + SP, v);
+  // I *think* this behaves identically to 6502 wrapping since SP is unsigned
+  SP -= 1;
+}
 
 void VM::execute(Instruction instruction) {
   Word address;
@@ -313,6 +319,18 @@ void VM::execute(Instruction instruction) {
   case CLD:
     S &= _DNot;
     return;
+  case CMP:
+    if (instruction.opCode.addressing == AddressingMode::immediate) {
+      value = instruction.operand.immediate;
+    } else {
+      address = _operandToAddress(instruction);
+      value = peek(address);
+    }
+    value = A - value;
+    _setC(value);
+    _setZ(value);
+    _setN(value);
+    return;
   case CPX:
     if (instruction.opCode.addressing == AddressingMode::immediate) {
       value = instruction.operand.immediate;
@@ -337,6 +355,13 @@ void VM::execute(Instruction instruction) {
     _setZ(value);
     _setN(value);
     return;
+  case DEC:
+    address = _operandToAddress(instruction);
+    value = peek(address) - 1;
+    poke(address, value);
+    _setZ(value);
+    _setN(value);
+    return;
   case DEX:
     X -= 1;
     // Is this handled correctly even though X is unsigned?
@@ -349,14 +374,29 @@ void VM::execute(Instruction instruction) {
     _setN(Y);
     _setZ(Y);
     return;
+  case INC:
+    address = _operandToAddress(instruction);
+    value = peek(address) + 1;
+    poke(address, value);
+    _setN(value);
+    _setZ(value);
+    return;
   case INX:
     X += 1;
     _setN(X);
     _setZ(X);
     return;
+  case INY:
+    Y += 1;
+    _setN(Y);
+    _setZ(Y);
+    return;
   case JMP:
     PC = _operandToAddress(instruction);
     debug(std::format("Jumping to ${:04X}", PC.to16()));
+    return;
+  case JSR:
+
     return;
   case LDA:
     // TODO: handle carry with ABS,X?
@@ -378,11 +418,8 @@ void VM::execute(Instruction instruction) {
     Y = value;
     return;
   case PHA:
-    poke16(0x0100 + SP, A);
-    // I *think* this behaves identically to 6502 wrapping since SP is unsigned
-    --SP;
+    _pushStack(A);
     return;
-
   case SEI:
     S |= _I;
     return;
@@ -397,10 +434,10 @@ void VM::execute(Instruction instruction) {
   case TXS:
     SP = X;
     return;
-  default:
-    throw std::runtime_error(
-        std::format("TODO: implement instruction {} in `VM::execute()`",
-                    instruction.toString()));
+    // default:
+    //   throw std::runtime_error(
+    //       std::format("TODO: implement instruction {} in `VM::execute()`",
+    //                   instruction.toString()));
   }
 }
 
