@@ -3,7 +3,7 @@
 #include <cassert>
 #include <cstdint>
 
-namespace Address {
+namespace NESPP {
 
 // TODO: rename this a Word
 // TODO: make this a wrapper around a uint16_t?
@@ -40,4 +40,4 @@ public:
   }
 };
 
-} // namespace Address
+} // namespace NESPP

@@ -3,7 +3,7 @@
 #include <stdio.h> // for snprintf
 #include <string>
 
-namespace Instructions {
+namespace NESPP {
 
 Instruction _make(OpCode opCode, uint8_t **src) {
   using enum AddressingMode;
@@ -66,7 +66,7 @@ std::string OpCode::toString() {
   std::string operandString;
 
   for (int i = 0; i <= 0xFF; i++) {
-    Instructions::OpCode current = opCodeLookup[i];
+    OpCode current = opCodeLookup[i];
     if (*this == current) {
       opcode = i;
       break;
@@ -109,4 +109,4 @@ std::string Instruction::toString() {
   return std::format("{}", opCode.toString());
 }
 
-} // namespace Instructions
+} // namespace NESPP

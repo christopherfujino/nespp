@@ -1,6 +1,6 @@
 #include "../include/address.h"
 
-namespace Address {
+namespace NESPP {
 
 Absolute::Absolute(uint8_t high, uint8_t low) {
   this->low = low;
@@ -20,4 +20,4 @@ Absolute::Absolute() {
 
 uint16_t Absolute::to16() { return low | (high << 8); }
 
-} // namespace Address
+} // namespace NESPP

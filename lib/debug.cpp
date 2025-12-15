@@ -106,7 +106,7 @@ void Debugger::start() {
 
   while (1) {
     auto insLoc = PC;
-    Instructions::Instruction ins = decodeInstruction();
+    Instruction ins = decodeInstruction();
     instructionQueue.enqueue(
         std::format("{:4X}: {}", insLoc.to16(), ins.toString().data()));
     execute(ins);

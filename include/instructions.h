@@ -7,7 +7,7 @@
 
 #include "address.h"
 
-namespace Instructions {
+namespace NESPP {
 
 enum class OpCodeType {
   AND, /// & accumulator
@@ -227,13 +227,13 @@ constexpr auto opCodeNameLookup = opCodeLookupPair.first;
 constexpr auto opCodeLookup = opCodeLookupPair.second;
 
 union InstructionOperandUnion {
-  Address::Absolute absolute;
+  Absolute absolute;
   uint8_t immediate;
   void *implied;
   void *accumulator;
   uint8_t relative;
   uint8_t zeropage;
-  Address::Absolute indirect;
+  Absolute indirect;
 };
 
 class Instruction {
@@ -253,4 +253,4 @@ public:
 // TODO: do we even need this anymore?
 Instruction decodeInstruction(uint8_t **src, int idx);
 
-} // namespace Instructions
+} // namespace NESPP

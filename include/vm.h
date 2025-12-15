@@ -35,7 +35,7 @@ public:
   ~VM();
 
   // registers
-  Address::Absolute PC;
+  Absolute PC;
   uint8_t A = 0;
   uint8_t X = 0;
   uint8_t Y = 0;
@@ -73,15 +73,15 @@ public:
   // Methods
   void start();
 
-  uint8_t peek(Address::Absolute address);
+  uint8_t peek(Absolute address);
   uint8_t peek8(uint8_t offset);
   uint8_t peek16(uint16_t address);
 
-  void poke(Address::Absolute address, uint8_t value);
+  void poke(Absolute address, uint8_t value);
   void poke16(uint16_t address, uint8_t value);
 
-  Instructions::Instruction decodeInstruction();
-  void execute(Instructions::Instruction instruction);
+  Instruction decodeInstruction();
+  void execute(Instruction instruction);
 
 private:
   Rom *rom = nullptr;
@@ -117,8 +117,8 @@ private:
   inline bool _getZ();
   inline bool _getC();
 
-  uint8_t _operandToValue(Instructions::Instruction);
-  Address::Absolute _operandToAddress(Instructions::Instruction);
+  uint8_t _operandToValue(Instruction);
+  Absolute _operandToAddress(Instruction);
 
 protected:
   virtual void debug(std::string) = 0;
