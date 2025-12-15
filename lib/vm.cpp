@@ -281,6 +281,11 @@ void VM::execute(Instructions::Instruction instruction) {
     _setC(value & (1 << 7) ? true : false);
     A = value << 1;
     return;
+  case BNE:
+    if (_Z == 0) {
+      PC = _operandToAddress(instruction);
+    }
+    return;
   case BPL:
     // if not negative...
     if ((S & _N) == 0) {
@@ -291,11 +296,24 @@ void VM::execute(Instructions::Instruction instruction) {
   case CLD:
     S &= _DNot;
     return;
+  case DEX:
+    X -= 1;
+    // Is this handled correctly even though X is unsigned?
+    _setN(X);
+    _setZ(X);
+    return;
+  case DEY:
+    Y -= 1;
+    // Is this handled correctly even though X is unsigned?
+    _setN(Y);
+    _setZ(Y);
+    return;
   case JMP:
     PC = _operandToAddress(instruction);
     debug(std::format("Jumping to ${:4X}", PC.to16()));
     return;
   case LDA:
+    // TODO: handle carry with ABS,X?
     value = _operandToValue(instruction);
     _setN(value);
     _setZ(value);
@@ -324,32 +342,9 @@ void VM::execute(Instructions::Instruction instruction) {
     SP = X;
     return;
 
-  default:
-    throw std::runtime_error(
-        std::format("TODO execute instruction: {}", instruction.toString()));
-    // case BNE_REL:
-    //   if (_Z == 0) {
-    //     PC += instruction.operand.relative;
-    //   }
-    //   return;
-    // case DEX:
-    //   X -= 1;
-    //   // Is this handled correctly even though X is unsigned?
-    //   _setN(X);
-    //   _setZ(X);
-    //   return;
-    // case DEY:
-    //   Y -= 1;
-    //   // Is this handled correctly even though X is unsigned?
-    //   _setN(Y);
-    //   _setZ(Y);
-    //   return;
-    // case LDA_ABS:
-    //   value = instruction.operand.absolute.to16();
-    //   _setN(value);
-    //   _setZ(value);
-    //   A = value;
-    //   return;
+  //default:
+  //  throw std::runtime_error(
+  //      std::format("TODO execute instruction: {}", instruction.toString()));
     // case LDA_ABS_X:
     //   // operand is address; effective address is address incremented by X
     //   with
