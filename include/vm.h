@@ -112,9 +112,12 @@ private:
   static constexpr uint8_t _CNot = ~_C;
 
   // Methods
-  void inline _setN(uint8_t other);
-  void inline _setZ(uint8_t other);
-  void inline _setC(bool didCarry);
+  inline void _setN(uint8_t other);
+  inline void _setZ(uint8_t other);
+  inline void _setC(bool didCarry);
+
+  inline bool _getZ();
+  inline bool _getC();
 
   uint8_t _operandToValue(Instructions::Instruction);
   Address::Absolute _operandToAddress(Instructions::Instruction);

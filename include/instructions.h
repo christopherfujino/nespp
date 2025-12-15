@@ -20,6 +20,7 @@ enum class OpCodeType {
   CLD, // Clear decimal status register
   CMP, // Compare memory with accumulator (A - M)
   CPX, // Compare X with memory (X - M)
+  CPY, // Compare X with memory (Y - M)
   DEC, // Decrement value at operand address
   DEX, // Decrement X
   DEY, // Decrement Y

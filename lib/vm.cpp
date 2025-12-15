@@ -40,13 +40,11 @@ uint8_t Mapper0::peek16(uint16_t address) {
   } else if (address < 0x8000) {
     // unbanked PRG-RAM
     throw "TODO: implement PRG-RAM";
-  } else if (address <= 0xFFFF) {
+  } else {
     // either continuation of PRG or mirror
     uint16_t offset = address - 0x8000;
     return prg[offset];
   }
-
-  throw "Unreachable";
 }
 
 void Mapper0::poke16(uint16_t address, uint8_t value) {
@@ -55,12 +53,10 @@ void Mapper0::poke16(uint16_t address, uint8_t value) {
   } else if (address < 0x8000) {
     // unbanked PRG-RAM
     throw "TODO: implement PRG-RAM";
-  } else if (address <= 0xFFFF) {
+  } else {
     // either continuation of PRG or mirror
     uint16_t offset = address - 0x8000;
     prg[offset] = value;
-  } else {
-    throw "Unreachable";
   }
 }
 
@@ -244,9 +240,9 @@ Instructions::Instruction VM::decodeInstruction() {
   return instruction;
 }
 
-void inline VM::_setN(uint8_t other) { S = (S & _NNot) | (_N & other); }
+inline void VM::_setN(uint8_t other) { S = (S & _NNot) | (_N & other); }
 
-void inline VM::_setZ(uint8_t other) {
+inline void VM::_setZ(uint8_t other) {
   if (other == 0x0) {
     // is zero
     S = (S & _ZNot) | (_Z);
@@ -256,10 +252,14 @@ void inline VM::_setZ(uint8_t other) {
   }
 }
 
-void inline VM::_setC(bool didCarry) {
+inline bool VM::_getZ() { return ((S & _Z) > 0); }
+
+inline void VM::_setC(bool didCarry) {
   uint8_t updateMask = didCarry ? _C : 0x0;
   S = (S & _CNot) | updateMask;
 }
+
+inline bool VM::_getC() { return ((S & _C) > 0); }
 
 void VM::execute(Instructions::Instruction instruction) {
   Address::Absolute address;
@@ -281,23 +281,66 @@ void VM::execute(Instructions::Instruction instruction) {
     _setC(value & (1 << 7) ? true : false);
     A = value << 1;
     return;
-  case BNE:
-    if (_Z == 0) {
+  case BCC:
+    if (!_getC()) {
       PC = _operandToAddress(instruction);
+      debug(std::format("Jumping to ${:04X}", PC.to16()));
+    }
+    return;
+  case BCS:
+    if (_getC()) {
+      PC = _operandToAddress(instruction);
+      debug(std::format("Jumping to ${:04X}", PC.to16()));
+    }
+    return;
+  case BEQ:
+    if (_getZ()) {
+      PC = _operandToAddress(instruction);
+      debug(std::format("Jumping to ${:04X}", PC.to16()));
+    }
+    return;
+  case BNE:
+    if (!_getZ()) {
+      PC = _operandToAddress(instruction);
+      debug(std::format("Jumping to ${:04X}", PC.to16()));
     }
     return;
   case BPL:
     // if not negative...
     if ((S & _N) == 0) {
       PC = _operandToAddress(instruction);
-      debug(std::format("Jumping to ${:4X}", PC.to16()));
+      debug(std::format("Jumping to ${:04X}", PC.to16()));
     }
     return;
   case CLD:
     S &= _DNot;
     return;
-  //case CPX:
-  //  
+  case CPX:
+    if (instruction.opCode.addressing ==
+        Instructions::AddressingMode::immediate) {
+      value = instruction.operand.immediate;
+    } else {
+      address = _operandToAddress(instruction);
+      value = peek(address);
+    }
+    value = X - value;
+    _setC(value);
+    _setZ(value);
+    _setN(value);
+    return;
+  case CPY:
+    if (instruction.opCode.addressing ==
+        Instructions::AddressingMode::immediate) {
+      value = instruction.operand.immediate;
+    } else {
+      address = _operandToAddress(instruction);
+      value = peek(address);
+    }
+    value = Y - value;
+    _setC(value);
+    _setZ(value);
+    _setN(value);
+    return;
   case DEX:
     X -= 1;
     // Is this handled correctly even though X is unsigned?
@@ -317,7 +360,7 @@ void VM::execute(Instructions::Instruction instruction) {
     return;
   case JMP:
     PC = _operandToAddress(instruction);
-    debug(std::format("Jumping to ${:4X}", PC.to16()));
+    debug(std::format("Jumping to ${:04X}", PC.to16()));
     return;
   case LDA:
     // TODO: handle carry with ABS,X?
