@@ -13,8 +13,6 @@
 
 namespace NESPP {
 
-namespace Debug {
-
 _Queue::_Queue(int _size) : size(_size) {}
 
 void _Queue::enqueue(std::string element) {
@@ -138,7 +136,5 @@ void Debugger::start() {
 }
 
 void Debugger::debug(std::string msg) { debugQueue.enqueue(msg); }
-
-} // namespace Debug
 
 } // namespace NESPP

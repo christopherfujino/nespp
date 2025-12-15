@@ -24,6 +24,6 @@ int main(int argc, char **argv) {
 
   Rom::fromPath(&rom, romPath);
 
-  Debug::Debugger debugger = {rom};
+  Debugger debugger = {rom};
   debugger.start();
 }

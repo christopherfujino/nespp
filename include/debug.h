@@ -8,8 +8,6 @@
 
 namespace NESPP {
 
-namespace Debug {
-
 class _Queue {
 public:
   _Queue(int _size);
@@ -38,7 +36,5 @@ private:
   void render();
   virtual void debug(std::string) override;
 };
-
-} // namespace Debug
 
 } // namespace NESPP
