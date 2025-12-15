@@ -13,10 +13,7 @@ Word Word::from16(uint16_t raw) {
   return Word{high, low};
 }
 
-Word::Word() {
-  low = 0;
-  high = 0;
-}
+Word::Word() : low(0), high(0) {}
 
 uint16_t Word::to16() { return low | (high << 8); }
 
