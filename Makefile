@@ -15,7 +15,7 @@ ROM ?= rom.nes
 
 .PHONY: cmake
 cmake:
-	./cmake.sloth all
+	./cmake.sloth && ./build/text-debugger
 
 .PHONY: text-debugger
 text-debugger: $(BUILD)/text-debugger $(ROM)
