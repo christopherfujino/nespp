@@ -5,7 +5,7 @@
 #include <string>
 #include <utility>
 
-#include "address.h"
+#include "word.h"
 
 namespace NESPP {
 
@@ -227,13 +227,13 @@ constexpr auto opCodeNameLookup = opCodeLookupPair.first;
 constexpr auto opCodeLookup = opCodeLookupPair.second;
 
 union InstructionOperandUnion {
-  Absolute absolute;
+  Word absolute;
   uint8_t immediate;
   void *implied;
   void *accumulator;
   uint8_t relative;
   uint8_t zeropage;
-  Absolute indirect;
+  Word indirect;
 };
 
 class Instruction {

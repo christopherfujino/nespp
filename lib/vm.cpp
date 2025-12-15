@@ -1,7 +1,7 @@
-#include "../include/vm.h"      // for VM, Mapper0, Mapper
-#include "../include/address.h" // for Absolute
+#include "../include/vm.h"           // for VM, Mapper0, Mapper
 #include "../include/instructions.h" // for OpCode, Instruction, OpCode::AND_ABS, OpC...
 #include "../include/rom.h"          // for Rom
+#include "../include/word.h"         // for Absolute
 #include <cstring>                   // for memcpy
 #include <format>                    // std::format
 #include <stdexcept>                 // std::runtime_except
@@ -88,7 +88,7 @@ void VM::start() {
   }
 }
 
-uint8_t VM::peek(Absolute address) {
+uint8_t VM::peek(Word address) {
   return peek16(address.low | (address.high << 8));
 }
 
@@ -135,7 +135,7 @@ uint8_t VM::peek16(uint16_t address) {
   throw "Unreachable";
 }
 
-void VM::poke(Absolute address, uint8_t value) {
+void VM::poke(Word address, uint8_t value) {
   poke16(address.low | (address.high << 8), value);
 }
 
@@ -260,7 +260,7 @@ inline void VM::_setC(bool didCarry) {
 inline bool VM::_getC() { return ((S & _C) > 0); }
 
 void VM::execute(Instruction instruction) {
-  Absolute address;
+  Word address;
   switch (instruction.opCode.type) {
     using enum OpCodeType;
     uint8_t value;
@@ -314,8 +314,7 @@ void VM::execute(Instruction instruction) {
     S &= _DNot;
     return;
   case CPX:
-    if (instruction.opCode.addressing ==
-        AddressingMode::immediate) {
+    if (instruction.opCode.addressing == AddressingMode::immediate) {
       value = instruction.operand.immediate;
     } else {
       address = _operandToAddress(instruction);
@@ -327,8 +326,7 @@ void VM::execute(Instruction instruction) {
     _setN(value);
     return;
   case CPY:
-    if (instruction.opCode.addressing ==
-        AddressingMode::immediate) {
+    if (instruction.opCode.addressing == AddressingMode::immediate) {
       value = instruction.operand.immediate;
     } else {
       address = _operandToAddress(instruction);
@@ -427,13 +425,13 @@ uint8_t VM::_operandToValue(Instruction instruction) {
   throw "Unreachable";
 }
 
-Absolute VM::_operandToAddress(Instruction instruction) {
+Word VM::_operandToAddress(Instruction instruction) {
   using enum AddressingMode;
   switch (instruction.opCode.addressing) {
   case absolute:
     return instruction.operand.absolute;
   case indirect:
-    return Absolute{
+    return Word{
         // high
         peek(instruction.operand.indirect + 1),
         // low
@@ -444,7 +442,7 @@ Absolute VM::_operandToAddress(Instruction instruction) {
     return PC + static_cast<int8_t>(instruction.operand.relative);
   case zeropage:
     // Full address is this cast to 16-bits
-    return Absolute(0x0, instruction.operand.zeropage);
+    return Word(0x0, instruction.operand.zeropage);
   case accumulator:
   case immediate:
   case implied:

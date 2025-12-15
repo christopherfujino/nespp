@@ -22,7 +22,7 @@ target_link_libraries(text-debugger
 
 # Main code
 add_library(vm
-  lib/address.cpp
   lib/instructions.cpp
   lib/rom.cpp
+  lib/word.cpp
   lib/vm.cpp)

@@ -7,29 +7,29 @@ namespace NESPP {
 
 // TODO: rename this a Word
 // TODO: make this a wrapper around a uint16_t?
-class Absolute {
+class Word {
 public:
-  Absolute(uint8_t high, uint8_t low);
-  Absolute();
+  Word(uint8_t high, uint8_t low);
+  Word();
 
   /// $HHLL
-  static Absolute from16(uint16_t);
+  static Word from16(uint16_t);
 
   uint8_t low;
   uint8_t high;
 
   uint16_t to16();
 
-  Absolute operator+(int other) {
+  Word operator+(int other) {
     int sum = other + low;
     if (sum > 0xFF) {
       uint8_t _low = 0xFF & sum;
       uint16_t _high = ((0xFF00 & sum) >> 8) + high;
       assert(_high <= 0xFF);
-      return Absolute{(uint8_t)_high, _low};
+      return Word{(uint8_t)_high, _low};
     } else {
       // no overflow
-      return Absolute{high, (uint8_t)sum};
+      return Word{high, (uint8_t)sum};
     }
   }
 

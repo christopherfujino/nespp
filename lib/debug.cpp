@@ -1,5 +1,5 @@
 #include "../include/debug.h"
-#include "../include/address.h"      // for Absolute
+#include "../include/word.h"      // for Word
 #include "../include/instructions.h" // for Instruction, OpCode
 #include "../include/vm.h"           // for VM
 #include <bitset>                    // std::bitset

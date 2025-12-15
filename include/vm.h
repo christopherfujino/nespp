@@ -2,9 +2,9 @@
 
 #include <cstdint>
 
-#include "address.h"
 #include "instructions.h"
 #include "rom.h"
+#include "word.h"
 
 namespace NESPP {
 
@@ -35,7 +35,7 @@ public:
   ~VM();
 
   // registers
-  Absolute PC;
+  Word PC;
   uint8_t A = 0;
   uint8_t X = 0;
   uint8_t Y = 0;
@@ -73,11 +73,11 @@ public:
   // Methods
   void start();
 
-  uint8_t peek(Absolute address);
+  uint8_t peek(Word address);
   uint8_t peek8(uint8_t offset);
   uint8_t peek16(uint16_t address);
 
-  void poke(Absolute address, uint8_t value);
+  void poke(Word address, uint8_t value);
   void poke16(uint16_t address, uint8_t value);
 
   Instruction decodeInstruction();
@@ -118,7 +118,7 @@ private:
   inline bool _getC();
 
   uint8_t _operandToValue(Instruction);
-  Absolute _operandToAddress(Instruction);
+  Word _operandToAddress(Instruction);
 
 protected:
   virtual void debug(std::string) = 0;
