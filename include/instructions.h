@@ -28,7 +28,7 @@ enum class OpCodeType {
   INX, // Increment X
   INY, // Increment Y
   JMP, // Jump
-  JSR,
+  JSR, // Jump subroutine
   LDA,
   LDX,
   LDY,

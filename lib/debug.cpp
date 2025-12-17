@@ -43,18 +43,18 @@ void _renderBox(int y, int x, int height, int width) {
 }
 
 void _renderDebug(Debugger *dbg) {
-  constexpr int y = 12;
+  constexpr int y = 13;
   constexpr int x = 0;
   int height = dbg->debugQueue.size + 2;
-  constexpr int width = 40;
+  constexpr int width = 50;
   _renderBox(y, x, height, width);
 
   dbg->debugQueue.renderLines(y + 1, x + 1, height - 2, width - 2);
 }
 
 void _renderInstruction(Debugger *dbg) {
-  constexpr int x = 28;
-  constexpr int y = 0;
+  constexpr int x = 0;
+  constexpr int y = 4;
   constexpr int width = 30;
   // TODO take a height as an argument
   const int height = dbg->instructionQueue.size + 2;
@@ -71,6 +71,22 @@ void _renderRegisters(Debugger *dbg) {
   mvprintw(y + 1, x + 1, "PC   A  X  Y  SP NV-BDIZC");
   mvprintw(y + 2, x + 1, "%04X %02X %02X %02X %02X %s", dbg->PC.to16(), dbg->A,
            dbg->X, dbg->Y, dbg->SP, std::bitset<8>{dbg->S}.to_string().data());
+}
+
+void _renderStack(Debugger *dbg) {
+  constexpr int x = 30;
+  constexpr int y = 0;
+  constexpr int width = 10;
+  constexpr int height = 13;
+  for (int i = 0; i < height; i++) {
+    uint16_t ptr = dbg->SP + i + 0x0100;
+    if (ptr > 0x01FF) {
+      break;
+    }
+    auto val = dbg->peek16(ptr);
+    mvprintw(y + i + 1, x + 1, "%04X: %02X", ptr, val);
+  }
+  _renderBox(y, x, height, width);
 }
 
 Debugger::Debugger(Rom *rom) : VM::VM(rom) {
@@ -91,10 +107,11 @@ void Debugger::render() {
   clear();
   _renderInstruction(this);
   _renderRegisters(this);
+  _renderStack(this);
   _renderDebug(this);
 
   // prompt
-  mvaddstr(instructionQueue.size + 3, 0, "> ");
+  mvaddstr(instructionQueue.size + 6, 0, "> ");
   refresh();
 }
 

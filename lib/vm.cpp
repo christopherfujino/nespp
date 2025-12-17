@@ -259,10 +259,28 @@ inline void VM::_setC(bool didCarry) {
 
 inline bool VM::_getC() { return ((S & _C) > 0); }
 
-void VM::_pushStack(uint8_t v) {
+void VM::_push(uint8_t v) {
   poke16(0x0100 + SP, v);
   // I *think* this behaves identically to 6502 wrapping since SP is unsigned
   SP -= 1;
+}
+
+void VM::_pushWord(Word word) {
+  _push(word.high);
+  _push(word.low);
+}
+
+uint8_t VM::_pop() {
+  SP += 1;
+  uint16_t i = 0x0100 + SP;
+  assert(i <= 0x01FF && i >= 0x0100);
+  return peek16(i);
+}
+
+Word VM::_popWord() {
+  auto low = _pop();
+  auto high = _pop();
+  return {high, low};
 }
 
 void VM::execute(Instruction instruction) {
@@ -396,7 +414,10 @@ void VM::execute(Instruction instruction) {
     debug(std::format("Jumping to ${:04X}", PC.to16()));
     return;
   case JSR:
-
+    // https://retrocomputing.stackexchange.com/questions/19543/why-does-the-6502-jsr-instruction-only-increment-the-return-address-by-2-bytes
+    _pushWord(PC - 1);
+    PC = _operandToAddress(instruction);
+    debug(std::format("Jumping to ${:04X}", PC.to16()));
     return;
   case LDA:
     // TODO: handle carry with ABS,X?
@@ -418,7 +439,11 @@ void VM::execute(Instruction instruction) {
     Y = value;
     return;
   case PHA:
-    _pushStack(A);
+    _push(A);
+    return;
+  case RTS:
+    // See JSR
+    PC = _popWord() + 1;
     return;
   case SEI:
     S |= _I;
@@ -434,10 +459,10 @@ void VM::execute(Instruction instruction) {
   case TXS:
     SP = X;
     return;
-    // default:
-    //   throw std::runtime_error(
-    //       std::format("TODO: implement instruction {} in `VM::execute()`",
-    //                   instruction.toString()));
+  default:
+    throw std::runtime_error(
+        std::format("TODO: implement instruction {} in `VM::execute()`",
+                    instruction.toString()));
   }
 }
 

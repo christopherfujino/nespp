@@ -1,0 +1,13 @@
+#!/usr/bin/env sloth
+
+with ($cwd = $scriptDir) {
+  with ($env = $env.merge({
+    'LD65_CFG': '../../../chris-monorepo/share/cc65/cfg/',
+    'LD65_LIB': '../../../chris-monorepo/share/cc65/lib/',
+  })) {
+    'ls ../../../chris-monorepo/share/cc65/cfg/'!
+    'env' | 'grep LD65'!
+    let cmd = ['make'].merge($argv)
+    cmd!
+  }
+}

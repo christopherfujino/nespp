@@ -19,24 +19,10 @@ public:
 
   uint16_t to16();
 
-  Word operator+(int other) {
-    int sum = other + low;
-    if (sum > 0xFF) {
-      uint8_t _low = 0xFF & sum;
-      uint16_t _high = ((0xFF00 & sum) >> 8) + high;
-      assert(_high <= 0xFF);
-      return Word{(uint8_t)_high, _low};
-    } else {
-      // no overflow
-      return Word{high, (uint8_t)sum};
-    }
-  }
+  Word operator+(int other);
+  Word operator-(int other);
 
-  void operator+=(int other) {
-    auto newThis = *this + other;
-    this->low = newThis.low;
-    this->high = newThis.high;
-  }
+  void operator+=(int other);
 };
 
 } // namespace NESPP
