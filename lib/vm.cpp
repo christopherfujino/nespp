@@ -438,6 +438,23 @@ void VM::execute(Instruction instruction) {
     _setZ(value);
     Y = value;
     return;
+  case LSR:
+    // Will shift right-most bit into C
+    if (instruction.opCode.addressing == AddressingMode::accumulator) {
+      value = A;
+      _setC((value & 0x1) > 0);
+      value = value >> 1;
+      A = value;
+    } else {
+      address = _operandToAddress(instruction);
+      value = peek(address);
+      _setC((value & 0x1) > 0);
+      value = value >> 1;
+      poke(address, value);
+    }
+    _setZ(value);
+    _setN(0);
+    return;
   case PHA:
     _push(A);
     return;
@@ -456,13 +473,20 @@ void VM::execute(Instruction instruction) {
     address = _operandToAddress(instruction);
     poke(address, X);
     return;
+  case STY:
+    address = _operandToAddress(instruction);
+    poke(address, Y);
+    return;
+  case TAX:
+    X = A;
+    _setN(X);
+    _setZ(X);
+    return;
   case TXS:
     SP = X;
     return;
-  default:
-    throw std::runtime_error(
-        std::format("TODO: implement instruction {} in `VM::execute()`",
-                    instruction.toString()));
+  case unimplemented:
+    throw std::runtime_error("Tried to execute unimplemented instruction");
   }
 }
 
