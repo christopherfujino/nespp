@@ -22,7 +22,7 @@ void _Queue::enqueue(std::string element) {
   contents.push_back(element);
 }
 
-void _Queue::renderLines(int y, int x, int height, int width) {
+void _Queue::renderLines(int y, int x, int _, int width) {
   // TODO check if height < size
   int currentY = y;
   for (auto line : contents) {

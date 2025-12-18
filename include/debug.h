@@ -16,7 +16,7 @@ public:
 
   void renderLines(int y, int x, int height, int width);
 
-  const int size;
+  const unsigned int size;
 
 private:
   std::list<std::string> contents;

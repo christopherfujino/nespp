@@ -5,7 +5,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 20)
 
 # project global
-add_compile_options(-Wall -Werror -Wpedantic)
+add_compile_options(-Wall -Werror -Wpedantic -Wextra)
 
 add_executable(text-debugger
   bin/text-debugger.cpp

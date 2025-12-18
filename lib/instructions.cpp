@@ -79,13 +79,6 @@ std::string OpCode::toString() {
   return std::format("{} ({:02X})", opCodeNameLookup[opcode], opcode);
 }
 
-// TODO remove this
-Instruction decodeInstruction(uint8_t **src,
-                              // TODO remove and handle error at higher level
-                              int idx) {
-  return _make(opCodeLookup[**src], src);
-}
-
 std::string Instruction::toString() {
   using enum AddressingMode;
   switch (opCode.addressing) {
@@ -100,7 +93,8 @@ std::string Instruction::toString() {
   case implied:
     return opCode.toString();
   case indirect:
-    return std::format("{}  ({:02X} {:02X})", opCode.toString(), operand.indirect.low, operand.indirect.high);
+    return std::format("{}  ({:02X} {:02X})", opCode.toString(),
+                       operand.indirect.low, operand.indirect.high);
   case relative:
     return std::format("{}  {:02X}", opCode.toString(), operand.relative);
   case zeropage:
