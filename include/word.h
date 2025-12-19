@@ -9,9 +9,8 @@ class Word {
 public:
   Word(uint8_t high, uint8_t low);
   Word();
-
   /// $HHLL
-  static Word from16(uint16_t);
+  explicit Word(uint16_t);
 
   uint8_t low;
   uint8_t high;
