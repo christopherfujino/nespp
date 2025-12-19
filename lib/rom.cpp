@@ -16,7 +16,7 @@
 
 #include "../include/rom.h"
 
-void Rom::fromPath(Rom **romPtr, const char *path) {
+void Rom::fromPath(Rom *rom, const char *path) {
   uint8_t headerBytes[HEADER_SIZE];
 
   FILE *f = fopen(path, "rb");
@@ -26,9 +26,6 @@ void Rom::fromPath(Rom **romPtr, const char *path) {
       headerBytes[3] != 0x1a) {
     throw "Unknown ROM format!";
   }
-
-  Rom *rom = *romPtr;
-  assert(rom != 0);
 
   rom->prgSize = (int)headerBytes[4] * 1024 * 16;
   rom->chrSize = (int)headerBytes[5] * 1024 * 8;

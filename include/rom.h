@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 struct Rom {
-  static void fromPath(Rom **romPtr, const char *path);
+  static void fromPath(Rom *romPtr, const char *path);
 
   ~Rom();
 

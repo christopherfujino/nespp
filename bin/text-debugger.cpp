@@ -20,10 +20,10 @@ int main(int argc, char **argv) {
     romPath = argv[1];
   }
 
-  Rom *rom = new Rom();
+  Rom rom = Rom();
 
   Rom::fromPath(&rom, romPath);
 
-  Debugger debugger = {rom};
+  Debugger debugger = {&rom};
   debugger.start();
 }
