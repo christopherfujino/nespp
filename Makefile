@@ -15,7 +15,7 @@ ROM ?= rom.nes
 
 .PHONY: cmake
 cmake:
-	./cmake.sloth && ./build/text-debugger
+	./cmake.sloth && ./build/text-debugger ./build/rom.nes
 
 .PHONY: text-debugger
 text-debugger: $(BUILD)/text-debugger $(ROM)
@@ -69,7 +69,3 @@ $(BUILD)/address.o: lib/address.cpp $(INCLUDE_DIR)/address.h
 
 rom.nes:
 	curl -L http://nickmass.com/images/nestest.nes -o ./rom.nes
-
-.PHONY: clean
-clean:
-	rm $(BUILD)/*

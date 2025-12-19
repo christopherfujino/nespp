@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Usage: bin.exe path-to-rom.nes\n");
     return 1;
 #else
-    romPath = "./rom.nes";
+    romPath = "./build/rom.nes";
 #endif
   } else {
     romPath = argv[1];

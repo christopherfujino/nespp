@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 # project global
 add_compile_options(-Wall -Werror -Wpedantic -Wextra)
 
-file(DOWNLOAD http://nickmass.com/images/nestest.nes rom.nes )
+file(DOWNLOAD http://nickmass.com/images/nestest.nes rom.nes)
 
 add_executable(text-debugger
   bin/text-debugger.cpp

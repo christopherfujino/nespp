@@ -11,8 +11,10 @@
 // rippers put their name across bytes 7-15)
 
 #include <cassert>
-#include <cstdio>
 #include <cstdint>
+#include <cstdio>
+#include <format>
+#include <stdexcept>
 
 #include "../include/rom.h"
 
@@ -20,6 +22,9 @@ void Rom::fromPath(Rom *rom, const char *path) {
   uint8_t headerBytes[HEADER_SIZE];
 
   FILE *f = fopen(path, "rb");
+  if (f == nullptr) {
+    throw std::runtime_error(std::format("Failed to open a ROM at {}", path));
+  }
   fread(&headerBytes, HEADER_SIZE, 1, f);
 
   if (headerBytes[0] != 'N' || headerBytes[1] != 'E' || headerBytes[2] != 'S' ||
@@ -53,11 +58,11 @@ void Rom::fromPath(Rom *rom, const char *path) {
 
   rom->prgBlob = new uint8_t[rom->prgSize];
   fread(rom->prgBlob, rom->prgSize, 1, f);
-  //printf("read %d bytes of PRG ROM.\n", rom->prgSize);
+  // printf("read %d bytes of PRG ROM.\n", rom->prgSize);
 
   rom->chrBlob = new uint8_t[rom->chrSize];
   fread(rom->chrBlob, rom->chrSize, 1, f);
-  //printf("read %d bytes of CHR ROM.\n", rom->chrSize);
+  // printf("read %d bytes of CHR ROM.\n", rom->chrSize);
 
   fclose(f);
 }

@@ -1,8 +1,8 @@
 #!/usr/bin/env sloth
 
-let remote = 'https://github.com/retroenv/nesgodisasm.git'
+let remote = 'https://github.com/retroenv/retrodisasm.git'
 let localPath = './THIRD_PARTY/disassembler'
-let binary = File("${localPath}/nesgodisasm")
+let binary = File("${localPath}/retrodisasm")
 
 if $argv.length != 1 {
   throw "Usage: ./disassemble $ROM"
@@ -15,10 +15,7 @@ with ($cwd = $scriptDir) {
     let localRepo = Directory(localPath)
     if not localRepo.exists() {
       ['git', 'clone', remote,
-        # HEAD at ec322f52e3cc51bd8f2a1ab403225598964f6d28 is broken
-        # We can roll forward if/when
-        # https://github.com/retroenv/nesgodisasm/pull/93/files is merged
-        '-b', 'v0.2.3',
+        '-b', 'v0.3.0',
         localPath]!
     }
     with ($cwd = localRepo.path) {
