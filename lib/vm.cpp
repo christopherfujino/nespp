@@ -2,10 +2,12 @@
 #include "../include/instructions.h" // for OpCode, Instruction, OpCode::AND_ABS, OpC...
 #include "../include/rom.h"          // for Rom
 #include "../include/word.h"         // for Absolute
-#include <cstring>                   // for memcpy
-#include <format>                    // std::format
-#include <stdexcept>                 // std::runtime_except
-#include <stdint.h>                  // for uint8_t, uint16_t, int8_t
+#include <array>
+#include <cassert>
+#include <cstring>   // for memcpy
+#include <format>    // std::format
+#include <stdexcept> // std::runtime_except
+#include <utility>   // for std::move
 
 namespace NESPP {
 

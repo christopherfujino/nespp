@@ -1,7 +1,0 @@
-#!/usr/bin/env sloth
-
-# apt install iwyu
-
-with ($cwd = $scriptDir) {
-  'make --keep-going CXX=iwyu'!
-}

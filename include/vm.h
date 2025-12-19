@@ -2,9 +2,10 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
 
 #include "instructions.h"
-#include "rom.h"
+struct Rom; // #include "rom.h"
 #include "word.h"
 
 namespace NESPP {

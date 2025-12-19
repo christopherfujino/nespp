@@ -2,21 +2,48 @@
 
 let debug = true
 let out = Directory("${$scriptDir}/build")
+let configurations = [
+  "debug",
+  "release",
+  "iwyu",
+]
+
+if $argv.length != 1 {
+  throw "argv.length == ${$argv.length}"
+}
+
+let configuration = $argv[0].trim()
+if not configurations.contains(configuration) {
+  throw "\"${configuration}\" is not a known configuration; expected one of:\n\t${configurations}"
+}
 
 if not out.exists() {
   out.create()
 }
 
-func configure(release) {
-  [
-    'cmake', $scriptDir,
-    "-DCMAKE_BUILD_TYPE=${release}",
-    '--toolchain', './tool/toolchain.cmake',
-    '-G', 'Ninja',
-  ]!
+func configure(name, release, cxx) {
+  let dir = Directory("${out.path}/${name}")
+  if not dir.exists() {
+    dir.create()
+  }
+
+  with ($cwd = dir.path) {
+    [
+      'cmake', $scriptDir,
+      "-DCMAKE_CXX_COMPILER=${cxx}",
+      "-DCMAKE_BUILD_TYPE=${release}",
+      '-G', 'Ninja',
+    ]!
+  }
 }
 
-with($cwd = out.path) {
-  let release = if debug {'Debug'} else {'Release'}
-  configure(release)
+if configuration == 'iwyu' {
+  configure('iwyu', 'Debug', 'include-what-you-use')
+} else if configuration == 'debug' {
+  configure('debug', 'Debug', 'clang++')
+} else if configuration == 'release' {
+  configure('release', 'Release', 'clang++')
+} else {
+  throw "Unreachable: ${configuration}"
 }
+

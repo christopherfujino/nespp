@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rom.h"
+struct Rom; // #include "rom.h"
 #include "vm.h"
 #include <list>
 

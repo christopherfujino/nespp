@@ -3,7 +3,7 @@
 #include "../include/vm.h"           // for VM
 #include "../include/word.h"         // for Word
 #include <bitset>                    // std::bitset
-#include <cstdlib>                   // for exit, size_t
+#include <cstdio>
 #include <cstring>                   // for strncmp
 #include <format>
 #include <locale.h>

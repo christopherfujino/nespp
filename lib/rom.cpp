@@ -10,7 +10,6 @@
 // extension) 11-15	Unused padding (should be filled with zero, but some
 // rippers put their name across bytes 7-15)
 
-#include <cassert>
 #include <cstdint>
 #include <cstdio>
 #include <format>

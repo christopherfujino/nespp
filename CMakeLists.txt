@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.31) # Ubuntu 25.10 version
 project(nespp LANGUAGES CXX VERSION 0.1)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 20)
+# comma-separated
+set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE include-what-you-use)
 
 # project global
 add_compile_options(-Wall -Werror -Wpedantic -Wextra)

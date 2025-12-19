@@ -1,5 +1,7 @@
 #include "../include/instructions.h" // for OpCode, Instruction, OpCode::AN...
+#include "../include/word.h"
 #include <format>
+#include <stdexcept>
 #include <stdio.h> // for snprintf
 #include <string>
 
