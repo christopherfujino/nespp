@@ -18,7 +18,7 @@
 
 #include "../include/rom.h"
 
-void Rom::fromPath(Rom *rom, const char *path) {
+Rom::Rom(const char *path) {
   uint8_t headerBytes[HEADER_SIZE];
 
   FILE *f = fopen(path, "rb");
@@ -32,13 +32,13 @@ void Rom::fromPath(Rom *rom, const char *path) {
     throw "Unknown ROM format!";
   }
 
-  rom->prgSize = (int)headerBytes[4] * 1024 * 16;
-  rom->chrSize = (int)headerBytes[5] * 1024 * 8;
+  prgSize = (int)headerBytes[4] * 1024 * 16;
+  chrSize = (int)headerBytes[5] * 1024 * 8;
   uint8_t flags6 = headerBytes[6];
-  rom->nameTableArrangement = flags6 & 1;
-  rom->batteryBackedPRGRam = flags6 & 1 << 1;
-  rom->trainer = flags6 & 1 << 2;
-  rom->alternativeNametableLayout = flags6 & 1 << 3;
+  nameTableArrangement = flags6 & 1;
+  batteryBackedPRGRam = flags6 & 1 << 1;
+  trainer = flags6 & 1 << 2;
+  alternativeNametableLayout = flags6 & 1 << 3;
   uint8_t lowerNibbleOfMapper = (flags6 & 0b11110000) >> 4;
 
   uint8_t flags7 = headerBytes[7];
@@ -52,16 +52,16 @@ void Rom::fromPath(Rom *rom, const char *path) {
     throw "TODO: implement NES2.0";
   }
   uint8_t upperNibbleOfMapper = flags7 & 0b11110000;
-  rom->mapper = upperNibbleOfMapper | lowerNibbleOfMapper;
+  mapper = upperNibbleOfMapper | lowerNibbleOfMapper;
 
   // TODO parse flags 8-10
 
-  rom->prgBlob = new uint8_t[rom->prgSize];
-  fread(rom->prgBlob, rom->prgSize, 1, f);
+  prgBlob = new uint8_t[prgSize];
+  fread(prgBlob, prgSize, 1, f);
   // printf("read %d bytes of PRG ROM.\n", rom->prgSize);
 
-  rom->chrBlob = new uint8_t[rom->chrSize];
-  fread(rom->chrBlob, rom->chrSize, 1, f);
+  chrBlob = new uint8_t[chrSize];
+  fread(chrBlob, chrSize, 1, f);
   // printf("read %d bytes of CHR ROM.\n", rom->chrSize);
 
   fclose(f);

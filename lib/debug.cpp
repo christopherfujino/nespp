@@ -1,7 +1,7 @@
 #include "../include/debug.h"
-#include "../include/word.h"      // for Word
 #include "../include/instructions.h" // for Instruction, OpCode
 #include "../include/vm.h"           // for VM
+#include "../include/word.h"         // for Word
 #include <bitset>                    // std::bitset
 #include <cstdlib>                   // for exit, size_t
 #include <cstring>                   // for strncmp
@@ -10,6 +10,7 @@
 #include <ncurses.h>
 #include <stdexcept>
 #include <stdint.h> // for uint8_t
+#include <utility>  // std::move
 
 namespace NESPP {
 
@@ -89,7 +90,7 @@ void _renderStack(Debugger *dbg) {
   _renderBox(y, x, height, width);
 }
 
-Debugger::Debugger(Rom *rom) : VM::VM(rom) {
+Debugger::Debugger(std::shared_ptr<Rom> rom) : VM::VM(std::move(rom)) {
   setlocale(LC_ALL, "en_US.UTF-8");
   initscr();
   // noecho();

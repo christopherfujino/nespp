@@ -4,6 +4,7 @@
 #include "vm.h"
 #include <list>
 
+#include <memory>
 #include <string>
 
 namespace NESPP {
@@ -24,7 +25,7 @@ private:
 
 class Debugger : public VM::VM {
 public:
-  Debugger(Rom *rom);
+  Debugger(std::shared_ptr<Rom> rom);
   ~Debugger();
 
   _Queue instructionQueue = {5};

@@ -9,8 +9,8 @@
 
 namespace NESPP {
 
-Mapper0::Mapper0(Rom *rom) {
-  this->rom = rom;
+Mapper0::Mapper0(std::shared_ptr<Rom> _rom) {
+  this->rom = std::move(_rom);
 
   // TODO: should we copy, or should this just be a light view into the ROM?
   switch (rom->prgSize) {
@@ -58,11 +58,12 @@ void Mapper0::poke16(uint16_t address, uint8_t value) {
   }
 }
 
-VM::VM(Rom *rom) {
-  this->rom = rom;
+VM::VM(std::shared_ptr<Rom> _rom) {
+  this->rom = std::move(_rom);
 
   switch (rom->mapper) {
   case 0:
+    // copy shared_ptr
     mapper = new Mapper0(rom);
     break;
   default:

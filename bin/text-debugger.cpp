@@ -1,3 +1,4 @@
+#include <memory>
 #ifdef NDEBUG
 #include <cstdio>
 #endif
@@ -20,10 +21,8 @@ int main(int argc, char **argv) {
     romPath = argv[1];
   }
 
-  Rom rom = Rom();
-
-  Rom::fromPath(&rom, romPath);
-
-  Debugger debugger = {&rom};
+  // No copy
+  std::shared_ptr<Rom> p {new Rom(romPath)};
+  Debugger debugger = {p};
   debugger.start();
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 
 #include "instructions.h"
 #include "rom.h"
@@ -17,12 +18,12 @@ public:
 
 class Mapper0 : public Mapper {
 public:
-  Mapper0(Rom *rom);
+  Mapper0(std::shared_ptr<Rom> rom);
   virtual ~Mapper0();
   virtual uint8_t peek16(uint16_t address);
   virtual void poke16(uint16_t address, uint8_t value);
 
-  Rom *rom;
+  std::shared_ptr<Rom> rom;
 
 private:
   // 32 KiB = 32768 = 0x8000
@@ -31,7 +32,7 @@ private:
 
 class VM {
 public:
-  VM(Rom *rom);
+  VM(std::shared_ptr<Rom> rom);
   ~VM();
 
   // registers
@@ -84,7 +85,7 @@ public:
   void execute(Instruction instruction);
 
 private:
-  Rom *rom = nullptr;
+  std::shared_ptr<Rom> rom;
 
   Mapper *mapper;
 
