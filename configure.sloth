@@ -1,6 +1,5 @@
 #!/usr/bin/env sloth
 
-let debug = true
 let out = Directory("${$scriptDir}/build")
 let configurations = [
   "debug",
