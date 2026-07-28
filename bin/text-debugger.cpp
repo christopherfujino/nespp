@@ -21,8 +21,16 @@ int main(int argc, char **argv) {
     romPath = argv[1];
   }
 
-  // No copy
-  std::shared_ptr<Rom> p {new Rom(romPath)};
-  Debugger debugger = {p};
-  debugger.start();
+  try {
+    // No copy
+    std::shared_ptr<Rom> p{new Rom(romPath)};
+    Debugger debugger = {p};
+    debugger.start();
+  } catch (std::runtime_error e) {
+    fprintf(stderr, "%s\n", e.what());
+    return 1;
+  } catch (...) {
+    fprintf(stderr, "Unknown error!\n");
+    return 1;
+  }
 }
