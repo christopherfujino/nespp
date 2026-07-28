@@ -8,7 +8,7 @@ let configurations = [
 ]
 
 if $argv.length != 1 {
-  throw "argv.length == ${$argv.length}"
+  throw "Usage: ./configure.sloth [debug|release|iwyu]"
 }
 
 let configuration = $argv[0].trim()
