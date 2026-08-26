@@ -143,6 +143,8 @@ void Debugger::start() {
       ppuRegisters[2] = 1 << 7;
       debug(std::format("Setting PPU[2] = #{:02X}", ppuRegisters[2]));
       continue;
+    } else if (strncmp(inputLine, "exit", 4)) {
+      exit(0);
     } else {
       throw std::runtime_error(
           std::format("Unrecognized debugger input: \"{}\" ({})", inputLine,

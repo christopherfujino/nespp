@@ -71,7 +71,7 @@ VM::VM(std::shared_ptr<Rom> _rom) {
   }
 }
 
-VM::~VM() { delete mapper; }
+VM::~VM() { }
 
 void VM::start() {
   {
