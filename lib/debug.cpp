@@ -4,7 +4,7 @@
 #include "../include/word.h"         // for Word
 #include <bitset>                    // std::bitset
 #include <cstdio>
-#include <cstring>                   // for strncmp
+#include <cstring> // for strncmp
 #include <format>
 #include <locale.h>
 #include <ncurses.h>
