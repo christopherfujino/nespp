@@ -1,6 +1,9 @@
 *.nes
 a.out
+*.exe
 *.o
+*.a
+*.d
 # output of ./disassemble script
 rom.asm
 # FCEUX debug file

@@ -1,7 +1,5 @@
 #include "../include/word.h"
 
-namespace NESPP {
-
 Word::Word(uint8_t high, uint8_t low) {
   this->low = low;
   this->high = high;
@@ -28,5 +26,3 @@ void Word::operator+=(int other) {
   auto newThis = *this + other;
   *this = newThis;
 }
-
-} // namespace NESPP

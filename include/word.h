@@ -2,8 +2,6 @@
 
 #include <cstdint>
 
-namespace NESPP {
-
 // TODO: make this a wrapper around a uint16_t?
 class Word {
 public:
@@ -22,5 +20,3 @@ public:
 
   void operator+=(int other);
 };
-
-} // namespace NESPP
