@@ -8,8 +8,6 @@
 struct Rom; // #include "rom.h"
 #include "word.h"
 
-namespace NESPP {
-
 class Mapper {
 public:
   virtual ~Mapper() {}
@@ -131,5 +129,3 @@ private:
 protected:
   virtual void debug(std::string) = 0;
 };
-
-} // namespace NESPP

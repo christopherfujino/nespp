@@ -7,8 +7,6 @@
 
 #include "word.h"
 
-namespace NESPP {
-
 enum class OpCodeType {
   AND, /// & accumulator
   ASL, // arithmetic shift left
@@ -252,5 +250,3 @@ public:
 
 // TODO: do we even need this anymore?
 Instruction decodeInstruction(uint8_t **src, int idx);
-
-} // namespace NESPP

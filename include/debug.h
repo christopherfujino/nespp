@@ -7,8 +7,6 @@ struct Rom; // #include "rom.h"
 #include <memory>
 #include <string>
 
-namespace NESPP {
-
 class _Queue {
 public:
   _Queue(int _size);
@@ -37,5 +35,3 @@ private:
   void render();
   virtual void debug(std::string) override;
 };
-
-} // namespace NESPP

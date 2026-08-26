@@ -9,8 +9,6 @@
 #include <stdexcept> // std::runtime_except
 #include <utility>   // for std::move
 
-namespace NESPP {
-
 Mapper0::Mapper0(std::shared_ptr<Rom> _rom) {
   this->rom = std::move(_rom);
 
@@ -540,5 +538,3 @@ Word VM::_operandToAddress(Instruction instruction) {
   assert(false);
   throw "Unreachable";
 }
-
-} // namespace NESPP

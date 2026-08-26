@@ -5,8 +5,6 @@
 #include <stdio.h> // for snprintf
 #include <string>
 
-namespace NESPP {
-
 Instruction _make(OpCode opCode, uint8_t **src) {
   using enum AddressingMode;
   // TODO only check #ifdef NDEBUG
@@ -104,5 +102,3 @@ std::string Instruction::toString() {
   }
   return std::format("{}", opCode.toString());
 }
-
-} // namespace NESPP
