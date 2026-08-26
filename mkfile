@@ -1,24 +1,33 @@
-# TODO make clang
-CC = clang++
-CFLAGS = -g -std=c++20 -Wall -Werror -Wpedantic -Wextra -I./include
+PROJECT = nespp
+CC = clang
+CXX = clang++
+AR = llvm-ar
+CFLAGS = -g -O0 -std=c++20 -Wall -Werror -Wpedantic -Wextra -I./include
 LDFLAGS = -lncursesw
+DEPFILES = `{/bin/sh -c 'find . -name "*.d"'}
 
-# TODO: add depfiles
+text-debugger.exe: bin/text-debugger.o lib/lib$PROJECT.a
+  $CXX $LDFLAGS $prereq -o $target
 
-text-debugger.exe: \
-    bin/text-debugger.o \
+<|cat $DEPFILES /dev/null
+
+bin/%.o: bin/%.cpp
+  $CXX $CFLAGS \
+    -MT $target -MMD -MP -MF bin/$stem.d \
+    -c bin/$stem.cpp -o $target
+
+lib/%.o: lib/%.cpp
+  $CXX $CFLAGS \
+    -MT $target -MMD -MP -MF lib/$stem.d \
+    -c lib/$stem.cpp -o $target
+
+lib/lib$PROJECT.a: \
     lib/rom.o \
     lib/debug.o \
     lib/vm.o \
     lib/word.o \
     lib/instructions.o
-  $CC $LDFLAGS $prereq -o $target
-
-bin/%.o: bin/%.cpp
-  $CC $CFLAGS -c bin/$stem.cpp -o $target
-
-lib/%.o: lib/%.cpp
-  $CC $CFLAGS -c lib/$stem.cpp -o $target
+	$AR rcs $target $prereq
 
 clean:V:
   rm -rf **/*.d **/*.o **/*.a *.exe
