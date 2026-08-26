@@ -3,8 +3,7 @@
 #include <cstdint>
 
 // TODO: make this a wrapper around a uint16_t?
-class Word {
-public:
+struct Word {
   Word(uint8_t high, uint8_t low);
   explicit Word();
   /// $HHLL

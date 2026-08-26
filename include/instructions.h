@@ -7,7 +7,7 @@
 
 #include "word.h"
 
-enum class OpCodeType {
+enum OpCodeType {
   AND, /// & accumulator
   ASL, // arithmetic shift left
   BCC, // Branch on carry clear
@@ -42,7 +42,7 @@ enum class OpCodeType {
   unimplemented,
 };
 
-enum class AddressingMode {
+enum AddressingMode {
   absolute,
   accumulator,
   immediate,
@@ -234,8 +234,7 @@ union InstructionOperandUnion {
   Word indirect;
 };
 
-class Instruction {
-public:
+struct Instruction {
   // Default no-op
   Instruction() : operand{.implied = nullptr} {}
 

@@ -6,7 +6,6 @@
 #include <string>
 
 Instruction _make(OpCode opCode, uint8_t **src) {
-  using enum AddressingMode;
   // TODO only check #ifdef NDEBUG
   if (opCode.type == OpCodeType::unimplemented) {
     char *msg = new char[256];
