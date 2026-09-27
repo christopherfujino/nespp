@@ -1,6 +1,6 @@
 PROJECT = nespp
-CC = clang
-CXX = clang++
+CC = bear --append -- clang
+CXX = bear --append -- clang++
 AR = llvm-ar
 DEBUG_FLAGS = -g -O0 #-fsanitize=address
 CFLAGS = $DEBUG_FLAGS -std=c++20 -Wall -Werror -Wpedantic -Wextra -I./include
