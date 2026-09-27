@@ -1,10 +1,12 @@
 #!/usr/bin/env sloth
 
+let buildMode = 'debug'
+
 with($cwd = $scriptDir) {
   let target = if $argv.length == 0 {
     'all'
   } else {
     $argv[0]
   }
-  "cmake --build ./build --target ${target}"!
+  "cmake --build ./build/${buildMode} --target ${target}"!
 }
