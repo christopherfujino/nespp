@@ -176,6 +176,10 @@ Instruction VM::decodeInstruction() {
   Instruction instruction;
   uint8_t _rawCode = peek(PC); // for debugging
   OpCode code = opCodeLookup[_rawCode];
+  if (code.type == unimplemented) {
+    throw std::runtime_error(std::format(
+        "Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode, PC.to16()));
+  }
   switch (code.addressing) {
   case AddressingMode::absolute:
     instruction = {
@@ -487,9 +491,10 @@ void VM::execute(Instruction instruction) {
     SP = X;
     return;
   case unimplemented:
-    throw std::runtime_error(
-        std::string("Tried to execute unimplemented instruction: ") +
-        instruction.opCode.toString());
+    abort();
+    // throw std::runtime_error(
+    //     std::string("Tried to execute unimplemented instruction: ") +
+    //     instruction.opCode.toString());
   }
 }
 

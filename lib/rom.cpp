@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib> // malloc()
 #include <format>
 #include <stdexcept>
 
@@ -55,11 +56,11 @@ Rom::Rom(const char *path) {
 
   // TODO parse flags 8-10
 
-  prgBlob = new uint8_t[prgSize];
+  prgBlob = (uint8_t *)malloc(sizeof(uint8_t) * prgSize);
   fread(prgBlob, prgSize, 1, f);
   // printf("read %d bytes of PRG ROM.\n", rom->prgSize);
 
-  chrBlob = new uint8_t[chrSize];
+  chrBlob = (uint8_t *)malloc(sizeof(uint8_t) * chrSize);
   fread(chrBlob, chrSize, 1, f);
   // printf("read %d bytes of CHR ROM.\n", rom->chrSize);
 
@@ -67,8 +68,8 @@ Rom::Rom(const char *path) {
 }
 
 Rom::~Rom() {
-  delete prgBlob;
-  delete chrBlob;
+  free(prgBlob);
+  free(chrBlob);
 }
 
 inline size_t Rom::prgStart() { return HEADER_SIZE; }
