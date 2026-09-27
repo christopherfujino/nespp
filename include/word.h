@@ -7,13 +7,13 @@ struct Word {
   uint8_t low;
   uint8_t high;
 
-  uint16_t to16();
-
   Word operator+(int other);
   Word operator-(int other);
 
   void operator+=(int other);
 };
+
+uint16_t wordTo16(Word *);
 
 inline Word wordOfU16(uint16_t raw) {
   uint8_t low = 0xFF & raw;

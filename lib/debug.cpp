@@ -68,8 +68,9 @@ void _renderRegisters(Debugger *dbg) {
   constexpr int height = 4;
   _renderBox(y, x, height, width);
   mvprintw(y + 1, x + 1, "PC   A  X  Y  SP NV-BDIZC");
-  mvprintw(y + 2, x + 1, "%04X %02X %02X %02X %02X %s", dbg->PC.to16(), dbg->A,
-           dbg->X, dbg->Y, dbg->SP, std::bitset<8>{dbg->S}.to_string().data());
+  mvprintw(y + 2, x + 1, "%04X %02X %02X %02X %02X %s", wordTo16(&dbg->PC),
+           dbg->A, dbg->X, dbg->Y, dbg->SP,
+           std::bitset<8>{dbg->S}.to_string().data());
 }
 
 void _renderStack(Debugger *dbg) {
@@ -124,7 +125,7 @@ void Debugger::start() {
     auto insLoc = PC;
     Instruction ins = decodeInstruction();
     instructionQueue.enqueue(
-        std::format("{:4X}: {}", insLoc.to16(), ins.toString().data()));
+        std::format("{:4X}: {}", wordTo16(&insLoc), ins.toString().data()));
     execute(ins);
     render();
 
