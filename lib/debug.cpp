@@ -115,9 +115,9 @@ void Debugger::render() {
 }
 
 void Debugger::start() {
-  PC = {
-      peek16(0xFFFD), // high
-      peek16(0xFFFC), // low
+  PC = Word{
+      .low = peek16(0xFFFC),
+      .high = peek16(0xFFFD),
   };
 
   while (1) {
