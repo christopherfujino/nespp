@@ -178,7 +178,7 @@ Instruction VM::decodeInstruction() {
   OpCode code = opCodeLookup[_rawCode];
   if (code.type == unimplemented) {
     throw std::runtime_error(std::format(
-        "Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode, PC.to16()));
+        "Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode, wordTo16(&PC)));
   }
   switch (code.addressing) {
   case AddressingMode::absolute:
@@ -237,7 +237,7 @@ Instruction VM::decodeInstruction() {
     break;
   default:
     throw std::runtime_error(std::format(
-        "Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode, PC.to16()));
+        "Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode, wordTo16(&PC)));
   }
 
   return instruction;
@@ -311,32 +311,32 @@ void VM::execute(Instruction instruction) {
   case BCC:
     if (!_getC()) {
       PC = _operandToAddress(instruction);
-      debug(std::format("Jumping to ${:04X}", PC.to16()));
+      debug(std::format("Jumping to ${:04X}", wordTo16(&PC)));
     }
     return;
   case BCS:
     if (_getC()) {
       PC = _operandToAddress(instruction);
-      debug(std::format("Jumping to ${:04X}", PC.to16()));
+      debug(std::format("Jumping to ${:04X}", wordTo16(&PC)));
     }
     return;
   case BEQ:
     if (_getZ()) {
       PC = _operandToAddress(instruction);
-      debug(std::format("Jumping to ${:04X}", PC.to16()));
+      debug(std::format("Jumping to ${:04X}", wordTo16(&PC)));
     }
     return;
   case BNE:
     if (!_getZ()) {
       PC = _operandToAddress(instruction);
-      debug(std::format("Jumping to ${:04X}", PC.to16()));
+      debug(std::format("Jumping to ${:04X}", wordTo16(&PC)));
     }
     return;
   case BPL:
     // if not negative...
     if ((S & _N) == 0) {
       PC = _operandToAddress(instruction);
-      debug(std::format("Jumping to ${:04X}", PC.to16()));
+      debug(std::format("Jumping to ${:04X}", wordTo16(&PC)));
     }
     return;
   case CLD:
@@ -416,13 +416,13 @@ void VM::execute(Instruction instruction) {
     return;
   case JMP:
     PC = _operandToAddress(instruction);
-    debug(std::format("Jumping to ${:04X}", PC.to16()));
+    debug(std::format("Jumping to ${:04X}", wordTo16(&PC)));
     return;
   case JSR:
     // https://retrocomputing.stackexchange.com/questions/19543/why-does-the-6502-jsr-instruction-only-increment-the-return-address-by-2-bytes
     _pushWord(PC - 1);
     PC = _operandToAddress(instruction);
-    debug(std::format("Jumping to ${:04X}", PC.to16()));
+    debug(std::format("Jumping to ${:04X}", wordTo16(&PC)));
     return;
   case LDA:
     // TODO: handle carry with ABS,X?

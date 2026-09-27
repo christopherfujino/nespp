@@ -4,7 +4,6 @@ struct Rom; // #include "rom.h"
 #include "vm.h"
 #include <list>
 
-#include <memory>
 #include <string>
 
 class _Queue {
