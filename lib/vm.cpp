@@ -71,7 +71,7 @@ VM::VM(std::shared_ptr<Rom> _rom) {
   }
 }
 
-VM::~VM() { }
+VM::~VM() {}
 
 void VM::start() {
   {
@@ -487,7 +487,9 @@ void VM::execute(Instruction instruction) {
     SP = X;
     return;
   case unimplemented:
-    throw std::runtime_error("Tried to execute unimplemented instruction");
+    throw std::runtime_error(
+        std::string("Tried to execute unimplemented instruction: ") +
+        instruction.opCode.toString());
   }
 }
 
