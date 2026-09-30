@@ -1,17 +1,5 @@
 #include "../include/word.h"
 
-// Word::Word(uint8_t high, uint8_t low) {
-//   this->low = low;
-//   this->high = high;
-// }
-
-// Word::Word(uint16_t raw) {
-//   low = 0xFF & raw;
-//   high = (0xFF00 & raw) >> 8;
-// }
-//
-// Word::Word() : low(0), high(0) {}
-
 uint16_t wordTo16(Word *word) { return word->low | (word->high << 8); }
 
 Word Word::operator+(int other) {

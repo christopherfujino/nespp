@@ -4,6 +4,7 @@
 #include "../include/word.h"         // for Absolute
 #include <array>
 #include <cassert>
+#include <cstdio>    // for printf
 #include <cstring>   // for memcpy
 #include <format>    // std::format
 #include <stdexcept> // std::runtime_except
@@ -177,8 +178,9 @@ Instruction VM::decodeInstruction() {
   uint8_t _rawCode = peek(PC); // for debugging
   OpCode code = opCodeLookup[_rawCode];
   if (code.type == unimplemented) {
-    throw std::runtime_error(std::format(
-        "Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode, wordTo16(&PC)));
+    throw std::runtime_error(
+        std::format("Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode,
+                    wordTo16(&PC)));
   }
   switch (code.addressing) {
   case AddressingMode::absolute:
@@ -236,9 +238,12 @@ Instruction VM::decodeInstruction() {
     PC += 2;
     break;
   default:
-    throw std::runtime_error(std::format(
-        "Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode, wordTo16(&PC)));
+    throw std::runtime_error(
+        std::format("Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode,
+                    wordTo16(&PC)));
   }
+  debug(std::string("[DEBUG] decoded instruction ") + instruction.toString() +
+        " at " + std::format("0x{:04X}", wordTo16(&PC)));
 
   return instruction;
 }
