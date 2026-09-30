@@ -6,8 +6,7 @@ struct Rom; // #include "rom.h"
 
 #include <string>
 
-class _Queue {
-public:
+struct _Queue {
   _Queue(int _size);
 
   void enqueue(std::string element);
@@ -16,7 +15,6 @@ public:
 
   const unsigned int size;
 
-private:
   std::list<std::string> contents;
 };
 

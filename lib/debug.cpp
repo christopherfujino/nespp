@@ -99,7 +99,10 @@ Debugger::~Debugger() {
   printw("about to call endwin()\n");
   endwin();
   printf("called endwin()\n");
-  fflush(stdout);
+  auto it = debugQueue.contents.begin();
+  for (size_t i = 0; i < debugQueue.contents.size(); i++, it++) {
+    printf("%ld: %s\n", i, it->c_str());
+  }
   VM::~VM();
 }
 
