@@ -24,7 +24,7 @@ public:
   ~Debugger();
 
   _Queue instructionQueue = {5};
-  _Queue debugQueue = {8};
+  _Queue debugQueue = {30};
 
   void start();
 
