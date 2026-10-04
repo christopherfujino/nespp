@@ -2,16 +2,17 @@
 #include "../include/word.h"
 #include <format>
 #include <stdexcept>
-#include <stdio.h> // for snprintf
 #include <string>
 
 Instruction _make(OpCode opCode, uint8_t **src) {
-  // TODO only check #ifdef NDEBUG
+#ifndef NDEBUG
   if (opCode.type == OpCodeType::unimplemented) {
-    char *msg = new char[256];
-    snprintf(msg, 256, "Unimplemented instruction 0x%02X", **src);
-    throw msg;
+    abort();
+    //char *msg = new char[256];
+    //snprintf(msg, 256, "Unimplemented instruction 0x%02X", **src);
+    //throw msg;
   }
+#endif
   Instruction instruction = {};
   instruction.opCode = opCode;
 

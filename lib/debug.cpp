@@ -10,6 +10,7 @@
 #include <ncurses.h>
 #include <stdexcept>
 #include <stdint.h> // for uint8_t
+#include <stdio.h>  // sprintf()
 #include <utility>  // std::move
 
 _Queue::_Queue(int _size) : size(_size) {}
@@ -125,6 +126,7 @@ void Debugger::start() {
   };
 
   while (1) {
+    debug(std::format("PC = ${:02X}{:02X}\n", PC.high, PC.low));
     auto insLoc = PC;
     Instruction ins = decodeInstruction();
     instructionQueue.enqueue(
