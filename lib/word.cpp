@@ -2,15 +2,18 @@
 
 uint16_t wordTo16(Word *word) { return word->low | (word->high << 8); }
 
-Word Word::operator+(int other) {
-  return Word(((static_cast<uint16_t>(high) << 8) | low) + other);
+Word wordPlus(Word *self, int other) {
+  uint16_t u16 = ((static_cast<uint16_t>(self->high) << 8) | self->low) + other;
+  return Word{
+      .low = static_cast<uint8_t>(0xFF & u16),
+      .high = static_cast<uint8_t>((0xFF00 & u16) >> 8),
+  };
 }
 
-Word Word::operator-(int other) {
-  return Word(((static_cast<uint16_t>(high) << 8) | low) - other);
-}
-
-void Word::operator+=(int other) {
-  auto newThis = *this + other;
-  *this = newThis;
+Word wordMinus(Word *self, int other) {
+  uint16_t u16 = ((static_cast<uint16_t>(self->high) << 8) | self->low) - other;
+  return Word{
+      .low = static_cast<uint8_t>(0xFF & u16),
+      .high = static_cast<uint8_t>((0xFF00 & u16) >> 8),
+  };
 }

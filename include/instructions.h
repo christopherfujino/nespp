@@ -247,5 +247,5 @@ struct Instruction {
   std::string toString();
 };
 
-// TODO: do we even need this anymore?
+// TODO: delete VM::decodeInstruction
 Instruction decodeInstruction(uint8_t **src, int idx);

@@ -4,7 +4,6 @@
 #include "../include/word.h"         // for Absolute
 #include <array>
 #include <cassert>
-#include <cstdio>    // for printf
 #include <cstring>   // for memcpy
 #include <format>    // std::format
 #include <stdexcept> // std::runtime_except
@@ -79,12 +78,12 @@ void VM::start() {
     uint8_t low = peek16(0xFFFC);
     uint8_t high = peek16(0xFFFD);
 
+    // TODO: This looks wrong?!
     PC = {high, low};
   }
 
   Instruction current;
   while (1) {
-    // printf("$%02X: ", PC);
     current = decodeInstruction();
     execute(current);
   }
@@ -176,6 +175,7 @@ void VM::poke16(uint16_t address, uint8_t value) {
 Instruction VM::decodeInstruction() {
   Instruction instruction;
   uint8_t _rawCode = peek(PC); // for debugging
+  Word debugStartPc = PC;
   OpCode code = opCodeLookup[_rawCode];
   if (code.type == unimplemented) {
     throw std::runtime_error(
@@ -188,54 +188,54 @@ Instruction VM::decodeInstruction() {
         code,
         {.absolute =
              {
-                 peek(PC + 2),
-                 peek(PC + 1),
+                 peek(wordPlus(&PC, 2)),
+                 peek(wordPlus(&PC, 1)),
              }},
     };
-    PC += 3;
+    PC = wordPlus(&PC, 3);
     break;
   case AddressingMode::relative:
     instruction = {
         code,
-        {.relative = peek(PC + 1)},
+        {.relative = peek(wordPlus(&PC, 1))},
     };
-    PC += 2;
+    PC = wordPlus(&PC, 2);
     break;
   case AddressingMode::accumulator:
     instruction = {
         code,
         {.accumulator = nullptr},
     };
-    PC += 1;
+    PC = wordPlus(&PC, 1);
     break;
   case AddressingMode::implied:
     instruction = {
         code,
         {.implied = nullptr},
     };
-    PC += 1;
+    PC = wordPlus(&PC, 1);
     break;
   case AddressingMode::indirect:
     instruction = {
         code,
         // TODO is this right?!
-        {.indirect = {peek(PC + 2), peek(PC + 1)}},
+        {.indirect = {peek(wordPlus(&PC, 2)), peek(wordPlus(&PC, 1))}},
     };
-    PC += 3;
+    PC = wordPlus(&PC, 3);
     break;
   case AddressingMode::immediate:
     instruction = {
         code,
-        {.immediate = peek(PC + 1)},
+        {.immediate = peek(wordPlus(&PC, 1))},
     };
-    PC += 2;
+    PC = wordPlus(&PC, 2);
     break;
   case AddressingMode::zeropage:
     instruction = {
         code,
-        {.zeropage = peek(PC + 1)},
+        {.zeropage = peek(wordPlus(&PC, 1))},
     };
-    PC += 2;
+    PC = wordPlus(&PC, 2);
     break;
   default:
     throw std::runtime_error(
@@ -243,8 +243,8 @@ Instruction VM::decodeInstruction() {
                     wordTo16(&PC)));
   }
   debug(std::string("[DEBUG] decoded instruction ") + instruction.toString() +
-        " at " + std::format("0x{:04X}", wordTo16(&PC)));
-
+        std::format(" at ${:04X}", wordTo16(&debugStartPc)));
+  debug(std::format("New PC is ${:04X}\n", wordTo16(&PC)));
   return instruction;
 }
 
@@ -425,7 +425,7 @@ void VM::execute(Instruction instruction) {
     return;
   case JSR:
     // https://retrocomputing.stackexchange.com/questions/19543/why-does-the-6502-jsr-instruction-only-increment-the-return-address-by-2-bytes
-    _pushWord(PC - 1);
+    _pushWord(wordMinus(&PC, 1));
     PC = _operandToAddress(instruction);
     debug(std::format("Jumping to ${:04X}", wordTo16(&PC)));
     return;
@@ -470,7 +470,7 @@ void VM::execute(Instruction instruction) {
     return;
   case RTS:
     // See JSR
-    PC = _popWord() + 1;
+    PC = wordPlus(&PC, 1);
     return;
   case SEI:
     S |= _I;
@@ -532,16 +532,19 @@ Word VM::_operandToAddress(Instruction instruction) {
   case indirect:
     return Word{
         // high
-        peek(instruction.operand.indirect + 1),
+        peek(wordPlus(&instruction.operand.indirect, 1)),
         // low
         peek(instruction.operand.indirect),
     };
   case relative:
     // This is an offset from the PC
-    return PC + static_cast<int8_t>(instruction.operand.relative);
+    return wordPlus(&PC, instruction.operand.relative);
   case zeropage:
     // Full address is this cast to 16-bits
-    return Word(0x0, instruction.operand.zeropage);
+    return Word{
+        .low = instruction.operand.zeropage,
+        .high = 0x00,
+    };
   case accumulator:
   case immediate:
   case implied:
