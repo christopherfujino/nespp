@@ -548,7 +548,7 @@ Word VM::_operandToAddress(Instruction instruction) {
   case relative:
     // This is an offset from the PC
     // Must cast to signed byte
-    return wordPlus(&PC, static_cast<int8_t>(instruction.operand.relative));
+    return wordPlus(&PC, (int8_t)instruction.operand.relative);
   case zeropage:
     // Full address is this cast to 16-bits
     return Word{
