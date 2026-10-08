@@ -184,42 +184,51 @@ Instruction VM::decodeInstruction() {
   }
   switch (code.addressing) {
   case AddressingMode::absolute:
-    instruction = {
+    instruction = Instruction{
         code,
-        {.absolute =
-             {
-                 peek(wordPlus(&PC, 2)),
-                 peek(wordPlus(&PC, 1)),
-             }},
+        InstructionOperandUnion{
+            .absolute =
+                Word{
+                    .low = peek(wordPlus(&PC, 1)),
+                    .high = peek(wordPlus(&PC, 2)),
+                },
+        },
     };
     PC = wordPlus(&PC, 3);
     break;
   case AddressingMode::relative:
-    instruction = {
+    instruction = Instruction{
         code,
-        {.relative = peek(wordPlus(&PC, 1))},
+        InstructionOperandUnion{
+            .relative = peek(wordPlus(&PC, 1)),
+        },
     };
     PC = wordPlus(&PC, 2);
     break;
   case AddressingMode::accumulator:
-    instruction = {
+    instruction = Instruction{
         code,
-        {.accumulator = nullptr},
+        InstructionOperandUnion{.accumulator = nullptr},
     };
     PC = wordPlus(&PC, 1);
     break;
   case AddressingMode::implied:
-    instruction = {
+    instruction = Instruction{
         code,
-        {.implied = nullptr},
+        InstructionOperandUnion{.implied = nullptr},
     };
     PC = wordPlus(&PC, 1);
     break;
   case AddressingMode::indirect:
-    instruction = {
+    instruction = Instruction{
         code,
-        // TODO is this right?!
-        {.indirect = {peek(wordPlus(&PC, 2)), peek(wordPlus(&PC, 1))}},
+        InstructionOperandUnion{
+            .indirect =
+                Word{
+                    .low = peek(wordPlus(&PC, 1)),
+                    .high = peek(wordPlus(&PC, 2)),
+                },
+        },
     };
     PC = wordPlus(&PC, 3);
     break;
@@ -538,7 +547,8 @@ Word VM::_operandToAddress(Instruction instruction) {
     };
   case relative:
     // This is an offset from the PC
-    return wordPlus(&PC, instruction.operand.relative);
+    // Must cast to signed byte
+    return wordPlus(&PC, static_cast<int8_t>(instruction.operand.relative));
   case zeropage:
     // Full address is this cast to 16-bits
     return Word{

@@ -14,11 +14,14 @@ void expect(bool e) {
   tests++;
 }
 
-int main() {
+static void one() {
   Word word = wordOfU16(0xC00E);
   uint8_t operand = 0xFB;
   auto sum = wordPlus(&word, operand);
   printf("%04X\n", wordTo16(&sum));
+}
 
+int main() {
+  one();
   printf("%ld of %ld tests passed.\n", tests, passes);
 }
