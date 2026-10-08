@@ -1,20 +1,27 @@
-#pragma once
+#ifndef __MONOREPO_SRC_NESPP_INCLUDE_WORD_H
+#define __MONOREPO_SRC_NESPP_INCLUDE_WORD_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdint.h>
 
 // TODO: make this a wrapper around a uint16_t?
-struct Word {
+typedef struct Word {
   uint8_t low;
   uint8_t high;
-};
+} Word;
 
 uint16_t wordTo16(Word *);
 
 Word wordPlus(Word *self, int other);
 Word wordMinus(Word *self, int other);
 
-inline Word wordOfU16(uint16_t raw) {
-  uint8_t low = 0xFF & raw;
-  uint8_t high = (0xFF00 & raw) >> 8;
-  return Word{.low = low, .high = high};
-}
+Word wordOfU16(uint16_t raw);
+
+#ifdef __cplusplus
+} // extern "C" {
+#endif
+
+#endif // __MONOREPO_SRC_NESPP_INCLUDE_WORD_H
