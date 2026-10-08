@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __MONOREPO_SRC_NESPP_INCLUDE_VM_H
+#define __MONOREPO_SRC_NESPP_INCLUDE_VM_H
 
 #include <cstdint>
 #include <memory>
@@ -29,8 +30,7 @@ private:
   uint8_t prg[0x8000] = {0};
 };
 
-class VM {
-public:
+struct VM {
   VM(std::shared_ptr<Rom> rom);
   ~VM();
 
@@ -129,3 +129,5 @@ private:
 protected:
   virtual void debug(std::string) = 0;
 };
+
+#endif // __MONOREPO_SRC_NESPP_INCLUDE_VM_H
