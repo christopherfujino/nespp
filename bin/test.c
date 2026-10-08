@@ -15,10 +15,10 @@ void expect(bool e) {
 }
 
 static void one() {
-  Word word = wordOfU16(0xC00E);
-  uint8_t operand = 0xFB;
-  auto sum = wordPlus(&word, operand);
-  printf("%04X\n", wordTo16(&sum));
+  Word word = wordOfU16(0x00FE);
+  uint8_t operand = 0x03;
+  Word sum = wordPlus(&word, operand);
+  expect(wordTo16(&sum) == 0x0101);
 }
 
 int main() {
