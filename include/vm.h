@@ -73,9 +73,11 @@ typedef struct VM {
   Mapper mapper;
 
   Rom *rom;
+
+  void (*debug)(VM *, std::string);
 } VM;
 
-VM vmNew(Rom *_rom);
+VM vmNew(Rom *_rom, void (*debug)(VM *, std::string));
 
 void vmPoke(VM *vm, Word address, uint8_t value);
 void vmPoke16(VM *vm, uint16_t address, uint8_t value);

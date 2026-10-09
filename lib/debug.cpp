@@ -28,12 +28,6 @@ static void _queueRenderLines(_Queue *queue, int y, int x, int _, int width) {
   }
 }
 
-// TODO: figure this out
-void debug(std::string) {
-  abort();
-  // debugQueue.enqueue(msg);
-}
-
 void _renderBox(int y, int x, int height, int width) {
   mvaddch(y, x, A_ALTCHARSET | ACS_ULCORNER);
   hline(A_ALTCHARSET | ACS_HLINE, width - 2);
@@ -96,11 +90,16 @@ void _renderStack(Debugger *dbg) {
   _renderBox(y, x, height, width);
 }
 
+extern void debuggerDebug(VM *vm, std::string s) {
+  auto debugger = (Debugger *)vm;
+  _queueEnqueue(&debugger->debugQueue, s);
+}
+
 Debugger debuggerNew(Rom *rom) {
   setlocale(LC_ALL, "en_US.UTF-8");
   initscr();
   return Debugger{
-      .super = vmNew(rom),
+      .super = vmNew(rom, debuggerDebug),
       .instructionQueue =
           _Queue{
               .size = 5,
@@ -144,7 +143,7 @@ void debuggerStart(Debugger *debugger) {
   };
 
   while (1) {
-    debug(std::format("PC = ${:02X}{:02X}\n", vm->PC.high, vm->PC.low));
+    vm->debug(vm, std::format("PC = ${:02X}{:02X}", vm->PC.high, vm->PC.low));
     auto insLoc = vm->PC;
     Instruction ins = vmDecodeInstruction(vm);
     _queueEnqueue(
@@ -166,10 +165,10 @@ void debuggerStart(Debugger *debugger) {
       // TODO: is this right?
       // we're branching on if the zero flag is set, so don't branch
       vm->ppuRegisters[2] = 1 << 7;
-      debug(std::format("Setting PPU[2] = #{:02X}", vm->ppuRegisters[2]));
+      vm->debug(vm, std::format("Setting PPU[2] = #{:02X}", vm->ppuRegisters[2]));
       continue;
-    } else if (strncmp(inputLine, "exit", 4)) {
-      exit(0);
+    } else if ((strncmp(inputLine, "exit", 4)) || strncmp(inputLine, "quit", 4)) {
+      throw std::runtime_error("Exit");
     } else {
       throw std::runtime_error(
           std::format("Unrecognized debugger input: \"{}\" ({})", inputLine,

@@ -1,4 +1,4 @@
-#include <memory>
+#include <stdexcept>
 #ifdef NDEBUG
 #include <cstdio>
 #endif
@@ -22,18 +22,25 @@ int main(int argc, char **argv) {
 
   int exitCode = 0;
   Debugger debugger = {};
+  constexpr size_t msgBufferLen = 512;
+  char msgBuffer[msgBufferLen] = {0};
   try {
     auto rom = Rom(romPath);
     debugger = debuggerNew(&rom);
     debuggerStart(&debugger);
   } catch (std::runtime_error e) {
-    fprintf(stderr, "caught: %s\n", e.what());
+    snprintf(msgBuffer, msgBufferLen, "caught: %s\n", e.what());
     exitCode = 1;
   } catch (...) {
-    fprintf(stderr, "Unknown error!\n");
+    snprintf(msgBuffer, msgBufferLen, "Unknown error!\n");
     exitCode = 1;
   }
 
   debuggerDispose(&debugger);
+  if (msgBuffer[0]) {
+    fprintf(stderr, "%s", msgBuffer);
+  } else {
+    fprintf(stderr, "empty msgBuffer\n");
+  }
   return exitCode;
 }

@@ -30,9 +30,6 @@ static constexpr uint8_t _ZNot = ~_Z;
 static constexpr uint8_t _C = 1 << 0;
 static constexpr uint8_t _CNot = ~_C;
 
-// TODO: make this real
-static inline void debug(std::string str) { printf("%s\n", str.c_str()); }
-
 // Methods
 static inline void _setN(VM *vm, uint8_t other) {
   vm->S = (vm->S & _NNot) | (_N & other);
@@ -201,7 +198,7 @@ void mapperPoke16(Mapper *mapper, uint16_t address, uint8_t value) {
   abort();
 }
 
-VM vmNew(Rom *_rom) {
+VM vmNew(Rom *_rom, void(*debug)(VM *, std::string)) {
   switch (_rom->mapper) {
   case 0:
     return VM{
@@ -220,6 +217,7 @@ VM vmNew(Rom *_rom) {
                 .mapper0 = mapper0New(_rom),
             },
         .rom = std::move(_rom),
+        .debug = debug,
     };
   default:
     throw "Oops!";
@@ -270,14 +268,14 @@ uint8_t vmPeek16(VM *vm, uint16_t address) {
     return vm->ram[normalizedIdx];
   } else if (address < 0x2008) {
     uint8_t offset = address - 0x2000;
-    debug(std::format("DEBUG PPU register: {} = 0x{:02X}", offset,
+    vm->debug(vm, std::format("DEBUG PPU register: {} = 0x{:02X}", offset,
                       vm->ppuRegisters[offset]));
     return vm->ppuRegisters[offset];
   } else if (address < 0x4000) {
     throw "TODO implement PPU register repeats";
   } else if (address < 0x4018) {
     uint8_t offset = address - 0x4000;
-    debug(std::format("DEBUG APU or I/O register: {} = 0x{:02X}", address,
+    vm->debug(vm, std::format("DEBUG APU or I/O register: {} = 0x{:02X}", address,
                       vm->apuAndIoRegisters[offset]));
     return vm->apuAndIoRegisters[offset];
   } else if (address < 0x4020) {
@@ -328,7 +326,6 @@ void vmPoke16(VM *vm, uint16_t address, uint8_t value) {
 Instruction vmDecodeInstruction(VM *vm) {
   Instruction instruction;
   uint8_t _rawCode = vmPeek(vm, vm->PC); // for debugging
-  Word debugStartPc = vm->PC;
   OpCode code = opCodeLookup[_rawCode];
   if (code.type == unimplemented) {
     throw std::runtime_error(
@@ -404,9 +401,6 @@ Instruction vmDecodeInstruction(VM *vm) {
         std::format("Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode,
                     wordTo16(&vm->PC)));
   }
-  debug(std::string("[DEBUG] decoded instruction ") + instruction.toString() +
-        std::format(" at ${:04X}", wordTo16(&debugStartPc)));
-  debug(std::format("New PC is ${:04X}\n", wordTo16(&vm->PC)));
   return instruction;
 }
 
@@ -433,32 +427,32 @@ void vmExecute(VM *vm, Instruction instruction) {
   case BCC:
     if (!_getC(vm)) {
       vm->PC = _operandToAddress(vm, instruction);
-      debug(std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
+      vm->debug(vm, std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
     }
     return;
   case BCS:
     if (_getC(vm)) {
       vm->PC = _operandToAddress(vm, instruction);
-      debug(std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
+      vm->debug(vm, std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
     }
     return;
   case BEQ:
     if (_getZ(vm)) {
       vm->PC = _operandToAddress(vm, instruction);
-      debug(std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
+      vm->debug(vm, std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
     }
     return;
   case BNE:
     if (!_getZ(vm)) {
       vm->PC = _operandToAddress(vm, instruction);
-      debug(std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
+      vm->debug(vm, std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
     }
     return;
   case BPL:
     // if not negative...
     if ((vm->S & _N) == 0) {
       vm->PC = _operandToAddress(vm, instruction);
-      debug(std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
+      vm->debug(vm, std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
     }
     return;
   case CLD:
@@ -538,13 +532,13 @@ void vmExecute(VM *vm, Instruction instruction) {
     return;
   case JMP:
     vm->PC = _operandToAddress(vm, instruction);
-    debug(std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
+    vm->debug(vm, std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
     return;
   case JSR:
     // https://retrocomputing.stackexchange.com/questions/19543/why-does-the-6502-jsr-instruction-only-increment-the-return-address-by-2-bytes
     _pushWord(vm, wordMinus(&vm->PC, 1));
     vm->PC = _operandToAddress(vm, instruction);
-    debug(std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
+    vm->debug(vm, std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
     return;
   case LDA:
     // TODO: handle carry with ABS,X?
