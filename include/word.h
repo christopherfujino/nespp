@@ -9,8 +9,8 @@ extern "C" {
 
 // TODO: make this a wrapper around a uint16_t?
 typedef struct Word {
-  uint8_t low;
   uint8_t high;
+  uint8_t low;
 } Word;
 
 uint16_t wordTo16(Word *);

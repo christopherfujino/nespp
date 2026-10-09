@@ -90,10 +90,12 @@ void _renderStack(Debugger *dbg) {
   _renderBox(y, x, height, width);
 }
 
-Debugger::Debugger(std::shared_ptr<Rom> rom) : VM::VM(std::move(rom)) {
+Debugger debuggerNew(std::shared_ptr<Rom> rom)  {
   setlocale(LC_ALL, "en_US.UTF-8");
   initscr();
-  // noecho();
+  return Debugger{
+    .super = vmNew(std::move(rom)),
+  };
 }
 
 Debugger::~Debugger() {
@@ -104,7 +106,6 @@ Debugger::~Debugger() {
   for (size_t i = 0; i < debugQueue.contents.size(); i++, it++) {
     printf("%ld: %s\n", i, it->c_str());
   }
-  VM::~VM();
 }
 
 void Debugger::render() {

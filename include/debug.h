@@ -18,17 +18,14 @@ struct _Queue {
   std::list<std::string> contents;
 };
 
-class Debugger : public VM::VM {
-public:
-  Debugger(std::shared_ptr<Rom> rom);
-  ~Debugger();
+struct Debugger {
+  VM super;
 
   _Queue instructionQueue = {5};
   _Queue debugQueue = {30};
-
-  void start();
-
-private:
-  void render();
-  virtual void debug(std::string) override;
 };
+
+Debugger debuggerNew(std::shared_ptr<Rom> rom);
+void start();
+void render();
+void debug(std::string);

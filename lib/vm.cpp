@@ -9,520 +9,93 @@
 #include <stdexcept> // std::runtime_except
 #include <utility>   // for std::move
 
-Mapper0::Mapper0(std::shared_ptr<Rom> _rom) {
-  this->rom = std::move(_rom);
+/// Negative bitmask
+static constexpr uint8_t _N = 1 << 7;
+static constexpr uint8_t _NNot = (uint8_t)(~_N);
 
-  // TODO: should we copy, or should this just be a light view into the ROM?
-  switch (rom->prgSize) {
-  case 0x4000: // 16KiB
-    memcpy(prg, rom->prgBlob, 0x4000);
-    // Mirror
-    memcpy(prg + 0x4000, rom->prgBlob, 0x4000);
-    break;
-  case 0x8000: // 32KiB
-    memcpy(prg, rom->prgBlob, 0x8000);
-    break;
-  default:
-    throw std::runtime_error(
-        std::format("Unknown PRG size {:4X}", rom->prgSize));
-  }
+/// Overflow bitmask
+// const uint8_t _V = 1 << 6;
+
+static constexpr uint8_t _D = 1 << 3;
+static constexpr uint8_t _DNot = ~_D;
+
+// Interrupt bitmask
+static constexpr uint8_t _I = 1 << 2;
+
+/// Zero bitmask
+static constexpr uint8_t _Z = 1 << 1;
+static constexpr uint8_t _ZNot = ~_Z;
+
+/// Carry bitmask
+static constexpr uint8_t _C = 1 << 0;
+static constexpr uint8_t _CNot = ~_C;
+
+// TODO: make this real
+static inline void debug(std::string str) { printf("%s\n", str.c_str()); }
+
+// Methods
+static inline void _setN(VM *vm, uint8_t other) {
+  vm->S = (vm->S & _NNot) | (_N & other);
 }
 
-Mapper0::~Mapper0() {
-  // Note: don't delete this->rom, we don't own it.
-}
-
-uint8_t Mapper0::peek16(uint16_t address) {
-  if (address < 0x6000) {
-    throw "Unreachable";
-  } else if (address < 0x8000) {
-    // unbanked PRG-RAM
-    throw "TODO: implement PRG-RAM";
-  } else {
-    // either continuation of PRG or mirror
-    uint16_t offset = address - 0x8000;
-    return prg[offset];
-  }
-}
-
-void Mapper0::poke16(uint16_t address, uint8_t value) {
-  if (address < 0x6000) {
-    throw "Unreachable";
-  } else if (address < 0x8000) {
-    // unbanked PRG-RAM
-    throw "TODO: implement PRG-RAM";
-  } else {
-    // either continuation of PRG or mirror
-    uint16_t offset = address - 0x8000;
-    prg[offset] = value;
-  }
-}
-
-VM::VM(std::shared_ptr<Rom> _rom) {
-  this->rom = std::move(_rom);
-
-  switch (rom->mapper) {
-  case 0:
-    // copy shared_ptr
-    mapper = new Mapper0(rom);
-    break;
-  default:
-    throw "Oops!";
-  }
-}
-
-VM::~VM() {}
-
-void VM::start() {
-  {
-    uint8_t low = peek16(0xFFFC);
-    uint8_t high = peek16(0xFFFD);
-
-    // TODO: This looks wrong?!
-    PC = {high, low};
-  }
-
-  Instruction current;
-  while (1) {
-    current = decodeInstruction();
-    execute(current);
-  }
-}
-
-uint8_t VM::peek(Word address) {
-  return peek16(address.low | (address.high << 8));
-}
-
-uint8_t VM::peek8(uint8_t offset) { return ram[offset]; }
-
-uint8_t VM::peek16(uint16_t address) {
-  // first 2KiB
-  if (address < 0x0800) {
-    // printf("DEBUG RAM address: 0x%04X = 0x%02X\n", idx, ram[idx]);
-    return ram[address];
-  } else if (address < 0x1000) {
-    uint16_t normalizedIdx = address - 0x800;
-    // printf("DEBUG 1st RAM mirror address: 0x%02X -> 0x%02X\n", address,
-    //        normalizedIdx);
-    return ram[normalizedIdx];
-  } else if (address < 0x1800) {
-    uint16_t normalizedIdx = address - 0x1000;
-    // printf("DEBUG 2nd RAM mirror address: 0x%02X -> 0x%02X\n", address,
-    //        normalizedIdx);
-    return ram[normalizedIdx];
-  } else if (address < 0x2000) {
-    uint16_t normalizedIdx = address - 0x1800;
-    // printf("DEBUG 3nd RAM mirror address: 0x%02X -> 0x%02X\n", address,
-    //        normalizedIdx);
-    return ram[normalizedIdx];
-  } else if (address < 0x2008) {
-    uint8_t offset = address - 0x2000;
-    debug(std::format("DEBUG PPU register: {} = 0x{:02X}", offset,
-                      ppuRegisters[offset]));
-    return ppuRegisters[offset];
-  } else if (address < 0x4000) {
-    throw "TODO implement PPU register repeats";
-  } else if (address < 0x4018) {
-    uint8_t offset = address - 0x4000;
-    debug(std::format("DEBUG APU or I/O register: {} = 0x{:02X}", address,
-                      apuAndIoRegisters[offset]));
-    return apuAndIoRegisters[offset];
-  } else if (address < 0x4020) {
-    throw "TODO: implement APU & I/O functionality that is normally disabled";
-  } else if (address <= 0xFFFF) {
-    // mapper
-    return mapper->peek16(address);
-  }
-  throw "Unreachable";
-}
-
-void VM::poke(Word address, uint8_t value) {
-  poke16(address.low | (address.high << 8), value);
-}
-
-void VM::poke16(uint16_t address, uint8_t value) {
-  // first 2KiB
-  if (address < 0x0800) {
-    // printf("DEBUG RAM address: 0x%04X = 0x%02X\n", idx, ram[idx]);
-    ram[address] = value;
-  } else if (address < 0x1000) {
-    uint16_t normalizedIdx = address - 0x800;
-    ram[normalizedIdx] = value;
-  } else if (address < 0x1800) {
-    uint16_t normalizedIdx = address - 0x1000;
-    ram[normalizedIdx] = value;
-  } else if (address < 0x2000) {
-    uint16_t normalizedIdx = address - 0x1800;
-    ram[normalizedIdx] = value;
-  } else if (address < 0x2008) {
-    uint8_t offset = address - 0x2000;
-    ppuRegisters[offset] = value;
-  } else if (address < 0x4000) {
-    throw "TODO implement PPU register repeats";
-  } else if (address < 0x4018) {
-    uint8_t offset = address - 0x4000;
-    apuAndIoRegisters[offset] = value;
-  } else if (address < 0x4020) {
-    throw "TODO: implement APU & I/O functionality that is normally disabled";
-  } else if (address <= 0xFFFF) {
-    // mapper
-    mapper->poke16(address, value);
-  } else {
-    throw std::runtime_error(std::format("Invalid address 0x{:4X}", address));
-  }
-}
-
-Instruction VM::decodeInstruction() {
-  Instruction instruction;
-  uint8_t _rawCode = peek(PC); // for debugging
-  Word debugStartPc = PC;
-  OpCode code = opCodeLookup[_rawCode];
-  if (code.type == unimplemented) {
-    throw std::runtime_error(
-        std::format("Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode,
-                    wordTo16(&PC)));
-  }
-  switch (code.addressing) {
-  case AddressingMode::absolute:
-    instruction = Instruction{
-        code,
-        InstructionOperandUnion{
-            .absolute =
-                Word{
-                    .low = peek(wordPlus(&PC, 1)),
-                    .high = peek(wordPlus(&PC, 2)),
-                },
-        },
-    };
-    PC = wordPlus(&PC, 3);
-    break;
-  case AddressingMode::relative:
-    instruction = Instruction{
-        code,
-        InstructionOperandUnion{
-            .relative = peek(wordPlus(&PC, 1)),
-        },
-    };
-    PC = wordPlus(&PC, 2);
-    break;
-  case AddressingMode::accumulator:
-    instruction = Instruction{
-        code,
-        InstructionOperandUnion{.accumulator = nullptr},
-    };
-    PC = wordPlus(&PC, 1);
-    break;
-  case AddressingMode::implied:
-    instruction = Instruction{
-        code,
-        InstructionOperandUnion{.implied = nullptr},
-    };
-    PC = wordPlus(&PC, 1);
-    break;
-  case AddressingMode::indirect:
-    instruction = Instruction{
-        code,
-        InstructionOperandUnion{
-            .indirect =
-                Word{
-                    .low = peek(wordPlus(&PC, 1)),
-                    .high = peek(wordPlus(&PC, 2)),
-                },
-        },
-    };
-    PC = wordPlus(&PC, 3);
-    break;
-  case AddressingMode::immediate:
-    instruction = {
-        code,
-        {.immediate = peek(wordPlus(&PC, 1))},
-    };
-    PC = wordPlus(&PC, 2);
-    break;
-  case AddressingMode::zeropage:
-    instruction = {
-        code,
-        {.zeropage = peek(wordPlus(&PC, 1))},
-    };
-    PC = wordPlus(&PC, 2);
-    break;
-  default:
-    throw std::runtime_error(
-        std::format("Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode,
-                    wordTo16(&PC)));
-  }
-  debug(std::string("[DEBUG] decoded instruction ") + instruction.toString() +
-        std::format(" at ${:04X}", wordTo16(&debugStartPc)));
-  debug(std::format("New PC is ${:04X}\n", wordTo16(&PC)));
-  return instruction;
-}
-
-inline void VM::_setN(uint8_t other) { S = (S & _NNot) | (_N & other); }
-
-inline void VM::_setZ(uint8_t other) {
+static inline void _setZ(VM *vm, uint8_t other) {
   if (other == 0x0) {
     // is zero
-    S = (S & _ZNot) | (_Z);
+    vm->S = (vm->S & _ZNot) | (_Z);
   } else {
     // not zero
-    S = S & _ZNot;
+    vm->S = vm->S & _ZNot;
   }
 }
 
-inline bool VM::_getZ() { return ((S & _Z) > 0); }
+static inline bool _getZ(VM *vm) { return (vm->S & _Z) > 0; }
 
-inline void VM::_setC(bool didCarry) {
+static inline void _setC(VM *vm, bool didCarry) {
   uint8_t updateMask = didCarry ? _C : 0x0;
-  S = (S & _CNot) | updateMask;
+  vm->S = (vm->S & _CNot) | updateMask;
 }
 
-inline bool VM::_getC() { return ((S & _C) > 0); }
+inline bool _getZ();
+static inline bool _getC(VM *vm) { return (vm->S & _C) > 0; }
 
-void VM::_push(uint8_t v) {
-  poke16(0x0100 + SP, v);
+static inline void _push(VM *vm, uint8_t v) {
+  vmPoke16(vm, 0x0100 + vm->SP, v);
   // I *think* this behaves identically to 6502 wrapping since SP is unsigned
-  SP -= 1;
+  vm->SP -= 1;
 }
 
-void VM::_pushWord(Word word) {
-  _push(word.high);
-  _push(word.low);
+static inline void _pushWord(VM *vm, Word word) {
+  _push(vm, word.high);
+  _push(vm, word.low);
 }
 
-uint8_t VM::_pop() {
-  SP += 1;
-  uint16_t i = 0x0100 + SP;
+static inline uint8_t _pop(VM *vm) {
+  vm->SP += 1;
+  uint16_t i = 0x0100 + vm->SP;
   assert(i <= 0x01FF && i >= 0x0100);
-  return peek16(i);
+  return vmPeek16(vm, i);
 }
 
-Word VM::_popWord() {
-  auto low = _pop();
-  auto high = _pop();
-  return {high, low};
+static inline Word _popWord(VM *vm) {
+  auto low = _pop(vm);
+  auto high = _pop(vm);
+  return Word{
+      .high = high,
+      .low = low,
+  };
 }
 
-void VM::execute(Instruction instruction) {
-  Word address;
-  switch (instruction.opCode.type) {
-    using enum OpCodeType;
-    uint8_t value;
-  case AND:
-    address = _operandToAddress(instruction);
-    value = peek(address);
-    // TODO: Should this be here?
-    _setN(value);
-    _setZ(value);
-    A = A & value;
-    return;
-  case ASL:
-    value = _operandToValue(instruction);
-    _setN(value);
-    _setZ(value);
-    _setC(value & (1 << 7) ? true : false);
-    A = value << 1;
-    return;
-  case BCC:
-    if (!_getC()) {
-      PC = _operandToAddress(instruction);
-      debug(std::format("Jumping to ${:04X}", wordTo16(&PC)));
-    }
-    return;
-  case BCS:
-    if (_getC()) {
-      PC = _operandToAddress(instruction);
-      debug(std::format("Jumping to ${:04X}", wordTo16(&PC)));
-    }
-    return;
-  case BEQ:
-    if (_getZ()) {
-      PC = _operandToAddress(instruction);
-      debug(std::format("Jumping to ${:04X}", wordTo16(&PC)));
-    }
-    return;
-  case BNE:
-    if (!_getZ()) {
-      PC = _operandToAddress(instruction);
-      debug(std::format("Jumping to ${:04X}", wordTo16(&PC)));
-    }
-    return;
-  case BPL:
-    // if not negative...
-    if ((S & _N) == 0) {
-      PC = _operandToAddress(instruction);
-      debug(std::format("Jumping to ${:04X}", wordTo16(&PC)));
-    }
-    return;
-  case CLD:
-    S &= _DNot;
-    return;
-  case CMP:
-    if (instruction.opCode.addressing == AddressingMode::immediate) {
-      value = instruction.operand.immediate;
-    } else {
-      address = _operandToAddress(instruction);
-      value = peek(address);
-    }
-    value = A - value;
-    _setC(value);
-    _setZ(value);
-    _setN(value);
-    return;
-  case CPX:
-    if (instruction.opCode.addressing == AddressingMode::immediate) {
-      value = instruction.operand.immediate;
-    } else {
-      address = _operandToAddress(instruction);
-      value = peek(address);
-    }
-    value = X - value;
-    _setC(value);
-    _setZ(value);
-    _setN(value);
-    return;
-  case CPY:
-    if (instruction.opCode.addressing == AddressingMode::immediate) {
-      value = instruction.operand.immediate;
-    } else {
-      address = _operandToAddress(instruction);
-      value = peek(address);
-    }
-    value = Y - value;
-    _setC(value);
-    _setZ(value);
-    _setN(value);
-    return;
-  case DEC:
-    address = _operandToAddress(instruction);
-    value = peek(address) - 1;
-    poke(address, value);
-    _setZ(value);
-    _setN(value);
-    return;
-  case DEX:
-    X -= 1;
-    // Is this handled correctly even though X is unsigned?
-    _setN(X);
-    _setZ(X);
-    return;
-  case DEY:
-    Y -= 1;
-    // Is this handled correctly even though X is unsigned?
-    _setN(Y);
-    _setZ(Y);
-    return;
-  case INC:
-    address = _operandToAddress(instruction);
-    value = peek(address) + 1;
-    poke(address, value);
-    _setN(value);
-    _setZ(value);
-    return;
-  case INX:
-    X += 1;
-    _setN(X);
-    _setZ(X);
-    return;
-  case INY:
-    Y += 1;
-    _setN(Y);
-    _setZ(Y);
-    return;
-  case JMP:
-    PC = _operandToAddress(instruction);
-    debug(std::format("Jumping to ${:04X}", wordTo16(&PC)));
-    return;
-  case JSR:
-    // https://retrocomputing.stackexchange.com/questions/19543/why-does-the-6502-jsr-instruction-only-increment-the-return-address-by-2-bytes
-    _pushWord(wordMinus(&PC, 1));
-    PC = _operandToAddress(instruction);
-    debug(std::format("Jumping to ${:04X}", wordTo16(&PC)));
-    return;
-  case LDA:
-    // TODO: handle carry with ABS,X?
-    value = _operandToValue(instruction);
-    _setN(value);
-    _setZ(value);
-    A = value;
-    return;
-  case LDX:
-    value = _operandToValue(instruction);
-    _setN(value);
-    _setZ(value);
-    X = value;
-    return;
-  case LDY:
-    value = _operandToValue(instruction);
-    _setN(value);
-    _setZ(value);
-    Y = value;
-    return;
-  case LSR:
-    // Will shift right-most bit into C
-    if (instruction.opCode.addressing == AddressingMode::accumulator) {
-      value = A;
-      _setC((value & 0x1) > 0);
-      value = value >> 1;
-      A = value;
-    } else {
-      address = _operandToAddress(instruction);
-      value = peek(address);
-      _setC((value & 0x1) > 0);
-      value = value >> 1;
-      poke(address, value);
-    }
-    _setZ(value);
-    _setN(0);
-    return;
-  case PHA:
-    _push(A);
-    return;
-  case RTS:
-    // See JSR
-    PC = wordPlus(&PC, 1);
-    return;
-  case SEI:
-    S |= _I;
-    return;
-  case STA:
-    address = _operandToAddress(instruction);
-    poke(address, A);
-    return;
-  case STX:
-    address = _operandToAddress(instruction);
-    poke(address, X);
-    return;
-  case STY:
-    address = _operandToAddress(instruction);
-    poke(address, Y);
-    return;
-  case TAX:
-    X = A;
-    _setN(X);
-    _setZ(X);
-    return;
-  case TXS:
-    SP = X;
-    return;
-  case unimplemented:
-    abort();
-    // throw std::runtime_error(
-    //     std::string("Tried to execute unimplemented instruction: ") +
-    //     instruction.opCode.toString());
-  }
-}
-
-uint8_t VM::_operandToValue(Instruction instruction) {
+static uint8_t _operandToValue(VM *vm, Instruction instruction) {
   using enum AddressingMode;
   switch (instruction.opCode.addressing) {
   case accumulator:
-    return A;
+    return vm->A;
   case immediate:
     return instruction.operand.immediate;
   case zeropage:
-    return peek8(instruction.operand.zeropage);
+    return vmPeek8(vm, instruction.operand.zeropage);
   case absolute:
-    return peek(instruction.operand.absolute);
+    return vmPeek(vm, instruction.operand.absolute);
 
   case relative: // This is a branch target
   case implied:  // no operand
@@ -533,27 +106,25 @@ uint8_t VM::_operandToValue(Instruction instruction) {
   throw "Unreachable";
 }
 
-Word VM::_operandToAddress(Instruction instruction) {
+static Word _operandToAddress(VM *vm, Instruction instruction) {
   using enum AddressingMode;
   switch (instruction.opCode.addressing) {
   case absolute:
     return instruction.operand.absolute;
   case indirect:
     return Word{
-        // high
-        peek(wordPlus(&instruction.operand.indirect, 1)),
-        // low
-        peek(instruction.operand.indirect),
+        .high = vmPeek(vm, wordPlus(&instruction.operand.indirect, 1)),
+        .low = vmPeek(vm, instruction.operand.indirect),
     };
   case relative:
     // This is an offset from the PC
     // Must cast to signed byte
-    return wordPlus(&PC, (int8_t)instruction.operand.relative);
+    return wordPlus(&vm->PC, (int8_t)instruction.operand.relative);
   case zeropage:
     // Full address is this cast to 16-bits
     return Word{
-        .low = instruction.operand.zeropage,
         .high = 0x00,
+        .low = instruction.operand.zeropage,
     };
   case accumulator:
   case immediate:
@@ -562,4 +133,470 @@ Word VM::_operandToAddress(Instruction instruction) {
   }
   assert(false);
   throw "Unreachable";
+}
+
+// TODO: avoid the copy in return.
+Mapper0 mapper0New(std::shared_ptr<Rom> _rom) {
+  Mapper0 mapper;
+  mapper.rom = std::move(_rom);
+
+  // TODO: should we copy, or should this just be a light view into the ROM?
+  switch (_rom->prgSize) {
+  case 0x4000: // 16KiB
+    memcpy(mapper.prg, _rom->prgBlob, 0x4000);
+    // Mirror
+    memcpy(mapper.prg + 0x4000, _rom->prgBlob, 0x4000);
+    break;
+  case 0x8000: // 32KiB
+    memcpy(mapper.prg, _rom->prgBlob, 0x8000);
+    break;
+  default:
+    throw std::runtime_error(
+        std::format("Unknown PRG size {:4X}", _rom->prgSize));
+  }
+  return mapper;
+}
+
+uint8_t mapper0Peek16(Mapper0 *mapper, uint16_t address) {
+  if (address < 0x6000) {
+    throw "Unreachable";
+  } else if (address < 0x8000) {
+    // unbanked PRG-RAM
+    throw "TODO: implement PRG-RAM";
+  } else {
+    // either continuation of PRG or mirror
+    uint16_t offset = address - 0x8000;
+    return mapper->prg[offset];
+  }
+}
+
+void mapper0Poke16(Mapper0 *mapper, uint16_t address, uint8_t value) {
+  if (address < 0x6000) {
+    throw "Unreachable";
+  } else if (address < 0x8000) {
+    // unbanked PRG-RAM
+    throw "TODO: implement PRG-RAM";
+  } else {
+    // either continuation of PRG or mirror
+    uint16_t offset = address - 0x8000;
+    mapper->prg[offset] = value;
+  }
+}
+
+VM vmNew(std::shared_ptr<Rom> _rom) {
+  switch (_rom->mapper) {
+  case 0:
+    return VM{
+        .PC = Word{},
+        .A = 0,
+        .Y = 0,
+        .SP = 0xFF,
+        .S = 1 << 5,
+        .ram = {0},
+        .ppuRegisters = {0},
+        .apuAndIoRegisters = {0},
+        .mapper =
+            Mapper{
+                .tag = mapperTag0,
+                .mapper0 = mapper0New(_rom),
+            },
+        .rom = std::move(_rom),
+    };
+  default:
+    throw "Oops!";
+  }
+}
+
+void VMStart(VM *vm) {
+  constexpr uint16_t startingLowAddress = 0xFFFC;
+  constexpr uint16_t startingHighAddress = 0xFFFD;
+
+  vm->PC = {
+      .high = vmPeek16(vm, startingHighAddress),
+      .low = vmPeek16(vm, startingLowAddress),
+  };
+
+  Instruction current;
+  while (1) {
+    current = vmDecodeInstruction(vm);
+    vmExecute(vm, current);
+  }
+}
+
+uint8_t vmPeek(VM *vm, Word address) {
+  return vmPeek16(vm, address.low | (address.high << 8));
+}
+
+uint8_t vmPeek8(VM *vm, uint8_t offset) { return vm->ram[offset]; }
+
+uint8_t vmPeek16(VM *vm, uint16_t address) {
+  // first 2KiB
+  if (address < 0x0800) {
+    // printf("DEBUG RAM address: 0x%04X = 0x%02X\n", idx, ram[idx]);
+    return vm->ram[address];
+  } else if (address < 0x1000) {
+    uint16_t normalizedIdx = address - 0x800;
+    // printf("DEBUG 1st RAM mirror address: 0x%02X -> 0x%02X\n", address,
+    //        normalizedIdx);
+    return vm->ram[normalizedIdx];
+  } else if (address < 0x1800) {
+    uint16_t normalizedIdx = address - 0x1000;
+    // printf("DEBUG 2nd RAM mirror address: 0x%02X -> 0x%02X\n", address,
+    //        normalizedIdx);
+    return vm->ram[normalizedIdx];
+  } else if (address < 0x2000) {
+    uint16_t normalizedIdx = address - 0x1800;
+    // printf("DEBUG 3nd RAM mirror address: 0x%02X -> 0x%02X\n", address,
+    //        normalizedIdx);
+    return vm->ram[normalizedIdx];
+  } else if (address < 0x2008) {
+    uint8_t offset = address - 0x2000;
+    debug(std::format("DEBUG PPU register: {} = 0x{:02X}", offset,
+                      vm->ppuRegisters[offset]));
+    return vm->ppuRegisters[offset];
+  } else if (address < 0x4000) {
+    throw "TODO implement PPU register repeats";
+  } else if (address < 0x4018) {
+    uint8_t offset = address - 0x4000;
+    debug(std::format("DEBUG APU or I/O register: {} = 0x{:02X}", address,
+                      vm->apuAndIoRegisters[offset]));
+    return vm->apuAndIoRegisters[offset];
+  } else if (address < 0x4020) {
+    throw "TODO: implement APU & I/O functionality that is normally disabled";
+  } else if (address <= 0xFFFF) {
+    // mapper
+    return mapperPeek16(&vm->mapper, address);
+  }
+  throw "Unreachable";
+}
+
+void vmPoke(VM *vm, Word address, uint8_t value) {
+  vmPoke16(vm, address.low | (address.high << 8), value);
+}
+
+void vmPoke16(VM *vm, uint16_t address, uint8_t value) {
+  // first 2KiB
+  if (address < 0x0800) {
+    // printf("DEBUG RAM address: 0x%04X = 0x%02X\n", idx, ram[idx]);
+    vm->ram[address] = value;
+  } else if (address < 0x1000) {
+    uint16_t normalizedIdx = address - 0x800;
+    vm->ram[normalizedIdx] = value;
+  } else if (address < 0x1800) {
+    uint16_t normalizedIdx = address - 0x1000;
+    vm->ram[normalizedIdx] = value;
+  } else if (address < 0x2000) {
+    uint16_t normalizedIdx = address - 0x1800;
+    vm->ram[normalizedIdx] = value;
+  } else if (address < 0x2008) {
+    uint8_t offset = address - 0x2000;
+    vm->ppuRegisters[offset] = value;
+  } else if (address < 0x4000) {
+    throw "TODO implement PPU register repeats";
+  } else if (address < 0x4018) {
+    uint8_t offset = address - 0x4000;
+    vm->apuAndIoRegisters[offset] = value;
+  } else if (address < 0x4020) {
+    throw "TODO: implement APU & I/O functionality that is normally disabled";
+  } else if (address <= 0xFFFF) {
+    // mapper
+    mapperPoke16(&vm->mapper, address, value);
+  } else {
+    throw std::runtime_error(std::format("Invalid address 0x{:4X}", address));
+  }
+}
+
+Instruction vmDecodeInstruction(VM *vm) {
+  Instruction instruction;
+  uint8_t _rawCode = vmPeek(vm, vm->PC); // for debugging
+  Word debugStartPc = vm->PC;
+  OpCode code = opCodeLookup[_rawCode];
+  if (code.type == unimplemented) {
+    throw std::runtime_error(
+        std::format("Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode,
+                    wordTo16(&vm->PC)));
+  }
+  switch (code.addressing) {
+  case AddressingMode::absolute:
+    instruction = Instruction{
+        code,
+        InstructionOperandUnion{
+            .absolute =
+                Word{
+                    .high = vmPeek(vm, wordPlus(&vm->PC, 2)),
+                    .low = vmPeek(vm, wordPlus(&vm->PC, 1)),
+                },
+        },
+    };
+    vm->PC = wordPlus(&vm->PC, 3);
+    break;
+  case AddressingMode::relative:
+    instruction = Instruction{
+        code,
+        InstructionOperandUnion{
+            .relative = vmPeek(vm, wordPlus(&vm->PC, 1)),
+        },
+    };
+    vm->PC = wordPlus(&vm->PC, 2);
+    break;
+  case AddressingMode::accumulator:
+    instruction = Instruction{
+        code,
+        InstructionOperandUnion{.accumulator = nullptr},
+    };
+    vm->PC = wordPlus(&vm->PC, 1);
+    break;
+  case AddressingMode::implied:
+    instruction = Instruction{
+        code,
+        InstructionOperandUnion{.implied = nullptr},
+    };
+    vm->PC = wordPlus(&vm->PC, 1);
+    break;
+  case AddressingMode::indirect:
+    instruction = Instruction{
+        code,
+        InstructionOperandUnion{
+            .indirect =
+                Word{
+                    .high = vmPeek(vm, wordPlus(&vm->PC, 2)),
+                    .low = vmPeek(vm, wordPlus(&vm->PC, 1)),
+                },
+        },
+    };
+    vm->PC = wordPlus(&vm->PC, 3);
+    break;
+  case AddressingMode::immediate:
+    instruction = {
+        code,
+        {.immediate = vmPeek(vm, wordPlus(&vm->PC, 1))},
+    };
+    vm->PC = wordPlus(&vm->PC, 2);
+    break;
+  case AddressingMode::zeropage:
+    instruction = {
+        code,
+        {.zeropage = vmPeek(vm, wordPlus(&vm->PC, 1))},
+    };
+    vm->PC = wordPlus(&vm->PC, 2);
+    break;
+  default:
+    throw std::runtime_error(
+        std::format("Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode,
+                    wordTo16(&vm->PC)));
+  }
+  debug(std::string("[DEBUG] decoded instruction ") + instruction.toString() +
+        std::format(" at ${:04X}", wordTo16(&debugStartPc)));
+  debug(std::format("New PC is ${:04X}\n", wordTo16(&vm->PC)));
+  return instruction;
+}
+
+void vmExecute(VM *vm, Instruction instruction) {
+  Word address;
+  switch (instruction.opCode.type) {
+    using enum OpCodeType;
+    uint8_t value;
+  case AND:
+    address = _operandToAddress(vm, instruction);
+    value = vmPeek(vm, address);
+    // TODO: Should this be here?
+    _setN(vm, value);
+    _setZ(vm, value);
+    vm->A = vm->A & value;
+    return;
+  case ASL:
+    value = _operandToValue(vm, instruction);
+    _setN(vm, value);
+    _setZ(vm, value);
+    _setC(vm, value & (1 << 7) ? true : false);
+    vm->A = value << 1;
+    return;
+  case BCC:
+    if (!_getC(vm)) {
+      vm->PC = _operandToAddress(vm, instruction);
+      debug(std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
+    }
+    return;
+  case BCS:
+    if (_getC(vm)) {
+      vm->PC = _operandToAddress(vm, instruction);
+      debug(std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
+    }
+    return;
+  case BEQ:
+    if (_getZ()) {
+      vm->PC = _operandToAddress(vm, instruction);
+      debug(std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
+    }
+    return;
+  case BNE:
+    if (!_getZ()) {
+      vm->PC = _operandToAddress(vm, instruction);
+      debug(std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
+    }
+    return;
+  case BPL:
+    // if not negative...
+    if ((vm->S & _N) == 0) {
+      vm->PC = _operandToAddress(vm, instruction);
+      debug(std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
+    }
+    return;
+  case CLD:
+    vm->S &= _DNot;
+    return;
+  case CMP:
+    if (instruction.opCode.addressing == AddressingMode::immediate) {
+      value = instruction.operand.immediate;
+    } else {
+      address = _operandToAddress(vm, instruction);
+      value = vmPeek(vm, address);
+    }
+    value = vm->A - value;
+    _setC(vm, value);
+    _setZ(vm, value);
+    _setN(vm, value);
+    return;
+  case CPX:
+    if (instruction.opCode.addressing == AddressingMode::immediate) {
+      value = instruction.operand.immediate;
+    } else {
+      address = _operandToAddress(vm, instruction);
+      value = vmPeek(vm, address);
+    }
+    value = vm->X - value;
+    _setC(vm, value);
+    _setZ(vm, value);
+    _setN(vm, value);
+    return;
+  case CPY:
+    if (instruction.opCode.addressing == AddressingMode::immediate) {
+      value = instruction.operand.immediate;
+    } else {
+      address = _operandToAddress(vm, instruction);
+      value = vmPeek(vm, address);
+    }
+    value = vm->Y - value;
+    _setC(vm, value);
+    _setZ(vm, value);
+    _setN(vm, value);
+    return;
+  case DEC:
+    address = _operandToAddress(vm, instruction);
+    value = vmPeek(vm, address) - 1;
+    vmPoke(vm, address, value);
+    _setZ(vm, value);
+    _setN(vm, value);
+    return;
+  case DEX:
+    vm->X -= 1;
+    // Is this handled correctly even though X is unsigned?
+    _setN(vm, vm->X);
+    _setZ(vm, vm->X);
+    return;
+  case DEY:
+    vm->Y -= 1;
+    // Is this handled correctly even though X is unsigned?
+    _setN(vm, vm->Y);
+    _setZ(vm, vm->Y);
+    return;
+  case INC:
+    address = _operandToAddress(vm, instruction);
+    value = vmPeek(vm, address) + 1;
+    vmPoke(vm, address, value);
+    _setN(vm, value);
+    _setZ(vm, value);
+    return;
+  case INX:
+    vm->X += 1;
+    _setN(vm, vm->X);
+    _setZ(vm, vm->X);
+    return;
+  case INY:
+    vm->Y += 1;
+    _setN(vm, vm->Y);
+    _setZ(vm, vm->Y);
+    return;
+  case JMP:
+    vm->PC = _operandToAddress(vm, instruction);
+    debug(std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
+    return;
+  case JSR:
+    // https://retrocomputing.stackexchange.com/questions/19543/why-does-the-6502-jsr-instruction-only-increment-the-return-address-by-2-bytes
+    _pushWord(vm, wordMinus(&vm->PC, 1));
+    vm->PC = _operandToAddress(vm, instruction);
+    debug(std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
+    return;
+  case LDA:
+    // TODO: handle carry with ABS,X?
+    value = _operandToValue(vm, instruction);
+    _setN(vm, value);
+    _setZ(vm, value);
+    vm->A = value;
+    return;
+  case LDX:
+    value = _operandToValue(vm, instruction);
+    _setN(vm, value);
+    _setZ(vm, value);
+    vm->X = value;
+    return;
+  case LDY:
+    value = _operandToValue(vm, instruction);
+    _setN(vm, value);
+    _setZ(vm, value);
+    vm->Y = value;
+    return;
+  case LSR:
+    // Will shift right-most bit into C
+    if (instruction.opCode.addressing == AddressingMode::accumulator) {
+      value = vm->A;
+      _setC(vm, (value & 0x1) > 0);
+      value = value >> 1;
+      vm->A = value;
+    } else {
+      address = _operandToAddress(vm, instruction);
+      value = vmPeek(vm, address);
+      _setC(vm, (value & 0x1) > 0);
+      value = value >> 1;
+      vmPoke(vm, address, value);
+    }
+    _setZ(vm, value);
+    _setN(vm, 0);
+    return;
+  case PHA:
+    _push(vm, vm->A);
+    return;
+  case RTS:
+    // See JSR
+    vm->PC = wordPlus(&vm->PC, 1);
+    return;
+  case SEI:
+    vm->S |= _I;
+    return;
+  case STA:
+    address = _operandToAddress(vm, instruction);
+    vmPoke(vm, address, vm->A);
+    return;
+  case STX:
+    address = _operandToAddress(vm, instruction);
+    vmPoke(vm, address, vm->X);
+    return;
+  case STY:
+    address = _operandToAddress(vm, instruction);
+    vmPoke(vm, address, vm->Y);
+    return;
+  case TAX:
+    vm->X = vm->A;
+    _setN(vm, vm->X);
+    _setZ(vm, vm->X);
+    return;
+  case TXS:
+    vm->SP = vm->X;
+    return;
+  case unimplemented:
+    abort();
+    // throw std::runtime_error(
+    //     std::string("Tried to execute unimplemented instruction: ") +
+    //     instruction.opCode.toString());
+  }
 }

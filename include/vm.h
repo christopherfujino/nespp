@@ -3,42 +3,43 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #include "instructions.h"
 struct Rom; // #include "rom.h"
 #include "word.h"
 
-class Mapper {
-public:
-  virtual ~Mapper() {}
-  virtual uint8_t peek16(uint16_t address) = 0;
-  virtual void poke16(uint16_t address, uint8_t value) = 0;
-};
-
-class Mapper0 : public Mapper {
-public:
-  Mapper0(std::shared_ptr<Rom> rom);
-  virtual ~Mapper0();
-  virtual uint8_t peek16(uint16_t address);
-  virtual void poke16(uint16_t address, uint8_t value);
-
+struct Mapper0 {
   std::shared_ptr<Rom> rom;
 
-private:
   // 32 KiB = 32768 = 0x8000
   uint8_t prg[0x8000] = {0};
 };
 
-struct VM {
-  VM(std::shared_ptr<Rom> rom);
-  ~VM();
+Mapper0 mapper0New(std::shared_ptr<Rom> rom);
+uint8_t mapper0Peek16(Mapper0 *mapper, uint16_t address);
+void mapper0Poke16(Mapper0 *mapper, uint16_t address, uint8_t value);
 
+// TODO: inline when we're in C world
+enum _MapperTag {
+  mapperTag0,
+};
+
+typedef struct Mapper {
+  _MapperTag tag;
+  union {
+    Mapper0 mapper0;
+  };
+} Mapper;
+
+uint8_t mapperPeek16(Mapper *mapper, uint16_t address);
+void mapperPoke16(Mapper *mapper, uint16_t address, uint8_t value);
+
+typedef struct VM {
   // registers
   Word PC;
-  uint8_t A = 0;
-  uint8_t X = 0;
-  uint8_t Y = 0;
+  uint8_t A;
+  uint8_t X;
+  uint8_t Y;
 
   /// Stack pointer
   ///
@@ -59,75 +60,34 @@ struct VM {
   /// ||+------- (no-op; always pushed as 1)
   /// |+-------- Overflow
   /// +--------- Negative
-  uint8_t S = 1 << 5;
+  uint8_t S;
 
   // Memory
 
   /// Mapped from $0000-$07FF, with 3 mirrors from $0800-$1FF
-  uint8_t ram[2048] = {0};
+  uint8_t ram[2048];
 
   /// Mapped from $2000-$2007
-  uint8_t ppuRegisters[8] = {0};
-  uint8_t apuAndIoRegisters[24] = {0};
+  uint8_t ppuRegisters[8];
+  uint8_t apuAndIoRegisters[24];
 
-  // Methods
-  void start();
+  Mapper mapper;
 
-  uint8_t peek(Word address);
-  uint8_t peek8(uint8_t offset);
-  uint8_t peek16(uint16_t address);
-
-  void poke(Word address, uint8_t value);
-  void poke16(uint16_t address, uint8_t value);
-
-  Instruction decodeInstruction();
-  void execute(Instruction instruction);
-
-private:
   std::shared_ptr<Rom> rom;
+} VM;
 
-  Mapper *mapper;
+VM vmNew(std::shared_ptr<Rom> _rom);
 
-  /// Negative bitmask
-  static constexpr uint8_t _N = 1 << 7;
-  static constexpr uint8_t _NNot = static_cast<uint8_t>(~_N);
+void vmPoke(VM *vm, Word address, uint8_t value);
+void vmPoke16(VM *vm, uint16_t address, uint8_t value);
 
-  ///// Overflow bitmask
-  // const uint8_t _V = 1 << 6;
+Instruction vmDecodeInstruction(VM *vm);
+void vmExecute(VM *vm, Instruction instruction);
 
-  static constexpr uint8_t _D = 1 << 3;
-  static constexpr uint8_t _DNot = ~_D;
+void vmStart(VM *vm);
 
-  // Interrupt bitmask
-  static constexpr uint8_t _I = 1 << 2;
-
-  /// Zero bitmask
-  static constexpr uint8_t _Z = 1 << 1;
-  static constexpr uint8_t _ZNot = ~_Z;
-
-  /// Carry bitmask
-  static constexpr uint8_t _C = 1 << 0;
-  static constexpr uint8_t _CNot = ~_C;
-
-  // Methods
-  inline void _setN(uint8_t other);
-  inline void _setZ(uint8_t other);
-  inline void _setC(bool didCarry);
-
-  inline bool _getZ();
-  inline bool _getC();
-
-  void _push(uint8_t);
-  void _pushWord(Word);
-
-  uint8_t _pop();
-  Word _popWord();
-
-  uint8_t _operandToValue(Instruction);
-  Word _operandToAddress(Instruction);
-
-protected:
-  virtual void debug(std::string) = 0;
-};
+uint8_t vmPeek(VM *vm, Word address);
+uint8_t vmPeek8(VM *vm, uint8_t offset);
+uint8_t vmPeek16(VM *vm, int16_t address);
 
 #endif // __MONOREPO_SRC_NESPP_INCLUDE_VM_H
