@@ -3,8 +3,8 @@
 #include "../include/rom.h"          // for Rom
 #include "../include/word.h"         // for Absolute
 #include <array>
-#include <cassert>
-#include <cstring>   // for memcpy
+#include <assert.h>
+#include <string.h>   // for memcpy
 #include <format>    // std::format
 #include <stdexcept> // std::runtime_except
 #include <utility>   // for std::move

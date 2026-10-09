@@ -1,7 +1,7 @@
 #ifndef __MONOREPO_SRC_NESPP_INCLUDE_VM_H
 #define __MONOREPO_SRC_NESPP_INCLUDE_VM_H
 
-#include <cstdint>
+#include <stdint.h>
 
 #include "instructions.h"
 struct Rom; // #include "rom.h"
