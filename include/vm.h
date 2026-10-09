@@ -2,20 +2,19 @@
 #define __MONOREPO_SRC_NESPP_INCLUDE_VM_H
 
 #include <cstdint>
-#include <memory>
 
 #include "instructions.h"
 struct Rom; // #include "rom.h"
 #include "word.h"
 
 struct Mapper0 {
-  std::shared_ptr<Rom> rom;
+  Rom *rom;
 
   // 32 KiB = 32768 = 0x8000
   uint8_t prg[0x8000] = {0};
 };
 
-Mapper0 mapper0New(std::shared_ptr<Rom> rom);
+Mapper0 mapper0New(Rom *rom);
 uint8_t mapper0Peek16(Mapper0 *mapper, uint16_t address);
 void mapper0Poke16(Mapper0 *mapper, uint16_t address, uint8_t value);
 
@@ -73,10 +72,10 @@ typedef struct VM {
 
   Mapper mapper;
 
-  std::shared_ptr<Rom> rom;
+  Rom *rom;
 } VM;
 
-VM vmNew(std::shared_ptr<Rom> _rom);
+VM vmNew(Rom *_rom);
 
 void vmPoke(VM *vm, Word address, uint8_t value);
 void vmPoke16(VM *vm, uint16_t address, uint8_t value);
@@ -88,6 +87,6 @@ void vmStart(VM *vm);
 
 uint8_t vmPeek(VM *vm, Word address);
 uint8_t vmPeek8(VM *vm, uint8_t offset);
-uint8_t vmPeek16(VM *vm, int16_t address);
+uint8_t vmPeek16(VM *vm, uint16_t address);
 
 #endif // __MONOREPO_SRC_NESPP_INCLUDE_VM_H

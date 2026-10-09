@@ -5,6 +5,7 @@
 
 #include "../include/debug.h"
 #include "../include/rom.h"
+#include "../include/vm.h"
 
 int main(int argc, char **argv) {
   const char *romPath = nullptr;
@@ -19,16 +20,20 @@ int main(int argc, char **argv) {
     romPath = argv[1];
   }
 
+  int exitCode = 0;
+  Debugger debugger = {};
   try {
-    // No copy
-    std::shared_ptr<Rom> p{new Rom(romPath)};
-    Debugger debugger = {p};
-    debugger.start();
+    auto rom = Rom(romPath);
+    debugger = debuggerNew(&rom);
+    debuggerStart(&debugger);
   } catch (std::runtime_error e) {
     fprintf(stderr, "caught: %s\n", e.what());
-    return 1;
+    exitCode = 1;
   } catch (...) {
     fprintf(stderr, "Unknown error!\n");
-    return 1;
+    exitCode = 1;
   }
+
+  debuggerDispose(&debugger);
+  return exitCode;
 }

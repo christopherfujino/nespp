@@ -76,6 +76,7 @@ static inline uint8_t _pop(VM *vm) {
   return vmPeek16(vm, i);
 }
 
+[[maybe_unused]]
 static inline Word _popWord(VM *vm) {
   auto low = _pop(vm);
   auto high = _pop(vm);
@@ -136,9 +137,9 @@ static Word _operandToAddress(VM *vm, Instruction instruction) {
 }
 
 // TODO: avoid the copy in return.
-Mapper0 mapper0New(std::shared_ptr<Rom> _rom) {
+Mapper0 mapper0New(Rom *_rom) {
   Mapper0 mapper;
-  mapper.rom = std::move(_rom);
+  mapper.rom = _rom;
 
   // TODO: should we copy, or should this just be a light view into the ROM?
   switch (_rom->prgSize) {
@@ -183,12 +184,30 @@ void mapper0Poke16(Mapper0 *mapper, uint16_t address, uint8_t value) {
   }
 }
 
-VM vmNew(std::shared_ptr<Rom> _rom) {
+uint8_t mapperPeek16(Mapper *mapper, uint16_t address) {
+  switch (mapper->tag) {
+  case mapperTag0:
+    return mapper0Peek16(&mapper->mapper0, address);
+  }
+  // unreachable
+  abort();
+}
+
+void mapperPoke16(Mapper *mapper, uint16_t address, uint8_t value) {
+  switch (mapper->tag) {
+    case mapperTag0:
+      return mapper0Poke16(&mapper->mapper0, address, value);
+  }
+  abort();
+}
+
+VM vmNew(Rom *_rom) {
   switch (_rom->mapper) {
   case 0:
     return VM{
         .PC = Word{},
         .A = 0,
+        .X = 0,
         .Y = 0,
         .SP = 0xFF,
         .S = 1 << 5,
@@ -424,13 +443,13 @@ void vmExecute(VM *vm, Instruction instruction) {
     }
     return;
   case BEQ:
-    if (_getZ()) {
+    if (_getZ(vm)) {
       vm->PC = _operandToAddress(vm, instruction);
       debug(std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
     }
     return;
   case BNE:
-    if (!_getZ()) {
+    if (!_getZ(vm)) {
       vm->PC = _operandToAddress(vm, instruction);
       debug(std::format("Jumping to ${:04X}", wordTo16(&vm->PC)));
     }

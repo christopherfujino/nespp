@@ -11,24 +11,27 @@
 #include <stdexcept>
 #include <stdint.h> // for uint8_t
 #include <stdio.h>  // sprintf()
-#include <utility>  // std::move
 
-_Queue::_Queue(int _size) : size(_size) {}
-
-void _Queue::enqueue(std::string element) {
-  if (contents.size() == size) {
-    contents.pop_front();
+static void _queueEnqueue(_Queue *queue, std::string element) {
+  if (queue->contents.size() == queue->size) {
+    queue->contents.pop_front();
   }
-  contents.push_back(element);
+  queue->contents.push_back(element);
 }
 
-void _Queue::renderLines(int y, int x, int _, int width) {
+static void _queueRenderLines(_Queue *queue, int y, int x, int _, int width) {
   // TODO check if height < size
   int currentY = y;
-  for (auto line : contents) {
+  for (auto line : queue->contents) {
     mvaddnstr(currentY, x, line.data(), width);
     currentY += 1;
   }
+}
+
+// TODO: figure this out
+void debug(std::string) {
+  abort();
+  // debugQueue.enqueue(msg);
 }
 
 void _renderBox(int y, int x, int height, int width) {
@@ -49,7 +52,7 @@ void _renderDebug(Debugger *dbg) {
   constexpr int width = 50;
   _renderBox(y, x, height, width);
 
-  dbg->debugQueue.renderLines(y + 1, x + 1, height - 2, width - 2);
+  _queueRenderLines(&dbg->debugQueue, y + 1, x + 1, height - 2, width - 2);
 }
 
 void _renderInstruction(Debugger *dbg) {
@@ -59,7 +62,8 @@ void _renderInstruction(Debugger *dbg) {
   // TODO take a height as an argument
   const int height = dbg->instructionQueue.size + 2;
   _renderBox(y, x, height, width);
-  dbg->instructionQueue.renderLines(y + 1, x + 1, height - 2, width - 2);
+  _queueRenderLines(&dbg->instructionQueue, y + 1, x + 1, height - 2,
+                    width - 2);
 }
 
 void _renderRegisters(Debugger *dbg) {
@@ -67,11 +71,12 @@ void _renderRegisters(Debugger *dbg) {
   constexpr int y = 0;
   constexpr int width = 27;
   constexpr int height = 4;
+  VM *vm = (VM *)dbg;
   _renderBox(y, x, height, width);
   mvprintw(y + 1, x + 1, "PC   A  X  Y  SP NV-BDIZC");
-  mvprintw(y + 2, x + 1, "%04X %02X %02X %02X %02X %s", wordTo16(&dbg->PC),
-           dbg->A, dbg->X, dbg->Y, dbg->SP,
-           std::bitset<8>{dbg->S}.to_string().data());
+  mvprintw(y + 2, x + 1, "%04X %02X %02X %02X %02X %s", wordTo16(&vm->PC),
+           vm->A, vm->X, vm->Y, vm->SP,
+           std::bitset<8>{vm->S}.to_string().data());
 }
 
 void _renderStack(Debugger *dbg) {
@@ -79,61 +84,74 @@ void _renderStack(Debugger *dbg) {
   constexpr int y = 0;
   constexpr int width = 10;
   constexpr int height = 13;
+  VM *vm = (VM *)dbg;
   for (int i = 0; i < height; i++) {
-    uint16_t ptr = dbg->SP + i + 0x0100;
+    uint16_t ptr = vm->SP + i + 0x0100;
     if (ptr > 0x01FF) {
       break;
     }
-    auto val = dbg->peek16(ptr);
+    auto val = vmPeek16(vm, ptr);
     mvprintw(y + i + 1, x + 1, "%04X: %02X", ptr, val);
   }
   _renderBox(y, x, height, width);
 }
 
-Debugger debuggerNew(std::shared_ptr<Rom> rom)  {
+Debugger debuggerNew(Rom *rom) {
   setlocale(LC_ALL, "en_US.UTF-8");
   initscr();
   return Debugger{
-    .super = vmNew(std::move(rom)),
+      .super = vmNew(rom),
+      .instructionQueue =
+          _Queue{
+              .size = 5,
+              .contents = std::list<std::string>(),
+          },
+      .debugQueue =
+          _Queue{
+              .size = 30,
+              .contents = std::list<std::string>(),
+          },
   };
 }
 
-Debugger::~Debugger() {
+void debuggerDispose(Debugger *debugger) {
   printw("about to call endwin()\n");
   endwin();
   printf("called endwin()\n");
-  auto it = debugQueue.contents.begin();
-  for (size_t i = 0; i < debugQueue.contents.size(); i++, it++) {
+  auto it = debugger->debugQueue.contents.begin();
+  for (size_t i = 0; i < debugger->debugQueue.contents.size(); i++, it++) {
     printf("%ld: %s\n", i, it->c_str());
   }
 }
 
-void Debugger::render() {
+void debuggerRender(Debugger *debugger) {
   clear();
-  _renderInstruction(this);
-  _renderRegisters(this);
-  _renderStack(this);
-  _renderDebug(this);
+  _renderInstruction(debugger);
+  _renderRegisters(debugger);
+  _renderStack(debugger);
+  _renderDebug(debugger);
 
   // prompt
-  mvaddstr(instructionQueue.size + 6, 0, "> ");
+  mvaddstr(debugger->instructionQueue.size + 6, 0, "> ");
   refresh();
 }
 
-void Debugger::start() {
-  PC = Word{
-      .low = peek16(0xFFFC),
-      .high = peek16(0xFFFD),
+void debuggerStart(Debugger *debugger) {
+  VM *vm = (VM *)debugger;
+  vm->PC = Word{
+      .high = vmPeek16(vm, 0xFFFD),
+      .low = vmPeek16(vm, 0xFFFC),
   };
 
   while (1) {
-    debug(std::format("PC = ${:02X}{:02X}\n", PC.high, PC.low));
-    auto insLoc = PC;
-    Instruction ins = decodeInstruction();
-    instructionQueue.enqueue(
+    debug(std::format("PC = ${:02X}{:02X}\n", vm->PC.high, vm->PC.low));
+    auto insLoc = vm->PC;
+    Instruction ins = vmDecodeInstruction(vm);
+    _queueEnqueue(
+        &debugger->instructionQueue,
         std::format("{:4X}: {}", wordTo16(&insLoc), ins.toString().data()));
-    execute(ins);
-    render();
+    vmExecute(vm, ins);
+    debuggerRender(debugger);
 
     constexpr size_t inputSize = 1024;
     char inputLine[inputSize] = {0};
@@ -147,8 +165,8 @@ void Debugger::start() {
     } else if (strncmp(inputLine, "setppu2", 7) == 0) {
       // TODO: is this right?
       // we're branching on if the zero flag is set, so don't branch
-      ppuRegisters[2] = 1 << 7;
-      debug(std::format("Setting PPU[2] = #{:02X}", ppuRegisters[2]));
+      vm->ppuRegisters[2] = 1 << 7;
+      debug(std::format("Setting PPU[2] = #{:02X}", vm->ppuRegisters[2]));
       continue;
     } else if (strncmp(inputLine, "exit", 4)) {
       exit(0);
@@ -159,5 +177,3 @@ void Debugger::start() {
     }
   }
 }
-
-void Debugger::debug(std::string msg) { debugQueue.enqueue(msg); }

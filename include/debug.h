@@ -7,13 +7,8 @@ struct Rom; // #include "rom.h"
 #include <string>
 
 struct _Queue {
-  _Queue(int _size);
-
-  void enqueue(std::string element);
-
-  void renderLines(int y, int x, int height, int width);
-
-  const unsigned int size;
+  // TODO: when in C, make this `const`
+  unsigned int size;
 
   std::list<std::string> contents;
 };
@@ -21,11 +16,14 @@ struct _Queue {
 struct Debugger {
   VM super;
 
-  _Queue instructionQueue = {5};
-  _Queue debugQueue = {30};
+  _Queue instructionQueue;
+  _Queue debugQueue;
 };
 
-Debugger debuggerNew(std::shared_ptr<Rom> rom);
-void start();
-void render();
+Debugger debuggerNew(Rom *rom);
+void debuggerStart(Debugger *debugger);
+void debuggerStart(Debugger *debugger);
+void debuggerRender(Debugger *debugger);
+void debuggerDispose(Debugger *debugger);
+
 void debug(std::string);
