@@ -42,6 +42,7 @@ enum OpCodeType {
   unimplemented,
 };
 
+// TODO namespace these
 enum AddressingMode {
   absolute,
   accumulator,
@@ -53,8 +54,8 @@ enum AddressingMode {
 };
 
 struct OpCode {
-  OpCodeType type = OpCodeType::unimplemented;
-  AddressingMode addressing = AddressingMode::implied;
+  OpCodeType type = unimplemented;
+  AddressingMode addressing = implied;
 
   std::string toString();
   bool operator==(OpCode other);
@@ -81,17 +82,18 @@ union InstructionOperandUnion {
 };
 
 struct Instruction {
-  // Default no-op
-  Instruction() : operand{.implied = nullptr} {}
-
-  Instruction(OpCode opCode, InstructionOperandUnion operand)
-      : opCode(opCode), operand(operand) {}
-
   OpCode opCode;
   InstructionOperandUnion operand;
-
-  std::string toString();
 };
+
+static inline Instruction instructionNew(OpCode opCode, InstructionOperandUnion operand) {
+  return Instruction{
+    .opCode = opCode,
+    .operand = operand,
+  };
+}
+
+std::string instructionToString(Instruction *);
 
 // TODO: delete VM::decodeInstruction
 Instruction decodeInstruction(uint8_t **src, int idx);

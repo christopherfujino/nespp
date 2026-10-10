@@ -201,26 +201,26 @@ std::string OpCode::toString() {
   return std::format("{} ({:02X})", opCodeNameLookup[opcode], opcode);
 }
 
-std::string Instruction::toString() {
+std::string instructionToString(Instruction *instruction) {
   using enum AddressingMode;
-  switch (opCode.addressing) {
+  switch (instruction->opCode.addressing) {
   case absolute:
     // TODO: is this the right order?
-    return std::format("{} {:02X} {:02X}", opCode.toString(),
-                       operand.absolute.low, operand.absolute.high);
+    return std::format("{} {:02X} {:02X}", instruction->opCode.toString(),
+                       instruction->operand.absolute.low, instruction->operand.absolute.high);
   case accumulator:
-    return std::format("{}  A", opCode.toString());
+    return std::format("{}  A", instruction->opCode.toString());
   case immediate:
-    return std::format("{} #{:02X}", opCode.toString(), operand.immediate);
+    return std::format("{} #{:02X}", instruction->opCode.toString(), instruction->operand.immediate);
   case implied:
-    return opCode.toString();
+    return instruction->opCode.toString();
   case indirect:
-    return std::format("{}  ({:02X} {:02X})", opCode.toString(),
-                       operand.indirect.low, operand.indirect.high);
+    return std::format("{}  ({:02X} {:02X})", instruction->opCode.toString(),
+                       instruction->operand.indirect.low, instruction->operand.indirect.high);
   case relative:
-    return std::format("{}  {:02X}", opCode.toString(), operand.relative);
+    return std::format("{}  {:02X}", instruction->opCode.toString(), instruction->operand.relative);
   case zeropage:
-    return std::format("{}  {:02X}", opCode.toString(), operand.zeropage);
+    return std::format("{}  {:02X}", instruction->opCode.toString(), instruction->operand.zeropage);
   }
-  return std::format("{}", opCode.toString());
+  return std::format("{}", instruction->opCode.toString());
 }

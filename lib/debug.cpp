@@ -148,7 +148,7 @@ void debuggerStart(Debugger *debugger) {
     Instruction ins = vmDecodeInstruction(vm);
     _queueEnqueue(
         &debugger->instructionQueue,
-        std::format("{:4X}: {}", wordTo16(&insLoc), ins.toString().data()));
+        std::format("{:4X}: {}", wordTo16(&insLoc), instructionToString(&ins).data()));
     vmExecute(vm, ins);
     debuggerRender(debugger);
 
