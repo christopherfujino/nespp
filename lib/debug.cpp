@@ -25,12 +25,11 @@ static inline size_t _queueLength(_Queue *queue) {
   return pastEnd - queue->start + queue->next - queue->contents;
 }
 
-static inline T *_maybeWrap(size_t len, T *start, T *cur) {
+static inline _QueueT *_maybeWrap(size_t len, _QueueT *start, _QueueT *cur) {
   auto pastEnd = start + len;
   if (cur == pastEnd) {
     return start;
   } else if (cur > pastEnd) {
-    // unreachable(?)
     abort();
   }
   return cur;

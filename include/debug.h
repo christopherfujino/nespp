@@ -6,14 +6,14 @@ struct Rom; // #include "rom.h"
 
 #include <string>
 
-typedef std::string T;
+typedef std::string _QueueT;
 struct _Queue {
   // TODO: when in C, make this `const`
   size_t size;
 
-  T *contents;
-  T *start;
-  T *next;
+  _QueueT *contents;
+  _QueueT *start;
+  _QueueT *next;
 };
 
 struct Debugger {
