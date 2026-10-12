@@ -9,7 +9,7 @@ LDFLAGS = -lncursesw #-fsanitize=address
 DEPFILES = `{/bin/sh -c 'find . -name "*.d"'}
 
 text-debugger.exe: bin/text-debugger.o lib/lib$PROJECT.a
-  $CXX $LDFLAGS -v $prereq -o $target
+  $CXX $LDFLAGS $prereq -o $target
 
 <|cat $DEPFILES /dev/null
 
