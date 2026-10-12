@@ -12,19 +12,54 @@
 #include <stdint.h> // for uint8_t
 #include <stdio.h>  // sprintf()
 
-static void _queueEnqueue(_Queue *queue, std::string element) {
-  if (queue->contents.size() == queue->size) {
-    queue->contents.pop_front();
+static inline size_t _queueLength(_Queue *queue) {
+  if (queue->start == queue->next) {
+    return 0;
   }
-  queue->contents.push_back(element);
+
+  if (queue->next > queue->start) {
+    return queue->next - queue->start;
+  }
+
+  auto pastEnd = queue->contents + queue->size;
+  return pastEnd - queue->start + queue->next - queue->contents;
+}
+
+static inline T *_maybeWrap(size_t len, T *start, T *cur) {
+  auto pastEnd = start + len;
+  if (cur == pastEnd) {
+    return start;
+  } else if (cur > pastEnd) {
+    // unreachable(?)
+    abort();
+  }
+  return cur;
+}
+
+static void _queueEnqueue(_Queue *queue, std::string element) {
+  if (_queueLength(queue) >= (queue->size - 1)) {
+    // buffer full
+    queue->start += 1;
+    if (queue->start == queue->contents + queue->size) {
+      queue->start = queue->contents;
+    }
+  }
+  *queue->next = element;
+  queue->next += 1;
+  if (queue->next == queue->contents + queue->size) {
+    queue->next = queue->contents;
+  }
 }
 
 static void _queueRenderLines(_Queue *queue, int y, int x, int _, int width) {
   // TODO check if height < size
   int currentY = y;
-  for (auto line : queue->contents) {
-    mvaddnstr(currentY, x, line.data(), width);
-    currentY += 1;
+  size_t len = _queueLength(queue);
+  auto ptr = queue->start;
+  for (size_t i = 0; i < len; i++, ptr++) {
+    ptr = _maybeWrap(queue->size, queue->contents, ptr);
+    mvaddnstr(currentY, x, ptr->c_str(), width);
+    currentY++;
   }
 }
 
@@ -96,19 +131,27 @@ extern void debuggerDebug(VM *vm, std::string s) {
 }
 
 Debugger debuggerNew(Rom *rom) {
+  constexpr size_t instructionLen = 5;
+  constexpr size_t debugLen = 30;
   setlocale(LC_ALL, "en_US.UTF-8");
   initscr();
+  auto instructionBuffer = new std::string[instructionLen];
+  auto debugBuffer = new std::string[debugLen];
   return Debugger{
       .super = vmNew(rom, debuggerDebug),
       .instructionQueue =
           _Queue{
-              .size = 5,
-              .contents = std::list<std::string>(),
+              .size = instructionLen,
+              .contents = instructionBuffer,
+              .start = instructionBuffer,
+              .next = instructionBuffer,
           },
       .debugQueue =
           _Queue{
-              .size = 30,
-              .contents = std::list<std::string>(),
+              .size = debugLen,
+              .contents = debugBuffer,
+              .start = debugBuffer,
+              .next = debugBuffer,
           },
   };
 }
@@ -117,8 +160,8 @@ void debuggerDispose(Debugger *debugger) {
   printw("about to call endwin()\n");
   endwin();
   printf("called endwin()\n");
-  auto it = debugger->debugQueue.contents.begin();
-  for (size_t i = 0; i < debugger->debugQueue.contents.size(); i++, it++) {
+  auto it = debugger->debugQueue.start;
+  for (size_t i = 0; i < debugger->debugQueue.size; i++, it++) {
     printf("%ld: %s\n", i, it->c_str());
   }
 }
@@ -146,9 +189,9 @@ void debuggerStart(Debugger *debugger) {
     vm->debug(vm, std::format("PC = ${:02X}{:02X}", vm->PC.high, vm->PC.low));
     auto insLoc = vm->PC;
     Instruction ins = vmDecodeInstruction(vm);
-    _queueEnqueue(
-        &debugger->instructionQueue,
-        std::format("{:4X}: {}", wordTo16(&insLoc), instructionToString(&ins).data()));
+    _queueEnqueue(&debugger->instructionQueue,
+                  std::format("{:4X}: {}", wordTo16(&insLoc),
+                              instructionToString(&ins).data()));
     vmExecute(vm, ins);
     debuggerRender(debugger);
 
@@ -165,9 +208,11 @@ void debuggerStart(Debugger *debugger) {
       // TODO: is this right?
       // we're branching on if the zero flag is set, so don't branch
       vm->ppuRegisters[2] = 1 << 7;
-      vm->debug(vm, std::format("Setting PPU[2] = #{:02X}", vm->ppuRegisters[2]));
+      vm->debug(vm,
+                std::format("Setting PPU[2] = #{:02X}", vm->ppuRegisters[2]));
       continue;
-    } else if ((strncmp(inputLine, "exit", 4)) || strncmp(inputLine, "quit", 4)) {
+    } else if ((strncmp(inputLine, "exit", 4)) ||
+               strncmp(inputLine, "quit", 4)) {
       throw std::runtime_error("Exit");
     } else {
       throw std::runtime_error(

@@ -1,7 +1,19 @@
-#pragma once
+#ifndef __MONOREPO_SRC_NESPP_INCLUDE_ROM_H
+#define __MONOREPO_SRC_NESPP_INCLUDE_ROM_H
 
 #include <cstdint>
 #include <stddef.h>
+
+static const size_t HEADER_SIZE = 16;
+
+// 8 bytes for plane 0, 8 bytes for plane 1
+static const size_t TILE_SIZE = 16;
+
+static const int SCREEN_WIDTH = 1920;
+static const int SCREEN_HEIGHT = 1080;
+static const int PIXEL_SCALE = 8;
+static const int TILE_WIDTH = 8 * PIXEL_SCALE;
+static const int TILES_PER_ROW = SCREEN_WIDTH / TILE_WIDTH;
 
 struct Rom {
   Rom(const char *path);
@@ -41,18 +53,13 @@ struct Rom {
   uint8_t *prgBlob;
   uint8_t *chrBlob;
 
-  static const size_t HEADER_SIZE = 16;
-
-  // 8 bytes for plane 0, 8 bytes for plane 1
-  static const size_t TILE_SIZE = 16;
-
-  static const int SCREEN_WIDTH = 1920;
-  static const int SCREEN_HEIGHT = 1080;
-  static const int PIXEL_SCALE = 8;
-  static const int TILE_WIDTH = 8 * PIXEL_SCALE;
-  static const int TILES_PER_ROW = SCREEN_WIDTH / TILE_WIDTH;
-
-private:
-  inline size_t prgStart();
-  inline size_t chrStart();
 };
+
+static inline size_t romPrgStart() {
+  return HEADER_SIZE;
+}
+static inline size_t romChrStart(Rom *rom) {
+  return HEADER_SIZE + rom->prgSize;
+}
+
+#endif // __MONOREPO_SRC_NESPP_INCLUDE_ROM_H

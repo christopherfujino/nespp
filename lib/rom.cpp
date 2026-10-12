@@ -71,7 +71,3 @@ Rom::~Rom() {
   free(prgBlob);
   free(chrBlob);
 }
-
-inline size_t Rom::prgStart() { return HEADER_SIZE; }
-
-inline size_t Rom::chrStart() { return this->prgStart() + this->prgSize; }

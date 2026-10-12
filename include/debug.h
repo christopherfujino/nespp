@@ -1,16 +1,19 @@
-#pragma once
+#ifndef __MONOREPO_SRC_NESPP_INCLUDE_DEBUG_H
+#define __MONOREPO_SRC_NESPP_INCLUDE_DEBUG_H
 
 struct Rom; // #include "rom.h"
 #include "vm.h"
-#include <list>
 
 #include <string>
 
+typedef std::string T;
 struct _Queue {
   // TODO: when in C, make this `const`
-  unsigned int size;
+  size_t size;
 
-  std::list<std::string> contents;
+  T *contents;
+  T *start;
+  T *next;
 };
 
 struct Debugger {
@@ -25,3 +28,5 @@ void debuggerStart(Debugger *debugger);
 void debuggerStart(Debugger *debugger);
 void debuggerRender(Debugger *debugger);
 void debuggerDispose(Debugger *debugger);
+
+#endif // __MONOREPO_SRC_NESPP_INCLUDE_DEBUG_H
