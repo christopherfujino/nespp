@@ -2,11 +2,10 @@
 #include "../include/instructions.h" // for OpCode, Instruction, OpCode::AND_ABS, OpC...
 #include "../include/rom.h"          // for Rom
 #include "../include/word.h"         // for Absolute
-#include <array>
 #include <assert.h>
-#include <string.h>   // for memcpy
 #include <format>    // std::format
 #include <stdexcept> // std::runtime_except
+#include <string.h>  // for memcpy
 #include <utility>   // for std::move
 
 /// Negative bitmask
@@ -84,7 +83,6 @@ static inline Word _popWord(VM *vm) {
 }
 
 static uint8_t _operandToValue(VM *vm, Instruction instruction) {
-  using enum AddressingMode;
   switch (instruction.opCode.addressing) {
   case accumulator:
     return vm->A;
@@ -192,13 +190,13 @@ uint8_t mapperPeek16(Mapper *mapper, uint16_t address) {
 
 void mapperPoke16(Mapper *mapper, uint16_t address, uint8_t value) {
   switch (mapper->tag) {
-    case mapperTag0:
-      return mapper0Poke16(&mapper->mapper0, address, value);
+  case mapperTag0:
+    return mapper0Poke16(&mapper->mapper0, address, value);
   }
   abort();
 }
 
-VM vmNew(Rom *_rom, void(*debug)(VM *, std::string)) {
+VM vmNew(Rom *_rom, void (*debug)(VM *, std::string)) {
   switch (_rom->mapper) {
   case 0:
     return VM{
@@ -269,14 +267,14 @@ uint8_t vmPeek16(VM *vm, uint16_t address) {
   } else if (address < 0x2008) {
     uint8_t offset = address - 0x2000;
     vm->debug(vm, std::format("DEBUG PPU register: {} = 0x{:02X}", offset,
-                      vm->ppuRegisters[offset]));
+                              vm->ppuRegisters[offset]));
     return vm->ppuRegisters[offset];
   } else if (address < 0x4000) {
     throw "TODO implement PPU register repeats";
   } else if (address < 0x4018) {
     uint8_t offset = address - 0x4000;
-    vm->debug(vm, std::format("DEBUG APU or I/O register: {} = 0x{:02X}", address,
-                      vm->apuAndIoRegisters[offset]));
+    vm->debug(vm, std::format("DEBUG APU or I/O register: {} = 0x{:02X}",
+                              address, vm->apuAndIoRegisters[offset]));
     return vm->apuAndIoRegisters[offset];
   } else if (address < 0x4020) {
     throw "TODO: implement APU & I/O functionality that is normally disabled";
