@@ -2,8 +2,8 @@
 #define __MONOREPO_SRC_NESPP_INCLUDE_ROM_H
 
 #include "common.h" // Result
-#include <cstdint>
 #include <stddef.h>
+#include <stdint.h>
 
 static const size_t HEADER_SIZE = 16;
 
@@ -16,7 +16,11 @@ static const int PIXEL_SCALE = 8;
 static const int TILE_WIDTH = 8 * PIXEL_SCALE;
 static const int TILES_PER_ROW = SCREEN_WIDTH / TILE_WIDTH;
 
-struct Rom {
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct Rom {
   // Size of PRG ROM in bytes
   //
   // Parsed from 16 KB units.
@@ -49,17 +53,19 @@ struct Rom {
   // rippers put their name across bytes 7-15)
   uint8_t *prgBlob;
   uint8_t *chrBlob;
-};
+} Rom;
 
 void romDispose(Rom *rom);
 
 Result romNew(Rom *rom, const char *path);
 
-static inline size_t romPrgStart() {
-  return HEADER_SIZE;
-}
+static inline size_t romPrgStart() { return HEADER_SIZE; }
 static inline size_t romChrStart(Rom *rom) {
   return HEADER_SIZE + rom->prgSize;
 }
+
+#ifdef __cplusplus
+} // extern "C" {
+#endif
 
 #endif // __MONOREPO_SRC_NESPP_INCLUDE_ROM_H

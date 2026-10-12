@@ -10,12 +10,12 @@
 // extension) 11-15	Unused padding (should be filled with zero, but some
 // rippers put their name across bytes 7-15)
 
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib> // malloc()
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h> // malloc()
 
-#include "../include/rom.h"
 #include "common.h"
+#include "rom.h"
 
 Result romNew(Rom *rom, const char *path) {
   uint8_t headerBytes[HEADER_SIZE];

@@ -1,13 +1,11 @@
 #include <linux/prctl.h> // PR_SET_PTRACER
-#include <stdexcept>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/prctl.h>
 #include <sys/types.h>
 
-#include "../include/debug.h"
-#include "../include/rom.h"
-#include "../include/vm.h"
+#include "debug.h"
+#include "rom.h"
 
 #define _USAGE()                                                               \
   do {                                                                         \

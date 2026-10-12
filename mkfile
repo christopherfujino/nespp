@@ -9,7 +9,7 @@ LDFLAGS = -lncursesw #-fsanitize=address
 DEPFILES = `{/bin/sh -c 'find . -name "*.d"'}
 
 text-debugger.exe: bin/text-debugger.o lib/lib$PROJECT.a
-  $CXX $LDFLAGS $prereq -o $target
+  $CXX $LDFLAGS -v $prereq -o $target
 
 <|cat $DEPFILES /dev/null
 
@@ -29,6 +29,11 @@ bin/%.o: bin/%.cpp
     -MT $target -MMD -MP -MF bin/$stem.d \
     -c bin/$stem.cpp -o $target
 
+lib/%.o: lib/%.c
+  $CC $CFLAGS \
+    -MT $target -MMD -MP -MF lib/$stem.d \
+    -c lib/$stem.c -o $target
+
 lib/%.o: lib/%.cpp
   $CXX $CXXFLAGS \
     -MT $target -MMD -MP -MF lib/$stem.d \
@@ -44,3 +49,5 @@ lib/lib$PROJECT.a: \
 
 clean:V:
   rm -rf **/*.d **/*.o **/*.a *.exe
+
+# vim: ft=make
