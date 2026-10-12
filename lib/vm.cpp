@@ -405,7 +405,6 @@ Instruction vmDecodeInstruction(VM *vm) {
 void vmExecute(VM *vm, Instruction instruction) {
   Word address;
   switch (instruction.opCode.type) {
-    using enum OpCodeType;
     uint8_t value;
   case AND:
     address = _operandToAddress(vm, instruction);

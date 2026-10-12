@@ -1,4 +1,5 @@
 #include <linux/prctl.h> // PR_SET_PTRACER
+#include <stdexcept>     // std::runtime_error
 #include <stdlib.h>
 #include <string.h>
 #include <sys/prctl.h>
@@ -72,16 +73,17 @@ int main(int argc, char **argv) {
     Rom rom;
     auto result = romNew(&rom, config.romPath);
     switch (result.tag) {
-      case resultOk_t:
-        debugger = debuggerNew(&rom);
-        debuggerStart(&debugger);
-        break;
-      case resultErr_t:
-        strncpy(msgBuffer, result.err, msgBufferLen);
-        break;
+    case resultOk_t:
+      debugger = debuggerNew(&rom);
+      debuggerStart(&debugger);
+      break;
+    case resultErr_t:
+      strncpy(msgBuffer, result.err, msgBufferLen);
+      break;
     }
-  } catch (...) {
-    snprintf(msgBuffer, msgBufferLen, "TODO: you should migrate this to `Result`!\n");
+  } catch (std::runtime_error err) {
+    snprintf(msgBuffer, msgBufferLen, "ERR(%s): migrate this to `Result`!\n",
+             err.what());
     exitCode = 1;
   }
 
