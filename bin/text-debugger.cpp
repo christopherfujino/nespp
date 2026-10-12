@@ -1,23 +1,69 @@
+#include <linux/prctl.h> // PR_SET_PTRACER
 #include <stdexcept>
-#ifdef NDEBUG
-#include <cstdio>
-#endif
+#include <stdlib.h>
+#include <string.h>
+#include <sys/prctl.h>
+#include <sys/types.h>
 
 #include "../include/debug.h"
 #include "../include/rom.h"
 #include "../include/vm.h"
 
-int main(int argc, char **argv) {
-  const char *romPath = nullptr;
+#define _USAGE()                                                               \
+  do {                                                                         \
+    printf("Usage: TODO\n");                                                   \
+    for (int i = 0; i < argc; i++) {                                           \
+      printf("\t%d: %s\n", i, argv[i]);                                        \
+    }                                                                          \
+    abort();                                                                   \
+  } while (0)
+
+typedef struct {
+  const char *romPath;
+  pid_t pid;
+} Config;
+
+static inline Config parse(int argc, char **argv) {
+  auto config = Config{
+      .romPath = "./rom.nes",
+      .pid = 0,
+  };
+
   if (argc == 1) {
-#ifdef NDEBUG
-    fprintf(stderr, "Usage: bin.exe path-to-rom.nes\n");
-    return 1;
-#else
-    romPath = "./rom.nes";
-#endif
-  } else {
-    romPath = argv[1];
+    return config;
+  }
+
+  for (int i = 1; i < argc; i++) {
+    if (strcmp("--rom", argv[i]) == 0) {
+      printf("[DEBUG] match at %d\n", i);
+      i += 1;
+      config.romPath = argv[i];
+      printf("[DEBUG] ROM at %d: %s\n", i, config.romPath);
+      continue;
+    }
+    if (strcmp("--debugger-pid", argv[i]) == 0) {
+      i += 1;
+      int pid = atoi(argv[i]);
+      if (pid == 0) {
+        _USAGE();
+      }
+      config.pid = pid;
+      continue;
+    }
+    _USAGE();
+  }
+
+  return config;
+}
+
+int main(int argc, char **argv) {
+  Config config = parse(argc, argv);
+  if (config.pid != 0) {
+    int res = prctl(PR_SET_PTRACER, config.pid, 0, 0, 0);
+    if (res < 0) {
+      perror("prctl() failed");
+      return 1;
+    }
   }
 
   int exitCode = 0;
@@ -25,7 +71,7 @@ int main(int argc, char **argv) {
   constexpr size_t msgBufferLen = 512;
   char msgBuffer[msgBufferLen] = {0};
   try {
-    auto rom = Rom(romPath);
+    auto rom = Rom(config.romPath);
     debugger = debuggerNew(&rom);
     debuggerStart(&debugger);
   } catch (std::runtime_error e) {

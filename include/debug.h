@@ -25,7 +25,6 @@ struct Debugger {
 
 Debugger debuggerNew(Rom *rom);
 void debuggerStart(Debugger *debugger);
-void debuggerStart(Debugger *debugger);
 void debuggerRender(Debugger *debugger);
 void debuggerDispose(Debugger *debugger);
 
