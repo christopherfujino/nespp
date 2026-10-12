@@ -161,6 +161,7 @@ void debuggerDispose(Debugger *debugger) {
   printf("called endwin()\n");
   auto it = debugger->debugQueue.start;
   for (size_t i = 0; i < debugger->debugQueue.size; i++, it++) {
+    _maybeWrap(debugger->debugQueue.size, debugger->debugQueue.start, it);
     printf("%ld: %s\n", i, it->c_str());
   }
 }

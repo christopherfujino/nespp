@@ -71,14 +71,19 @@ int main(int argc, char **argv) {
   constexpr size_t msgBufferLen = 512;
   char msgBuffer[msgBufferLen] = {0};
   try {
-    auto rom = Rom(config.romPath);
-    debugger = debuggerNew(&rom);
-    debuggerStart(&debugger);
-  } catch (std::runtime_error e) {
-    snprintf(msgBuffer, msgBufferLen, "caught: %s\n", e.what());
-    exitCode = 1;
+    Rom rom;
+    auto result = romNew(&rom, config.romPath);
+    switch (result.tag) {
+      case resultOk_t:
+        debugger = debuggerNew(&rom);
+        debuggerStart(&debugger);
+        break;
+      case resultErr_t:
+        strncpy(msgBuffer, result.err, msgBufferLen);
+        break;
+    }
   } catch (...) {
-    snprintf(msgBuffer, msgBufferLen, "Unknown error!\n");
+    snprintf(msgBuffer, msgBufferLen, "TODO: you should migrate this to `Result`!\n");
     exitCode = 1;
   }
 

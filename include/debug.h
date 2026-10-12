@@ -4,6 +4,7 @@
 struct Rom; // #include "rom.h"
 #include "vm.h"
 
+#include <stddef.h>
 #include <string>
 
 typedef std::string _QueueT;

@@ -13,61 +13,65 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib> // malloc()
-#include <format>
-#include <stdexcept>
 
 #include "../include/rom.h"
+#include "common.h"
 
-Rom::Rom(const char *path) {
+Result romNew(Rom *rom, const char *path) {
   uint8_t headerBytes[HEADER_SIZE];
 
   FILE *f = fopen(path, "rb");
   if (f == nullptr) {
-    throw std::runtime_error(std::format("Failed to open a ROM at {}", path));
+    constexpr size_t buflen = 128;
+    char *buf = (char *)malloc(buflen);
+    snprintf(buf, buflen, "Failed to open a ROM at %s", path);
+    return resultErr(buf);
   }
   fread(&headerBytes, HEADER_SIZE, 1, f);
 
   if (headerBytes[0] != 'N' || headerBytes[1] != 'E' || headerBytes[2] != 'S' ||
       headerBytes[3] != 0x1a) {
-    throw "Unknown ROM format!";
+    return resultErr("Unknown ROM format!");
   }
 
-  prgSize = (int)headerBytes[4] * 1024 * 16;
-  chrSize = (int)headerBytes[5] * 1024 * 8;
+  rom->prgSize = (int)headerBytes[4] * 1024 * 16;
+  rom->chrSize = (int)headerBytes[5] * 1024 * 8;
   uint8_t flags6 = headerBytes[6];
-  nameTableArrangement = flags6 & 1;
-  batteryBackedPRGRam = flags6 & 1 << 1;
-  trainer = flags6 & 1 << 2;
-  alternativeNametableLayout = flags6 & 1 << 3;
+  rom->nameTableArrangement = flags6 & 1;
+  rom->batteryBackedPRGRam = flags6 & 1 << 1;
+  rom->trainer = flags6 & 1 << 2;
+  rom->alternativeNametableLayout = flags6 & 1 << 3;
   uint8_t lowerNibbleOfMapper = (flags6 & 0b11110000) >> 4;
 
   uint8_t flags7 = headerBytes[7];
   if (flags7 & 1) {
-    throw "TODO: implement VS Unisystem";
+    return resultErr("TODO: implement VS Unisystem");
   }
   if (flags7 & (1 << 1)) {
-    throw "TODO: implement Playchoice-10";
+    return resultErr("TODO: implement Playchoice-10");
   }
   if (flags7 & 0b1100) {
-    throw "TODO: implement NES2.0";
+    return resultErr("TODO: implement NES2.0");
   }
   uint8_t upperNibbleOfMapper = flags7 & 0b11110000;
-  mapper = upperNibbleOfMapper | lowerNibbleOfMapper;
+  rom->mapper = upperNibbleOfMapper | lowerNibbleOfMapper;
 
   // TODO parse flags 8-10
 
-  prgBlob = (uint8_t *)malloc(sizeof(uint8_t) * prgSize);
-  fread(prgBlob, prgSize, 1, f);
+  rom->prgBlob = (uint8_t *)malloc(sizeof(uint8_t) * rom->prgSize);
+  fread(rom->prgBlob, rom->prgSize, 1, f);
   // printf("read %d bytes of PRG ROM.\n", rom->prgSize);
 
-  chrBlob = (uint8_t *)malloc(sizeof(uint8_t) * chrSize);
-  fread(chrBlob, chrSize, 1, f);
+  rom->chrBlob = (uint8_t *)malloc(sizeof(uint8_t) * rom->chrSize);
+  fread(rom->chrBlob, rom->chrSize, 1, f);
   // printf("read %d bytes of CHR ROM.\n", rom->chrSize);
 
   fclose(f);
+
+  return resultOk();
 }
 
-Rom::~Rom() {
-  free(prgBlob);
-  free(chrBlob);
+void romDispose(Rom *rom) {
+  free(rom->prgBlob);
+  free(rom->chrBlob);
 }
