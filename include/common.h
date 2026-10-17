@@ -1,6 +1,10 @@
 #ifndef __MONOREPO_SRC_NESPP_INCLUDE_COMMON_H
 #define __MONOREPO_SRC_NESPP_INCLUDE_COMMON_H
 
+#include <stdarg.h> // va_list
+#include <stdio.h>  // vfprintf()
+#include <stdlib.h> // abort()
+
 #ifdef __cplusplus
 #define WRAP_LITERAL(v) v
 #else
@@ -33,6 +37,17 @@ static inline Result resultErr(const char *msg) {
       .tag = resultErr_t,
       .err = msg,
   };
+}
+
+[[noreturn]] [[gnu::format(printf, 1, 2)]]
+static inline void panic(const char *fmt, ...) {
+  // TODO: do something different in RELEASE?
+  // TODO: streamline this when we universally use C23
+  va_list args;
+  va_start(args, fmt);
+  vfprintf(stderr, fmt, args);
+  va_end(args);
+  abort();
 }
 
 #endif // __MONOREPO_SRC_NESPP_INCLUDE_COMMON_H

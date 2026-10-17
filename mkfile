@@ -20,6 +20,9 @@ text-debugger.exe: bin/text-debugger.o lib/lib$PROJECT.a
 tileBrowser.exe: bin/tileBrowser.o lib/lib$PROJECT.a $RAYLIB_BUILD/libraylib.a
 	$CXX $LDFLAGS -lm -lX11 $prereq -o $target
 
+romToSource.exe: bin/romToSource.o lib/lib$PROJECT.a $RAYLIB_BUILD/libraylib.a
+	$CXX $LDFLAGS -lm -lX11 $prereq -o $target
+
 test:V: test.exe
   ./test.exe
 
@@ -30,6 +33,11 @@ bin/%.o: bin/%.c
   $CC $CFLAGS \
     -MT $target -MMD -MP -MF bin/$stem.d \
     -c bin/$stem.c -o $target
+
+bin/romToSource.o: bin/romToSource.c
+  $CC $CFLAGS -I$RAYLIB_INCLUDE \
+    -MT $target -MMD -MP -MF bin/$stem.d \
+    -c bin/romToSource.c -o $target
 
 bin/tileBrowser.o: bin/tileBrowser.cpp
   $CXX $CXXFLAGS -I$RAYLIB_INCLUDE \

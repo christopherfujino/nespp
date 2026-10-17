@@ -16,12 +16,10 @@ int main(int argc, char **argv) {
   try {
     Result res = romNew(&rom, argv[1]);
     if (res.tag != resultOk_t) {
-      fprintf(stderr, "Error: %s\n", res.err);
-      abort();
+      panic("Error: %s\n", res.err);
     }
   } catch (const char *msg) {
-    fprintf(stderr, "Caught %s!\n", msg);
-    return 1;
+    panic("TODO: rewrite to use Result: %s!\n", msg);
   }
   render(&rom);
 }
@@ -38,6 +36,8 @@ void render(Rom *rom) {
 
   int tileNumber = 0;
   while (!WindowShouldClose()) {
+    BeginDrawing();
+
     if (IsKeyDown(KEY_L)) {
       tileNumber += 1;
       if (tileNumber >= n) {
@@ -48,8 +48,10 @@ void render(Rom *rom) {
       if (tileNumber < 0) {
         tileNumber = 0;
       }
+    } else {
+      EndDrawing();
+      continue;
     }
-    BeginDrawing();
 
     ClearBackground(BLACK);
 
@@ -91,5 +93,6 @@ void renderTile(Rom *rom, int i) {
               .a = (unsigned char)(0xFF / 3 * bit),
           });
     }
+    printf("%d:\t0x%02X, 0x%02X\n", i, plane0Byte, plane1Byte);
   }
 }
