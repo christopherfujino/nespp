@@ -93,6 +93,5 @@ void renderTile(Rom *rom, int i) {
               .a = (unsigned char)(0xFF / 3 * bit),
           });
     }
-    printf("%d:\t0x%02X, 0x%02X\n", i, plane0Byte, plane1Byte);
   }
 }
