@@ -1,7 +1,8 @@
 #include <cstdio>
+#include <cstdlib>
 
-#include "../THIRD_PARTY/raylib-5.5/out/raylib/include/raylib.h"
-#include "../include/rom.h"
+#include "raylib.h"
+#include "rom.h"
 
 void render(Rom *rom);
 void renderTile(Rom *rom, int i);
@@ -13,7 +14,11 @@ int main(int argc, char **argv) {
   }
   Rom rom;
   try {
-    rom = Rom::fromPath(argv[1]);
+    Result res = romNew(&rom, argv[1]);
+    if (res.tag != resultOk_t) {
+      fprintf(stderr, "Error: %s\n", res.err);
+      abort();
+    }
   } catch (const char *msg) {
     fprintf(stderr, "Caught %s!\n", msg);
     return 1;
@@ -23,9 +28,9 @@ int main(int argc, char **argv) {
 
 void render(Rom *rom) {
   // Decode n tiles
-  const int n = rom->chrSize / Rom::TILE_SIZE;
+  const int n = rom->chrSize / TILE_SIZE;
 
-  InitWindow(Rom::SCREEN_WIDTH, Rom::SCREEN_HEIGHT, "NES");
+  InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "NES");
   SetTargetFPS(10);
 
   const int MESSAGE_MAX = 100;
@@ -51,7 +56,7 @@ void render(Rom *rom) {
     renderTile(rom, tileNumber);
 
     snprintf(msg, MESSAGE_MAX, "%d/%d", tileNumber, n);
-    DrawText(msg, 5 * Rom::PIXEL_SCALE, 20 * Rom::PIXEL_SCALE, 96, WHITE);
+    DrawText(msg, 5 * PIXEL_SCALE, 20 * PIXEL_SCALE, 96, WHITE);
 
     EndDrawing();
   }
@@ -61,7 +66,7 @@ void renderTile(Rom *rom, int i) {
   int x = 5;
   int y = 5;
 
-  std::size_t tileOffset = i * (Rom::TILE_SIZE);
+  std::size_t tileOffset = i * (TILE_SIZE);
   for (int byteOffset = 0; byteOffset < 8; byteOffset++) {
     uint8_t plane0Byte = rom->chrBlob[tileOffset + byteOffset];
     uint8_t plane1Byte = rom->chrBlob[tileOffset + byteOffset + 8];
@@ -75,11 +80,11 @@ void renderTile(Rom *rom, int i) {
       // int y = ((i * 8 / TILES_PER_ROW) + byteOffset);
       DrawRectangleV(
           // position
-          (Vector2){.x = (float)((x + bitOffset) * Rom::PIXEL_SCALE),
-                    .y = (float)((y + byteOffset) * Rom::PIXEL_SCALE)},
+          Vector2{.x = (float)((x + bitOffset) * PIXEL_SCALE),
+                  .y = (float)((y + byteOffset) * PIXEL_SCALE)},
           // size
-          (Vector2){.x = Rom::PIXEL_SCALE, .y = Rom::PIXEL_SCALE},
-          (Color){
+          Vector2{.x = PIXEL_SCALE, .y = PIXEL_SCALE},
+          Color{
               .r = 0xFF,
               .g = 0xFF,
               .b = 0xFF,
