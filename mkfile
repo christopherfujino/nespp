@@ -12,6 +12,8 @@ RAYLIB_VERSION = 5.5
 RAYLIB_INCLUDE = ../../3p/raylib/build/raylib/include
 RAYLIB_BUILD = ../../3p/raylib/build/raylib
 
+all:V: text-debugger.exe tileBrowser.exe romToSource.exe
+
 text-debugger.exe: bin/text-debugger.o lib/lib$PROJECT.a
   $CXX $LD_CURSES $LDFLAGS $prereq -o $target
 
