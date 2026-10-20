@@ -1,10 +1,11 @@
 PROJECT = nespp
 CC = bear --append -- clang
+CVERSION = c23
 CXX = bear --append -- clang++
 AR = llvm-ar
 DEBUG_FLAGS = -g -O0 #-fsanitize=address
 CXXFLAGS = $DEBUG_FLAGS -std=c++20 -Wall -Werror -Wpedantic -Wextra -I./include
-CFLAGS = $DEBUG_FLAGS -std=c23 -Wall -Werror -Wpedantic -Wextra -I./include
+CFLAGS = $DEBUG_FLAGS -std=$CVERSION -Wall -Werror -Wpedantic -Wextra -I./include
 LDFLAGS = #-fsanitize=address
 LD_CURSES = -lncursesw
 DEPFILES = `{/bin/sh -c 'find . -name "*.d"'}
@@ -62,11 +63,12 @@ lib/%.o: lib/%.cpp
     -c lib/$stem.cpp -o $target
 
 lib/lib$PROJECT.a: \
-    lib/rom.o \
-    lib/debug.o \
-    lib/vm.o \
-    lib/word.o \
-    lib/instructions.o
+	lib/common.o \
+	lib/debug.o \
+	lib/instructions.o \
+	lib/rom.o \
+	lib/word.o \
+	lib/vm.o
 	$AR rcs $target $prereq
 
 clean:V:

@@ -78,7 +78,8 @@ int main(int argc, char **argv) {
       debuggerStart(&debugger);
       break;
     case resultErr_t:
-      strncpy(msgBuffer, result.err, msgBufferLen);
+      strncpy(msgBuffer, result.err.s, msgBufferLen);
+
       break;
     }
   } catch (std::runtime_error err) {

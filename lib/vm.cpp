@@ -103,7 +103,6 @@ static uint8_t _operandToValue(VM *vm, Instruction instruction) {
 }
 
 static Word _operandToAddress(VM *vm, Instruction instruction) {
-  using enum AddressingMode;
   switch (instruction.opCode.addressing) {
   case absolute:
     return instruction.operand.absolute;

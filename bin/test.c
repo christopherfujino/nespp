@@ -1,59 +1,21 @@
-#include "word.h"
-#include <assert.h>
-#include <stdint.h>
-#include <stdio.h>
+#include <stdint.h> // uint8_t
 #include <stdlib.h> // malloc()
+#include <string.h> // memset()
 
-typedef bool (*Test)();
-typedef struct {
-  const char *name;
-  Test test;
-} SuiteEntry;
-typedef struct Suite {
-  size_t tests;
-  size_t test_cap;
-  SuiteEntry *test_buf;
-} Suite;
+#include "common.h"
+#include "test.h"
+#include "word.h"
 
 constexpr size_t string_size = 1024;
 char string_buf[string_size];
 
-static Suite SuiteNew() {
-  constexpr size_t init_cap = 8;
-  SuiteEntry *buf = malloc(sizeof(SuiteEntry) * init_cap);
-  return (Suite){
-      .tests = 0,
-      .test_cap = init_cap,
-      .test_buf = buf,
-  };
-}
+static char *mkstring(size_t len) {
+  char *s = malloc(len);
 
-static void mktest(Suite *suite, const char *name, Test test) {
-  if (suite->tests == suite->test_cap) {
-    suite->test_cap *= 2;
-    suite->test_buf = realloc(suite->test_buf, suite->test_cap);
-    if (suite->test_buf == nullptr) {
-      abort();
-    }
-  }
-  suite->test_buf[suite->tests] = (SuiteEntry){
-      .name = name,
-      .test = test,
-  };
-  suite->tests++;
-}
+  memset(s, 'c', len - 1);
+  s[len - 1] = '\0';
 
-static void runsuite(Suite *suite) {
-  size_t passes = 0;
-  for (size_t i = 0; i < suite->tests; i++) {
-    bool result = suite->test_buf[i].test();
-    if (result) {
-      passes++;
-    } else {
-      printf("Test \"%s\" failed.\n", suite->test_buf[i].name);
-    }
-  }
-  printf("%ld of %ld tests passed.\n", passes, suite->tests);
+  return s;
 }
 
 static bool test0() {
@@ -63,9 +25,25 @@ static bool test0() {
   return wordTo16(&sum) == 0x0101;
 }
 
+static bool test1() {
+  constexpr size_t buflen = 1024;
+  char *string = mkstring(buflen + 1);
+  char *newString = nullptr;
+  chrisprintf(&newString, "%s", string);
+  char *cursor = newString;
+  size_t count = 0;
+  while (*cursor != '\0') {
+    if (*cursor != 'c') {
+      abort();
+    }
+  }
+  return true;
+}
+
 int main() {
   Suite suite = SuiteNew();
-  mktest(&suite, "foo", test0);
+  suiteAddTest(&suite, "foo", test0);
+  suiteAddTest(&suite, "common:chrisprintf", test1);
 
-  runsuite(&suite);
+  suiteRun(&suite);
 }

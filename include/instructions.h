@@ -1,10 +1,9 @@
 #pragma once
 
-#include <array>
 #include <stdint.h>
 #include <string>
-#include <utility>
 
+#include "common.h"
 #include "word.h"
 
 enum OpCodeType {
@@ -56,10 +55,10 @@ enum AddressingMode {
 struct OpCode {
   OpCodeType type = unimplemented;
   AddressingMode addressing = implied;
-
-  std::string toString();
-  bool operator==(OpCode other);
 };
+
+bool opCodeIsEqual(OpCode first, OpCode second);
+Result opCodeToString(OpCode *code, char **that);
 
 typedef struct LookupTables {
   const char *names[256];
@@ -86,10 +85,13 @@ struct Instruction {
   InstructionOperandUnion operand;
 };
 
-static inline Instruction instructionNew(OpCode opCode, InstructionOperandUnion operand) {
+std::string instructionToString(Instruction *);
+
+static inline Instruction instructionNew(OpCode opCode,
+                                         InstructionOperandUnion operand) {
   return Instruction{
-    .opCode = opCode,
-    .operand = operand,
+      .opCode = opCode,
+      .operand = operand,
   };
 }
 
