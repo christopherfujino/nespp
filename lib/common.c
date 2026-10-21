@@ -17,7 +17,7 @@ void resultDispose(Result *result) {
   }
 }
 
-void chrisprintf(char **restrict strp, const char *restrict fmt, ...) {
+Result chrisprintf(char **restrict strp, const char *restrict fmt, ...) {
   constexpr size_t initialBuflen = 1024;
   size_t currentBuflen = initialBuflen;
   char initialBuf[initialBuflen];
@@ -29,7 +29,7 @@ void chrisprintf(char **restrict strp, const char *restrict fmt, ...) {
     n = vsnprintf(buf, currentBuflen, fmt, args);
     // TODO validate n
     if (n < 0) {
-      panic("vsnprintf() failed\n");
+      return resultErr("vsnprintf() failed", false);
     } else if (n == (int)currentBuflen) {
       currentBuflen *= 2;
       if (buf == initialBuf) {
@@ -38,7 +38,7 @@ void chrisprintf(char **restrict strp, const char *restrict fmt, ...) {
         buf = realloc(buf, currentBuflen);
       }
       if (buf == nullptr) {
-        panic("failed to allocate memory");
+        return resultErr("failed to allocate memory", false);
       }
     } else {
       // success
@@ -53,4 +53,5 @@ void chrisprintf(char **restrict strp, const char *restrict fmt, ...) {
   if (buf != initialBuf) {
     free(buf);
   }
+  return resultOk();
 }

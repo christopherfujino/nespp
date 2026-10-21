@@ -1,12 +1,11 @@
 #pragma once
 
 #include <stdint.h>
-#include <string>
 
 #include "common.h"
 #include "word.h"
 
-enum OpCodeType {
+typedef enum {
   AND, /// & accumulator
   ASL, // arithmetic shift left
   BCC, // Branch on carry clear
@@ -38,11 +37,11 @@ enum OpCodeType {
   STY,
   TAX, // Transfer accumulator to X
   TXS, // Transfer index X to stack register
-  unimplemented,
-};
+  OpCodeTypeUnimplemented,
+} OpCodeType;
 
 // TODO namespace these
-enum AddressingMode {
+typedef enum {
   absolute,
   accumulator,
   immediate,
@@ -50,12 +49,12 @@ enum AddressingMode {
   indirect,
   relative,
   zeropage,
-};
+} AddressingMode;
 
-struct OpCode {
-  OpCodeType type = unimplemented;
-  AddressingMode addressing = implied;
-};
+typedef struct {
+  OpCodeType type;
+  AddressingMode addressing;
+} OpCode;
 
 bool opCodeIsEqual(OpCode first, OpCode second);
 Result opCodeToString(OpCode *code, char **that);
@@ -70,7 +69,7 @@ extern LookupTables opCodeLookupPair;
 extern const char **opCodeNameLookup;
 extern OpCode *opCodeLookup;
 
-union InstructionOperandUnion {
+typedef union {
   Word absolute;
   uint8_t immediate;
   void *implied;
@@ -78,14 +77,14 @@ union InstructionOperandUnion {
   uint8_t relative;
   uint8_t zeropage;
   Word indirect;
-};
+} InstructionOperandUnion;
 
-struct Instruction {
+typedef struct {
   OpCode opCode;
   InstructionOperandUnion operand;
-};
+} Instruction;
 
-std::string instructionToString(Instruction *);
+const char *instructionToString(Instruction *);
 
 static inline Instruction instructionNew(OpCode opCode,
                                          InstructionOperandUnion operand) {
@@ -95,7 +94,7 @@ static inline Instruction instructionNew(OpCode opCode,
   };
 }
 
-std::string instructionToString(Instruction *);
+const char *instructionToString(Instruction *);
 
 // TODO: delete VM::decodeInstruction
 Instruction decodeInstruction(uint8_t **src, int idx);

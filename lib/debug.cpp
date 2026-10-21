@@ -1,7 +1,3 @@
-#include "../include/debug.h"
-#include "../include/instructions.h" // for Instruction, OpCode
-#include "../include/vm.h"           // for VM
-#include "../include/word.h"         // for Word
 #include <bitset>                    // std::bitset
 #include <cstdio>
 #include <cstring> // for strncmp
@@ -11,6 +7,12 @@
 #include <stdexcept>
 #include <stdint.h> // for uint8_t
 #include <stdio.h>  // sprintf()
+
+#include "common.h"
+#include "debug.h"
+#include "instructions.h" // for Instruction, OpCode
+#include "vm.h"           // for VM
+#include "word.h"         // for Word
 
 static inline size_t _queueLength(_Queue *queue) {
   if (queue->start == queue->next) {
@@ -124,7 +126,7 @@ void _renderStack(Debugger *dbg) {
   _renderBox(y, x, height, width);
 }
 
-extern void debuggerDebug(VM *vm, std::string s) {
+extern void debuggerDebug(VM *vm, const char *s) {
   auto debugger = (Debugger *)vm;
   _queueEnqueue(&debugger->debugQueue, s);
 }
@@ -187,9 +189,12 @@ void debuggerStart(Debugger *debugger) {
   };
 
   while (1) {
-    vm->debug(vm, std::format("PC = ${:02X}{:02X}", vm->PC.high, vm->PC.low));
+    char *msg = nullptr;
+    resultTry(chrisprintf(&msg, "PC = %02X%02X", vm->PC.high, vm->PC.low));
+    vm->debug(vm, msg);
     auto insLoc = vm->PC;
     Instruction ins = vmDecodeInstruction(vm);
+    resultTry(chrisprintf(&msg, "%04X: %s", wordTo16(&insLoc), instructionToString(&ins)));
     _queueEnqueue(&debugger->instructionQueue,
                   std::format("{:4X}: {}", wordTo16(&insLoc),
                               instructionToString(&ins).data()));
