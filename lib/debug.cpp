@@ -1,10 +1,8 @@
 #include <bitset>  // std::bitset
 #include <cstring> // for strncmp
-#include <format>
 #include <locale.h>
 #include <ncurses.h>
 #include <stdarg.h> // va_list
-#include <stdexcept>
 #include <stdint.h> // for uint8_t
 #include <stdio.h>  // sprintf()
 
@@ -170,7 +168,8 @@ void debuggerDispose(Debugger *debugger) {
   _QueueT *it = debugger->debugQueue.start;
   size_t len = _queueLength(&debugger->debugQueue);
   for (size_t i = 0; i < len; i++, it++) {
-    it = _maybeWrap(debugger->debugQueue.size, debugger->debugQueue.contents, it);
+    it = _maybeWrap(debugger->debugQueue.size, debugger->debugQueue.contents,
+                    it);
     printf("%ld: %s\n", i, *it);
   }
 }
@@ -187,7 +186,7 @@ void debuggerRender(Debugger *debugger) {
   refresh();
 }
 
-void debuggerStart(Debugger *debugger) {
+Result debuggerStart(Debugger *debugger) {
   VM *vm = (VM *)debugger;
   vm->PC = Word{
       .high = vmPeek16(vm, 0xFFFD),
@@ -211,7 +210,7 @@ void debuggerStart(Debugger *debugger) {
     char inputLine[inputSize] = {0};
     int result = getnstr(inputLine, inputSize);
     if (result == ERR) {
-      throw std::runtime_error("getnstr returned ERR");
+      return resultErr("getnstr returned ERR");
     }
     if (strncmp(inputLine, "", 1) == 0) {
       // step into
@@ -224,11 +223,10 @@ void debuggerStart(Debugger *debugger) {
       continue;
     } else if ((strncmp(inputLine, "exit", 4)) ||
                strncmp(inputLine, "quit", 4)) {
-      throw std::runtime_error("Exit");
+      return resultErr("Exit");
     } else {
-      throw std::runtime_error(
-          std::format("Unrecognized debugger input: \"{}\" ({})", inputLine,
-                      strlen(inputLine)));
+      return resultErr("Unrecognized debugger input: \"%s\" (%ld)", inputLine,
+                       strlen(inputLine));
     }
   }
 }

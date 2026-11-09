@@ -2,11 +2,12 @@
 #define __MONOREPO_SRC_NESPP_INCLUDE_DEBUG_H
 
 struct Rom; // #include "rom.h"
+#include "common.h"
 #include "vm.h"
 
 #include <stddef.h>
 
-typedef const char * _QueueT;
+typedef const char *_QueueT;
 struct _Queue {
   // TODO: when in C, make this `const`
   size_t size;
@@ -24,7 +25,7 @@ struct Debugger {
 };
 
 Debugger debuggerNew(Rom *rom);
-void debuggerStart(Debugger *debugger);
+Result debuggerStart(Debugger *debugger);
 void debuggerRender(Debugger *debugger);
 void debuggerDispose(Debugger *debugger);
 

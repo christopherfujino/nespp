@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
   Rom rom;
   Result res = romNew(&rom, argv[1]);
   if (res.tag != resultOk_t) {
-    panic("romNew() failed: %s\n", res.err.s);
+    panic("romNew() failed: %s\n", res.err);
   }
   const size_t tileCount = rom.chrSize / TILE_SIZE;
   Image img = GenImageColor(tileCount * TILE_WIDTH, 8,

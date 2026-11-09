@@ -45,7 +45,7 @@ typedef struct {
   enum ResultTag tag;
   union {
     const void *ok;
-    WrappedString err;
+    const char *err;
   };
 } Result;
 
@@ -64,22 +64,14 @@ static inline void resultTry(Result result) {
   case resultOk_t:
     return;
   case resultErr_t:
-    panic("%s", result.err.s);
+    panic("%s", result.err);
     break;
   }
 }
 
 // TODO: make this an sprintf wrapper and we don't need to track ownership
-static inline Result resultErr(char *msg, bool ownsString) {
-  return WRAP_LITERAL(Result){
-      .tag = resultErr_t,
-      .err =
-          {
-              .ownsString = ownsString,
-              .s = msg,
-          },
-  };
-}
+[[gnu::format(printf, 1, 2)]] [[nodiscard]]
+Result resultErr(const char *fmt, ...);
 
 // basically `man 3 asprintf`
 // TODO: use `restrict` when in C world

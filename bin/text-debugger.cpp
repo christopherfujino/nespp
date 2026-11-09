@@ -71,7 +71,8 @@ int main(int argc, char **argv) {
       debuggerStart(&debugger);
       break;
     case resultErr_t:
-      strncpy(msgBuffer, result.err.s, msgBufferLen);
+      strncpy(msgBuffer, result.err, msgBufferLen);
+      // TODO: call resultDispose(result);
 
       break;
     }

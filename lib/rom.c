@@ -30,7 +30,7 @@ Result romNew(Rom *rom, const char *path) {
 
   if (headerBytes[0] != 'N' || headerBytes[1] != 'E' || headerBytes[2] != 'S' ||
       headerBytes[3] != 0x1a) {
-    return resultErr("Unknown ROM format!", false);
+    return resultErr("Unknown ROM format!");
   }
 
   rom->prgSize = (int)headerBytes[4] * 1024 * 16;
@@ -44,13 +44,13 @@ Result romNew(Rom *rom, const char *path) {
 
   uint8_t flags7 = headerBytes[7];
   if (flags7 & 1) {
-    return resultErr("TODO: implement VS Unisystem", false);
+    return resultErr("TODO: implement VS Unisystem");
   }
   if (flags7 & (1 << 1)) {
-    return resultErr("TODO: implement Playchoice-10", false);
+    return resultErr("TODO: implement Playchoice-10");
   }
   if (flags7 & 0b1100) {
-    return resultErr("TODO: implement NES2.0", false);
+    return resultErr("TODO: implement NES2.0");
   }
   uint8_t upperNibbleOfMapper = flags7 & 0b11110000;
   rom->mapper = upperNibbleOfMapper | lowerNibbleOfMapper;

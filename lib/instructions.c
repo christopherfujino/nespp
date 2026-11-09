@@ -192,7 +192,7 @@ Result opCodeToString(OpCode *code, char **that) {
   }
 
   if (opcode == -1) {
-    return resultErr("unreachable", false);
+    return resultErr("unreachable");
   }
 
   resultTry(chrisprintf(that, "%s (%02X)", opCodeNameLookup[opcode], opcode));

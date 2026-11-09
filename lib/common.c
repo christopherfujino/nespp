@@ -11,9 +11,7 @@ void resultDispose(Result *result) {
   case resultOk_t:
     return;
   case resultErr_t:
-    if (result->err.ownsString) {
-      free(result->err.s);
-    }
+    free((void *)result->err);
   }
 }
 
@@ -28,7 +26,7 @@ Result vchrisprintf(char **strp, const char *fmt, va_list args) {
     n = vsnprintf(buf, currentBuflen, fmt, args);
     // TODO validate n
     if (n < 0) {
-      return resultErr("vsnprintf() failed", false);
+      return resultErr("vsnprintf() failed");
     } else if (n == (int)currentBuflen) {
       currentBuflen *= 2;
       if (buf == staticBuf) {
@@ -37,7 +35,7 @@ Result vchrisprintf(char **strp, const char *fmt, va_list args) {
         buf = realloc(buf, currentBuflen);
       }
       if (buf == nullptr) {
-        return resultErr("failed to allocate memory", false);
+        return resultErr("failed to allocate memory");
       }
     } else {
       // success
@@ -61,4 +59,19 @@ Result chrisprintf(char **restrict strp, const char *restrict fmt, ...) {
   va_end(args);
 
   return result;
+}
+
+Result resultErr(const char *fmt, ...) {
+  char *msg = nullptr;
+  va_list args = {};
+  {
+    va_start(args, fmt);
+    resultTry(vchrisprintf(&msg, fmt, args));
+    va_end(args);
+  }
+
+  return WRAP_LITERAL(Result){
+      .tag = resultErr_t,
+      .err = msg,
+  };
 }
