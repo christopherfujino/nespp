@@ -4,8 +4,8 @@ CVERSION = c23
 CXX = bear --append -- clang++
 AR = llvm-ar
 DEBUG_FLAGS = -g -O0 #-fsanitize=address
-CXXFLAGS = $DEBUG_FLAGS -std=c++20 -Wall -Werror -Wpedantic -Wextra -I./include
-CFLAGS = $DEBUG_FLAGS -std=$CVERSION -Wall -Werror -Wpedantic -Wextra -I./include
+CXXFLAGS = $DEBUG_FLAGS -std=c++20 -Wall -Werror -Wpedantic -Wextra -Wimplicit-fallthrough -I./include
+CFLAGS = $DEBUG_FLAGS -std=$CVERSION -Wall -Werror -Wpedantic -Wextra -Wimplicit-fallthrough -I./include
 LDFLAGS = #-fsanitize=address
 LD_CURSES = -lncursesw
 DEPFILES = `{/bin/sh -c 'find . -name "*.d"'}

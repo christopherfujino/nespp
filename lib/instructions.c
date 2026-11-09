@@ -223,12 +223,15 @@ const char *instructionToString(Instruction *instruction) {
     resultTry(chrisprintf(&instructionString, "%s  (%02X %02X)", opCodeString,
                           instruction->operand.indirect.low,
                           instruction->operand.indirect.high));
+    return instructionString;
   case relative:
     resultTry(chrisprintf(&instructionString, "%s  %02X", opCodeString,
                           instruction->operand.relative));
+    return instructionString;
   case zeropage:
     resultTry(chrisprintf(&instructionString, "%s  %02X", opCodeString,
                           instruction->operand.zeropage));
+    return instructionString;
   }
   panic("TODO: set compiler to flag on fallthrough");
   return instructionString;

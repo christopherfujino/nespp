@@ -27,6 +27,7 @@ static inline size_t _queueLength(_Queue *queue) {
   return pastEnd - queue->start + queue->next - queue->contents;
 }
 
+[[nodiscard]]
 static inline _QueueT *_maybeWrap(size_t len, _QueueT *start, _QueueT *cur) {
   auto pastEnd = start + len;
   if (cur == pastEnd) {
@@ -60,7 +61,7 @@ static void _queueRenderLines(_Queue *queue, int y, int x, int _, int width) {
   auto ptr = queue->start;
   for (size_t i = 0; i < len; i++, ptr++) {
     ptr = _maybeWrap(queue->size, queue->contents, ptr);
-    mvaddnstr(currentY, x, ptr->c_str(), width);
+    mvaddnstr(currentY, x, *ptr, width);
     currentY++;
   }
 }
@@ -142,8 +143,9 @@ Debugger debuggerNew(Rom *rom) {
   constexpr size_t debugLen = 30;
   setlocale(LC_ALL, "en_US.UTF-8");
   initscr();
-  auto instructionBuffer = new std::string[instructionLen];
-  auto debugBuffer = new std::string[debugLen];
+  _QueueT *instructionBuffer =
+      (_QueueT *)malloc(instructionLen * sizeof(_QueueT));
+  _QueueT *debugBuffer = (_QueueT *)malloc(debugLen * sizeof(_QueueT));
   return Debugger{
       .super = vmNew(rom, debuggerDebug),
       .instructionQueue =
@@ -164,14 +166,12 @@ Debugger debuggerNew(Rom *rom) {
 }
 
 void debuggerDispose(Debugger *debugger) {
-  printw("about to call endwin()\n");
   endwin();
-  printf("called endwin()\n");
-  auto it = debugger->debugQueue.start;
-  auto len = _queueLength(&debugger->debugQueue);
+  _QueueT *it = debugger->debugQueue.start;
+  size_t len = _queueLength(&debugger->debugQueue);
   for (size_t i = 0; i < len; i++, it++) {
-    _maybeWrap(debugger->debugQueue.size, debugger->debugQueue.contents, it);
-    printf("%ld: %s\n", i, it->c_str());
+    it = _maybeWrap(debugger->debugQueue.size, debugger->debugQueue.contents, it);
+    printf("%ld: %s\n", i, *it);
   }
 }
 

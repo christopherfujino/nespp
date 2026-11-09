@@ -5,9 +5,8 @@ struct Rom; // #include "rom.h"
 #include "vm.h"
 
 #include <stddef.h>
-#include <string>
 
-typedef std::string _QueueT;
+typedef const char * _QueueT;
 struct _Queue {
   // TODO: when in C, make this `const`
   size_t size;
