@@ -74,10 +74,11 @@ typedef struct VM {
 
   Rom *rom;
 
-  void (*debug)(VM *, const char *string);
+  [[gnu::format(printf, 2, 3)]]
+  void (*debug)(VM *, const char *string, ...);
 } VM;
 
-VM vmNew(Rom *_rom, void (*debug)(VM *, const char *));
+VM vmNew(Rom *_rom, void (*debug)(VM *, const char *, ...));
 
 void vmPoke(VM *vm, Word address, uint8_t value);
 void vmPoke16(VM *vm, uint16_t address, uint8_t value);

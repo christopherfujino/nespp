@@ -1,9 +1,9 @@
-#include <bitset>                    // std::bitset
-#include <cstdio>
+#include <bitset>  // std::bitset
 #include <cstring> // for strncmp
 #include <format>
 #include <locale.h>
 #include <ncurses.h>
+#include <stdarg.h> // va_list
 #include <stdexcept>
 #include <stdint.h> // for uint8_t
 #include <stdio.h>  // sprintf()
@@ -37,8 +37,9 @@ static inline _QueueT *_maybeWrap(size_t len, _QueueT *start, _QueueT *cur) {
   return cur;
 }
 
-static void _queueEnqueue(_Queue *queue, std::string element) {
+static void _queueEnqueue(_Queue *queue, const char *element) {
   if (_queueLength(queue) >= (queue->size - 1)) {
+    // TODO: free
     // buffer full
     queue->start += 1;
     if (queue->start == queue->contents + queue->size) {
@@ -126,9 +127,14 @@ void _renderStack(Debugger *dbg) {
   _renderBox(y, x, height, width);
 }
 
-extern void debuggerDebug(VM *vm, const char *s) {
+extern void debuggerDebug(VM *vm, const char *s, ...) {
+  va_list args = {};
+  va_start(args, s);
+
+  char *string = nullptr;
+  resultTry(vchrisprintf(&string, s, args));
   auto debugger = (Debugger *)vm;
-  _queueEnqueue(&debugger->debugQueue, s);
+  _queueEnqueue(&debugger->debugQueue, string);
 }
 
 Debugger debuggerNew(Rom *rom) {
@@ -189,15 +195,15 @@ void debuggerStart(Debugger *debugger) {
   };
 
   while (1) {
-    char *msg = nullptr;
-    resultTry(chrisprintf(&msg, "PC = %02X%02X", vm->PC.high, vm->PC.low));
-    vm->debug(vm, msg);
+    vm->debug(vm, "PC = %02X%02X", vm->PC.high, vm->PC.low);
     auto insLoc = vm->PC;
     Instruction ins = vmDecodeInstruction(vm);
-    resultTry(chrisprintf(&msg, "%04X: %s", wordTo16(&insLoc), instructionToString(&ins)));
-    _queueEnqueue(&debugger->instructionQueue,
-                  std::format("{:4X}: {}", wordTo16(&insLoc),
-                              instructionToString(&ins).data()));
+    {
+      char *msg = nullptr;
+      resultTry(chrisprintf(&msg, "%04X: %s", wordTo16(&insLoc),
+                            instructionToString(&ins)));
+      _queueEnqueue(&debugger->instructionQueue, msg);
+    }
     vmExecute(vm, ins);
     debuggerRender(debugger);
 
@@ -214,8 +220,7 @@ void debuggerStart(Debugger *debugger) {
       // TODO: is this right?
       // we're branching on if the zero flag is set, so don't branch
       vm->ppuRegisters[2] = 1 << 7;
-      vm->debug(vm,
-                std::format("Setting PPU[2] = #{:02X}", vm->ppuRegisters[2]));
+      vm->debug(vm, "Setting PPU[2] = #%02X", vm->ppuRegisters[2]);
       continue;
     } else if ((strncmp(inputLine, "exit", 4)) ||
                strncmp(inputLine, "quit", 4)) {

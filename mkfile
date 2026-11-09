@@ -9,7 +9,6 @@ CFLAGS = $DEBUG_FLAGS -std=$CVERSION -Wall -Werror -Wpedantic -Wextra -I./includ
 LDFLAGS = #-fsanitize=address
 LD_CURSES = -lncursesw
 DEPFILES = `{/bin/sh -c 'find . -name "*.d"'}
-RAYLIB_VERSION = 5.5
 RAYLIB_INCLUDE = ../../3p/raylib/build/raylib/include
 RAYLIB_BUILD = ../../3p/raylib/build/raylib
 
@@ -61,6 +60,9 @@ lib/%.o: lib/%.cpp
   $CXX $CXXFLAGS \
     -MT $target -MMD -MP -MF lib/$stem.d \
     -c lib/$stem.cpp -o $target
+
+rom.nes:
+	curl -L http://nickmass.com/images/nestest.nes -o $target
 
 lib/lib$PROJECT.a: \
 	lib/common.o \

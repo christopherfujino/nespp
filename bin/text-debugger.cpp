@@ -8,15 +8,6 @@
 #include "debug.h"
 #include "rom.h"
 
-#define _USAGE()                                                               \
-  do {                                                                         \
-    printf("Usage: TODO\n");                                                   \
-    for (int i = 0; i < argc; i++) {                                           \
-      printf("\t%d: %s\n", i, argv[i]);                                        \
-    }                                                                          \
-    abort();                                                                   \
-  } while (0)
-
 typedef struct {
   const char *romPath;
   pid_t pid;
@@ -44,18 +35,20 @@ static inline Config parse(int argc, char **argv) {
       i += 1;
       int pid = atoi(argv[i]);
       if (pid == 0) {
-        _USAGE();
+        panic("Expected value of --debugger-pid to be an integer, got \"%s\"", argv[i]);
       }
       config.pid = pid;
       continue;
     }
-    _USAGE();
+    panic("Unexpected CLI argument \"%s\"", argv[i]);
   }
 
   return config;
 }
 
 int main(int argc, char **argv) {
+  initInstructions();
+
   Config config = parse(argc, argv);
   if (config.pid != 0) {
     int res = prctl(PR_SET_PTRACER, config.pid, 0, 0, 0);

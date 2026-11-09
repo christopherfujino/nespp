@@ -5,6 +5,7 @@
 #include <stdio.h>  // vfprintf()
 #include <stdlib.h> // abort(), exit()
 
+// TODO: deprecate
 #ifdef __cplusplus
 extern "C" {
 #define WRAP_LITERAL(v) v
@@ -18,6 +19,8 @@ static inline void panic(const char *fmt, ...) {
   va_list args;
   va_start(args, fmt);
   vfprintf(stderr, fmt, args);
+  fprintf(stderr, "\n");
+  fflush(stderr);
   va_end(args);
 #ifdef NDEBUG
   exit(1);
@@ -32,6 +35,7 @@ enum ResultTag {
   resultErr_t,
 };
 
+// TODO: utilize copying (and sprintf) so we always own the string
 typedef struct {
   bool ownsString;
   char *s;
@@ -82,7 +86,14 @@ static inline Result resultErr(char *msg, bool ownsString) {
 [[gnu::format(printf, 2, 3)]] [[nodiscard]]
 Result chrisprintf(char **strp, const char *fmt, ...);
 
+// TODO: use `restrict` when in C world
+[[nodiscard]]
+Result vchrisprintf(char **strp, const char *fmt, va_list args);
+
 static inline void chrisFreeString(char **pp) {
+  if (*pp == nullptr) {
+    return;
+  }
   free(*pp);
   *pp = nullptr;
 }

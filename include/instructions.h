@@ -1,9 +1,17 @@
-#pragma once
+#ifndef __MONOREPO_SRC_NESPP_INCLUDE_INSTRUCTIONS_H
+#define __MONOREPO_SRC_NESPP_INCLUDE_INSTRUCTIONS_H
 
 #include <stdint.h>
 
 #include "common.h"
 #include "word.h"
+
+#ifdef __cplusplus
+extern "C" {
+#define WRAP_LITERAL(v) v
+#else
+#define WRAP_LITERAL(v) (v)
+#endif
 
 typedef enum {
   AND, /// & accumulator
@@ -69,6 +77,8 @@ extern LookupTables opCodeLookupPair;
 extern const char **opCodeNameLookup;
 extern OpCode *opCodeLookup;
 
+void initInstructions();
+
 typedef union {
   Word absolute;
   uint8_t immediate;
@@ -88,7 +98,7 @@ const char *instructionToString(Instruction *);
 
 static inline Instruction instructionNew(OpCode opCode,
                                          InstructionOperandUnion operand) {
-  return Instruction{
+  return WRAP_LITERAL(Instruction){
       .opCode = opCode,
       .operand = operand,
   };
@@ -98,3 +108,9 @@ const char *instructionToString(Instruction *);
 
 // TODO: delete VM::decodeInstruction
 Instruction decodeInstruction(uint8_t **src, int idx);
+
+#ifdef __cplusplus
+} // extern "C" {
+#endif // __cplusplus
+
+#endif // __MONOREPO_SRC_NESPP_INCLUDE_INSTRUCTIONS_H

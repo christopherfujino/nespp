@@ -9,7 +9,7 @@ static inline LookupTables _buildOpCodeLookup() {
 
   for (int i = 0; i < 256; ++i) {
     names[i] = "unimplemented";
-    codes[i] = (OpCode){.type = unimplemented, .addressing = implied};
+    codes[i] = (OpCode){.type = OpCodeTypeUnimplemented, .addressing = implied};
   }
 
   names[0x0A] = "ASL";
@@ -120,11 +120,11 @@ static inline LookupTables _buildOpCodeLookup() {
   return tables;
 }
 
-// LookupTables opCodeLookupPair = _buildOpCodeLookup();
-// const char **opCodeNameLookup = opCodeLookupPair.names;
-// OpCode *opCodeLookup = opCodeLookupPair.opCodes;
-
-void initModule() {
+// TODO: explore making these constexpr
+LookupTables opCodeLookupPair = {};
+const char **opCodeNameLookup = nullptr;
+OpCode *opCodeLookup = nullptr;
+void initInstructions() {
   opCodeLookupPair = _buildOpCodeLookup();
   opCodeNameLookup = opCodeLookupPair.names;
   opCodeLookup = opCodeLookupPair.opCodes;
@@ -192,39 +192,44 @@ Result opCodeToString(OpCode *code, char **that) {
   }
 
   if (opcode == -1) {
-    return resultErr();
+    return resultErr("unreachable", false);
   }
 
-  chrisprintf(that, "%s (%02X)", opCodeNameLookup[opcode], opcode);
+  resultTry(chrisprintf(that, "%s (%02X)", opCodeNameLookup[opcode], opcode));
   return resultOk();
 }
 
-std::string instructionToString(Instruction *instruction) {
+const char *instructionToString(Instruction *instruction) {
   char *opCodeString = nullptr;
+  char *instructionString = nullptr;
   opCodeToString(&instruction->opCode, &opCodeString);
   switch (instruction->opCode.addressing) {
   case absolute:
     // TODO: is this the right order?
-    return std::format("{} {:02X} {:02X}", opCodeString,
-                       instruction->operand.absolute.low,
-                       instruction->operand.absolute.high);
+    resultTry(chrisprintf(&instructionString, "%s %02X %02X", opCodeString,
+                          instruction->operand.absolute.high,
+                          instruction->operand.absolute.low));
+    return instructionString;
   case accumulator:
-    return std::format("{}  A", opCodeString);
+    resultTry(chrisprintf(&instructionString, "%s  A", opCodeString));
+    return instructionString;
   case immediate:
-    return std::format("{} #{:02X}", opCodeString,
-                       instruction->operand.immediate);
+    resultTry(chrisprintf(&instructionString, "%s #%02X", opCodeString,
+                          instruction->operand.immediate));
+    return instructionString;
   case implied:
     return opCodeString;
   case indirect:
-    return std::format("{}  ({:02X} {:02X})", opCodeString,
-                       instruction->operand.indirect.low,
-                       instruction->operand.indirect.high);
+    resultTry(chrisprintf(&instructionString, "%s  (%02X %02X)", opCodeString,
+                          instruction->operand.indirect.low,
+                          instruction->operand.indirect.high));
   case relative:
-    return std::format("{}  {:02X}", opCodeString,
-                       instruction->operand.relative);
+    resultTry(chrisprintf(&instructionString, "%s  %02X", opCodeString,
+                          instruction->operand.relative));
   case zeropage:
-    return std::format("{}  {:02X}", opCodeString,
-                       instruction->operand.zeropage);
+    resultTry(chrisprintf(&instructionString, "%s  %02X", opCodeString,
+                          instruction->operand.zeropage));
   }
-  return std::format("{}", opCodeString);
+  panic("TODO: set compiler to flag on fallthrough");
+  return instructionString;
 }

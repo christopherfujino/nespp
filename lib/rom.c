@@ -23,7 +23,7 @@ Result romNew(Rom *rom, const char *path) {
   FILE *f = fopen(path, "rb");
   if (f == nullptr) {
     char *buf = nullptr;
-    chrisprintf(&buf, "Failed to open a ROM at %s", path);
+    resultTry(chrisprintf(&buf, "Failed to open a ROM at %s", path));
     return resultErr(buf, true);
   }
   fread(&headerBytes, HEADER_SIZE, 1, f);

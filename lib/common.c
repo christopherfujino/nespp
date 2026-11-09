@@ -17,14 +17,13 @@ void resultDispose(Result *result) {
   }
 }
 
-Result chrisprintf(char **restrict strp, const char *restrict fmt, ...) {
-  constexpr size_t initialBuflen = 1024;
+Result vchrisprintf(char **strp, const char *fmt, va_list args) {
+  constexpr size_t initialBuflen = 512;
   size_t currentBuflen = initialBuflen;
-  char initialBuf[initialBuflen];
-  char *buf = initialBuf;
-  va_list args = {};
+  static char staticBuf[initialBuflen];
+  char *buf = staticBuf;
   int n = 0;
-  va_start(args);
+
   while (1) {
     n = vsnprintf(buf, currentBuflen, fmt, args);
     // TODO validate n
@@ -32,7 +31,7 @@ Result chrisprintf(char **restrict strp, const char *restrict fmt, ...) {
       return resultErr("vsnprintf() failed", false);
     } else if (n == (int)currentBuflen) {
       currentBuflen *= 2;
-      if (buf == initialBuf) {
+      if (buf == staticBuf) {
         buf = malloc(currentBuflen);
       } else {
         buf = realloc(buf, currentBuflen);
@@ -45,13 +44,21 @@ Result chrisprintf(char **restrict strp, const char *restrict fmt, ...) {
       break;
     }
   }
-  va_end(args);
 
   *strp = malloc(n + 1);
   strncpy(*strp, buf, n);
   (*strp)[n] = '\0';
-  if (buf != initialBuf) {
+  if (buf != staticBuf) {
     free(buf);
   }
   return resultOk();
+}
+
+Result chrisprintf(char **restrict strp, const char *restrict fmt, ...) {
+  va_list args = {};
+  va_start(args);
+  Result result = vchrisprintf(strp, fmt, args);
+  va_end(args);
+
+  return result;
 }
