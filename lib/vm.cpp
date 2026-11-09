@@ -6,7 +6,6 @@
 #include <format>    // std::format
 #include <stdexcept> // std::runtime_except
 #include <string.h>  // for memcpy
-#include <utility>   // for std::move
 
 /// Negative bitmask
 static constexpr uint8_t _N = 1 << 7;
