@@ -7,4 +7,6 @@ An NES emulator.
 
 ## Building
 
-Requires https://github.com/christopherfujino/slothscript for build scripts.
+Requires Plan 9 mk to build.
+
+The build rules assume it built from within https://github.com/christopherfujino/monorepo.

@@ -3,10 +3,9 @@ CC = bear --append -- clang
 CVERSION = c23
 CXX = bear --append -- clang++
 AR = llvm-ar
-DEBUG_FLAGS = -g -O0 #-fsanitize=address
-CXXFLAGS = $DEBUG_FLAGS -std=c++20 -Wall -Werror -Wpedantic -Wextra -Wimplicit-fallthrough -Wvla -I./include
+DEBUG_FLAGS = -g -O0
 CFLAGS = $DEBUG_FLAGS -std=$CVERSION -Wall -Werror -Wpedantic -Wextra -Wimplicit-fallthrough -I./include
-LDFLAGS = #-fsanitize=address
+LDFLAGS = -fsanitize=address
 LD_CURSES = -lncursesw
 DEPFILES = `{/bin/sh -c 'find . -name "*.d"'}
 RAYLIB_INCLUDE = ../../3p/raylib/build/raylib/include
