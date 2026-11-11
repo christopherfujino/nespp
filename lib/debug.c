@@ -1,10 +1,9 @@
-#include <bitset>  // std::bitset
-#include <cstring> // for strncmp
 #include <locale.h>
 #include <ncurses.h>
 #include <stdarg.h> // va_list
 #include <stdint.h> // for uint8_t
 #include <stdio.h>  // sprintf()
+#include <string.h> // for strncmp
 
 #include "common.h"
 #include "debug.h"
@@ -104,9 +103,8 @@ void _renderRegisters(Debugger *dbg) {
   VM *vm = (VM *)dbg;
   _renderBox(y, x, height, width);
   mvprintw(y + 1, x + 1, "PC   A  X  Y  SP NV-BDIZC");
-  mvprintw(y + 2, x + 1, "%04X %02X %02X %02X %02X %s", wordTo16(&vm->PC),
-           vm->A, vm->X, vm->Y, vm->SP,
-           std::bitset<8>{vm->S}.to_string().data());
+  mvprintw(y + 2, x + 1, "%04X %02X %02X %02X %02X %08b", wordTo16(&vm->PC),
+           vm->A, vm->X, vm->Y, vm->SP, vm->S);
 }
 
 void _renderStack(Debugger *dbg) {
@@ -144,17 +142,17 @@ Debugger debuggerNew(Rom *rom) {
   _QueueT *instructionBuffer =
       (_QueueT *)malloc(instructionLen * sizeof(_QueueT));
   _QueueT *debugBuffer = (_QueueT *)malloc(debugLen * sizeof(_QueueT));
-  return Debugger{
+  return (Debugger){
       .super = vmNew(rom, debuggerDebug),
       .instructionQueue =
-          _Queue{
+          (_Queue){
               .size = instructionLen,
               .contents = instructionBuffer,
               .start = instructionBuffer,
               .next = instructionBuffer,
           },
       .debugQueue =
-          _Queue{
+          (_Queue){
               .size = debugLen,
               .contents = debugBuffer,
               .start = debugBuffer,
@@ -188,7 +186,7 @@ void debuggerRender(Debugger *debugger) {
 
 Result debuggerStart(Debugger *debugger) {
   VM *vm = (VM *)debugger;
-  vm->PC = Word{
+  vm->PC = (Word){
       .high = vmPeek16(vm, 0xFFFD),
       .low = vmPeek16(vm, 0xFFFC),
   };

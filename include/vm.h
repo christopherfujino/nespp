@@ -4,24 +4,28 @@
 #include <stdint.h>
 
 #include "instructions.h"
-struct Rom; // #include "rom.h"
+#include "rom.h"
 #include "word.h"
 
-struct Mapper0 {
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct {
   Rom *rom;
 
   // 32 KiB = 32768 = 0x8000
-  uint8_t prg[0x8000] = {0};
-};
+  uint8_t prg[0x8000];
+} Mapper0;
 
 Mapper0 mapper0New(Rom *rom);
 uint8_t mapper0Peek16(Mapper0 *mapper, uint16_t address);
 void mapper0Poke16(Mapper0 *mapper, uint16_t address, uint8_t value);
 
 // TODO: inline when we're in C world
-enum _MapperTag {
+typedef enum {
   mapperTag0,
-};
+} _MapperTag;
 
 typedef struct Mapper {
   _MapperTag tag;
@@ -43,7 +47,7 @@ typedef struct VM {
   /// Stack pointer
   ///
   /// Grows down from $FF to $00. These are offsets from CPU RAM map $0100.
-  uint8_t SP = 0xFF;
+  uint8_t SP;
 
   /// Status
   ///
@@ -75,7 +79,7 @@ typedef struct VM {
   Rom *rom;
 
   [[gnu::format(printf, 2, 3)]]
-  void (*debug)(VM *, const char *string, ...);
+  void (*debug)(struct VM *, const char *string, ...);
 } VM;
 
 VM vmNew(Rom *_rom, void (*debug)(VM *, const char *, ...));
@@ -91,5 +95,9 @@ void vmStart(VM *vm);
 uint8_t vmPeek(VM *vm, Word address);
 uint8_t vmPeek8(VM *vm, uint8_t offset);
 uint8_t vmPeek16(VM *vm, uint16_t address);
+
+#ifdef __cplusplus
+} // extern "C" {
+#endif
 
 #endif // __MONOREPO_SRC_NESPP_INCLUDE_VM_H

@@ -131,7 +131,7 @@ static Word _operandToAddress(VM *vm, Instruction instruction) {
 
 // TODO: avoid the copy in return.
 Mapper0 mapper0New(Rom *_rom) {
-  Mapper0 mapper;
+  Mapper0 mapper = {};
   mapper.rom = _rom;
 
   // TODO: should we copy, or should this just be a light view into the ROM?

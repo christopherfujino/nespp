@@ -20,7 +20,7 @@ static const int TILES_PER_ROW = SCREEN_WIDTH / TILE_WIDTH;
 extern "C" {
 #endif
 
-typedef struct Rom {
+typedef struct {
   // Size of PRG ROM in bytes
   //
   // Parsed from 16 KB units.
