@@ -35,7 +35,8 @@ static inline Config parse(int argc, char **argv) {
       i += 1;
       int pid = atoi(argv[i]);
       if (pid == 0) {
-        panic("Expected value of --debugger-pid to be an integer, got \"%s\"", argv[i]);
+        panic("Expected value of --debugger-pid to be an integer, got \"%s\"",
+              argv[i]);
       }
       config.pid = pid;
       continue;
@@ -61,7 +62,7 @@ int main(int argc, char **argv) {
   int exitCode = 0;
   Debugger debugger = {};
   constexpr size_t msgBufferLen = 512;
-  char msgBuffer[msgBufferLen] = {0};
+  char msgBuffer[msgBufferLen] = "";
   try {
     Rom rom;
     auto result = romNew(&rom, config.romPath);
@@ -72,8 +73,7 @@ int main(int argc, char **argv) {
       break;
     case resultErr_t:
       strncpy(msgBuffer, result.err, msgBufferLen);
-      // TODO: call resultDispose(result);
-
+      resultDispose(&result);
       break;
     }
   } catch (std::runtime_error err) {
@@ -85,8 +85,6 @@ int main(int argc, char **argv) {
   debuggerDispose(&debugger);
   if (msgBuffer[0]) {
     fprintf(stderr, "%s", msgBuffer);
-  } else {
-    fprintf(stderr, "empty msgBuffer\n");
   }
   return exitCode;
 }

@@ -130,7 +130,7 @@ extern void debuggerDebug(VM *vm, const char *s, ...) {
 
   char *string = nullptr;
   resultTry(vchrisprintf(&string, s, args));
-  auto debugger = (Debugger *)vm;
+  Debugger *debugger = (Debugger *)vm;
   _queueEnqueue(&debugger->debugQueue, string);
 }
 
@@ -161,15 +161,19 @@ Debugger debuggerNew(Rom *rom) {
   };
 }
 
-void debuggerDispose(Debugger *debugger) {
-  endwin();
-  _QueueT *it = debugger->debugQueue.start;
+void debuggerDumpQueue(Debugger *debugger) {
+   _QueueT *it = debugger->debugQueue.start;
   size_t len = _queueLength(&debugger->debugQueue);
   for (size_t i = 0; i < len; i++, it++) {
     it = _maybeWrap(debugger->debugQueue.size, debugger->debugQueue.contents,
                     it);
     printf("%ld: %s\n", i, *it);
   }
+}
+
+void debuggerDispose(Debugger *debugger) {
+  endwin();
+  debuggerDumpQueue(debugger);
 }
 
 void debuggerRender(Debugger *debugger) {

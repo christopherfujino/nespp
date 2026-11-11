@@ -21,7 +21,7 @@ typedef struct {
   _QueueT *next;
 } _Queue;
 
-typedef struct {
+typedef struct Debugger {
   VM super;
 
   _Queue instructionQueue;
@@ -32,6 +32,7 @@ Debugger debuggerNew(Rom *rom);
 Result debuggerStart(Debugger *debugger);
 void debuggerRender(Debugger *debugger);
 void debuggerDispose(Debugger *debugger);
+void debuggerDumpQueue(Debugger *debugger);
 
 #ifdef __cplusplus
 } // extern "C" {

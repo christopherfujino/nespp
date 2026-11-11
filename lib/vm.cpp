@@ -1,10 +1,9 @@
 #include <assert.h>
-#include <format>    // std::format
-#include <string.h>  // for memcpy
+#include <string.h> // for memcpy
 
-#include "vm.h"           // for VM, Mapper0, Mapper
 #include "instructions.h" // for OpCode, Instruction, OpCode::AND_ABS, OpC...
 #include "rom.h"          // for Rom
+#include "vm.h"           // for VM, Mapper0, Mapper
 #include "word.h"         // for Absolute
 
 /// Negative bitmask
@@ -130,25 +129,23 @@ static Word _operandToAddress(VM *vm, Instruction instruction) {
 }
 
 // TODO: avoid the copy in return.
-Mapper0 mapper0New(Rom *_rom) {
-  Mapper0 mapper = {};
-  mapper.rom = _rom;
+Result mapper0New(Rom *_rom, Mapper0 *mapper) {
+  mapper->rom = _rom;
 
   // TODO: should we copy, or should this just be a light view into the ROM?
   switch (_rom->prgSize) {
   case 0x4000: // 16KiB
-    memcpy(mapper.prg, _rom->prgBlob, 0x4000);
+    memcpy(mapper->prg, _rom->prgBlob, 0x4000);
     // Mirror
-    memcpy(mapper.prg + 0x4000, _rom->prgBlob, 0x4000);
+    memcpy(mapper->prg + 0x4000, _rom->prgBlob, 0x4000);
     break;
   case 0x8000: // 32KiB
-    memcpy(mapper.prg, _rom->prgBlob, 0x8000);
+    memcpy(mapper->prg, _rom->prgBlob, 0x8000);
     break;
   default:
-    throw std::runtime_error(
-        std::format("Unknown PRG size {:4X}", _rom->prgSize));
+    return resultErr("Unknown PRG size %04X", _rom->prgSize);
   }
-  return mapper;
+  return resultOk();
 }
 
 uint8_t mapper0Peek16(Mapper0 *mapper, uint16_t address) {
@@ -195,8 +192,10 @@ void mapperPoke16(Mapper *mapper, uint16_t address, uint8_t value) {
 }
 
 VM vmNew(Rom *_rom, void (*debug)(VM *, const char *, ...)) {
+  Mapper0 mapper = {};
   switch (_rom->mapper) {
   case 0:
+    resultTry(mapper0New(_rom, &mapper));
     return VM{
         .PC = Word{},
         .A = 0,
@@ -210,13 +209,13 @@ VM vmNew(Rom *_rom, void (*debug)(VM *, const char *, ...)) {
         .mapper =
             Mapper{
                 .tag = mapperTag0,
-                .mapper0 = mapper0New(_rom),
+                .mapper0 = mapper,
             },
-        .rom = std::move(_rom),
+        .rom = _rom,
         .debug = debug,
     };
   default:
-    throw "Oops!";
+    panic("Oops!");
   }
 }
 
@@ -315,7 +314,7 @@ void vmPoke16(VM *vm, uint16_t address, uint8_t value) {
     // mapper
     mapperPoke16(&vm->mapper, address, value);
   } else {
-    throw std::runtime_error(std::format("Invalid address 0x{:4X}", address));
+    panic("Invalid address 0x%04X", address);
   }
 }
 
@@ -324,9 +323,8 @@ Instruction vmDecodeInstruction(VM *vm) {
   uint8_t _rawCode = vmPeek(vm, vm->PC); // for debugging
   OpCode code = opCodeLookup[_rawCode];
   if (code.type == OpCodeTypeUnimplemented) {
-    throw std::runtime_error(
-        std::format("Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode,
-                    wordTo16(&vm->PC)));
+    panic("Unimplemented instruction 0x%02X at 0x%04X", _rawCode,
+          wordTo16(&vm->PC));
   }
   switch (code.addressing) {
   case AddressingMode::absolute:
@@ -393,9 +391,8 @@ Instruction vmDecodeInstruction(VM *vm) {
     vm->PC = wordPlus(&vm->PC, 2);
     break;
   default:
-    throw std::runtime_error(
-        std::format("Unimplemented instruction 0x{:02X} at 0x{:04X}", _rawCode,
-                    wordTo16(&vm->PC)));
+    panic("Unimplemented instruction 0x%02X at 0x%04X", _rawCode,
+          wordTo16(&vm->PC));
   }
   return instruction;
 }
