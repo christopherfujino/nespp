@@ -56,11 +56,6 @@ lib/%.o: lib/%.c
     -MT $target -MMD -MP -MF lib/$stem.d \
     -c lib/$stem.c -o $target
 
-lib/%.o: lib/%.cpp
-  $CXX $CXXFLAGS \
-    -MT $target -MMD -MP -MF lib/$stem.d \
-    -c lib/$stem.cpp -o $target
-
 rom.nes:
 	curl -L http://nickmass.com/images/nestest.nes -o $target
 
