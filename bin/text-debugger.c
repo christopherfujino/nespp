@@ -1,12 +1,10 @@
 #include <linux/prctl.h> // PR_SET_PTRACER
-#include <stdexcept>     // std::runtime_error
 #include <stdlib.h>
 #include <string.h>
 #include <sys/prctl.h>
 #include <sys/types.h>
 
 #include "debug.h"
-#include "rom.h"
 
 typedef struct {
   const char *romPath;
@@ -14,7 +12,7 @@ typedef struct {
 } Config;
 
 static inline Config parse(int argc, char **argv) {
-  auto config = Config{
+  auto config = (Config){
       .romPath = "./rom.nes",
       .pid = 0,
   };
@@ -63,23 +61,18 @@ int main(int argc, char **argv) {
   Debugger debugger = {};
   constexpr size_t msgBufferLen = 512;
   char msgBuffer[msgBufferLen] = "";
-  try {
-    Rom rom;
-    auto result = romNew(&rom, config.romPath);
-    switch (result.tag) {
-    case resultOk_t:
-      debugger = debuggerNew(&rom);
-      debuggerStart(&debugger);
-      break;
-    case resultErr_t:
-      strncpy(msgBuffer, result.err, msgBufferLen);
-      resultDispose(&result);
-      break;
-    }
-  } catch (std::runtime_error err) {
-    snprintf(msgBuffer, msgBufferLen, "ERR(%s): migrate this to `Result`!\n",
-             err.what());
-    exitCode = 1;
+
+  Rom rom = {};
+  auto result = romNew(&rom, config.romPath);
+  switch (result.tag) {
+  case resultOk_t:
+    debugger = debuggerNew(&rom);
+    debuggerStart(&debugger);
+    break;
+  case resultErr_t:
+    strncpy(msgBuffer, result.err, msgBufferLen);
+    resultDispose(&result);
+    break;
   }
 
   debuggerDispose(&debugger);
