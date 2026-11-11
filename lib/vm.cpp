@@ -1,11 +1,11 @@
-#include "../include/vm.h"           // for VM, Mapper0, Mapper
-#include "../include/instructions.h" // for OpCode, Instruction, OpCode::AND_ABS, OpC...
-#include "../include/rom.h"          // for Rom
-#include "../include/word.h"         // for Absolute
 #include <assert.h>
 #include <format>    // std::format
-#include <stdexcept> // std::runtime_except
 #include <string.h>  // for memcpy
+
+#include "vm.h"           // for VM, Mapper0, Mapper
+#include "instructions.h" // for OpCode, Instruction, OpCode::AND_ABS, OpC...
+#include "rom.h"          // for Rom
+#include "word.h"         // for Absolute
 
 /// Negative bitmask
 static constexpr uint8_t _N = 1 << 7;
