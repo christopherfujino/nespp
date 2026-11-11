@@ -13,6 +13,7 @@ extern "C" {
 #define WRAP_LITERAL(v) (v)
 #endif
 
+// TODO: depend on //src/chrislib/chrislib.h when in C world
 [[noreturn]] [[gnu::format(printf, 1, 2)]]
 static inline void panic(const char *fmt, ...) {
   // TODO: streamline this when we universally use C23
@@ -34,12 +35,6 @@ enum ResultTag {
   resultOk_t,
   resultErr_t,
 };
-
-// TODO: utilize copying (and sprintf) so we always own the string
-typedef struct {
-  bool ownsString;
-  char *s;
-} WrappedString;
 
 typedef struct {
   enum ResultTag tag;
@@ -69,7 +64,6 @@ static inline void resultTry(Result result) {
   }
 }
 
-// TODO: make this an sprintf wrapper and we don't need to track ownership
 [[gnu::format(printf, 1, 2)]] [[nodiscard]]
 Result resultErr(const char *fmt, ...);
 
