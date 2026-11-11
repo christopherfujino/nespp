@@ -18,7 +18,7 @@ typedef struct {
   uint8_t prg[0x8000];
 } Mapper0;
 
-Mapper0 mapper0New(Rom *rom);
+Result mapper0New(Rom *rom, Mapper0 *mapper);
 uint8_t mapper0Peek16(Mapper0 *mapper, uint16_t address);
 void mapper0Poke16(Mapper0 *mapper, uint16_t address, uint8_t value);
 

@@ -79,6 +79,7 @@ extern OpCode *opCodeLookup;
 
 void initInstructions();
 
+// TODO inline
 typedef union {
   Word absolute;
   uint8_t immediate;
