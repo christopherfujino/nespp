@@ -1,5 +1,5 @@
-#include <cstdio>
-#include <cstdlib>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "raylib.h"
 #include "rom.h"
@@ -13,13 +13,9 @@ int main(int argc, char **argv) {
     return 1;
   }
   Rom rom;
-  try {
-    Result res = romNew(&rom, argv[1]);
-    if (res.tag == resultErr_t) {
-      panic("Error: %s\n", res.err);
-    }
-  } catch (const char *msg) {
-    panic("TODO: rewrite to use Result: %s!\n", msg);
+  Result res = romNew(&rom, argv[1]);
+  if (res.tag == resultErr_t) {
+    panic("Error: %s\n", res.err);
   }
   render(&rom);
 }
@@ -31,7 +27,7 @@ void render(Rom *rom) {
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "NES");
   SetTargetFPS(10);
 
-  const int MESSAGE_MAX = 100;
+  constexpr size_t MESSAGE_MAX = 100;
   char msg[MESSAGE_MAX] = {0};
 
   int tileNumber = 0;
@@ -68,7 +64,7 @@ void renderTile(Rom *rom, int i) {
   int x = 5;
   int y = 5;
 
-  std::size_t tileOffset = i * (TILE_SIZE);
+  size_t tileOffset = i * (TILE_SIZE);
   for (int byteOffset = 0; byteOffset < 8; byteOffset++) {
     uint8_t plane0Byte = rom->chrBlob[tileOffset + byteOffset];
     uint8_t plane1Byte = rom->chrBlob[tileOffset + byteOffset + 8];
@@ -82,11 +78,11 @@ void renderTile(Rom *rom, int i) {
       // int y = ((i * 8 / TILES_PER_ROW) + byteOffset);
       DrawRectangleV(
           // position
-          Vector2{.x = (float)((x + bitOffset) * PIXEL_SCALE),
-                  .y = (float)((y + byteOffset) * PIXEL_SCALE)},
+          (Vector2){.x = (float)((x + bitOffset) * PIXEL_SCALE),
+                    .y = (float)((y + byteOffset) * PIXEL_SCALE)},
           // size
-          Vector2{.x = PIXEL_SCALE, .y = PIXEL_SCALE},
-          Color{
+          (Vector2){.x = PIXEL_SCALE, .y = PIXEL_SCALE},
+          (Color){
               .r = 0xFF,
               .g = 0xFF,
               .b = 0xFF,

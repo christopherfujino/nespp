@@ -4,7 +4,7 @@ CVERSION = c23
 CXX = bear --append -- clang++
 AR = llvm-ar
 DEBUG_FLAGS = -g -O0 #-fsanitize=address
-CXXFLAGS = $DEBUG_FLAGS -std=c++20 -Wall -Werror -Wpedantic -Wextra -Wimplicit-fallthrough -I./include
+CXXFLAGS = $DEBUG_FLAGS -std=c++20 -Wall -Werror -Wpedantic -Wextra -Wimplicit-fallthrough -Wvla -I./include
 CFLAGS = $DEBUG_FLAGS -std=$CVERSION -Wall -Werror -Wpedantic -Wextra -Wimplicit-fallthrough -I./include
 LDFLAGS = #-fsanitize=address
 LD_CURSES = -lncursesw
@@ -20,10 +20,10 @@ text-debugger.exe: bin/text-debugger.o lib/lib$PROJECT.a
 <|cat $DEPFILES /dev/null
 
 tileBrowser.exe: bin/tileBrowser.o lib/lib$PROJECT.a $RAYLIB_BUILD/libraylib.a
-	$CXX $LDFLAGS -lm -lX11 $prereq -o $target
+	$CC $LDFLAGS -lm -lX11 $prereq -o $target
 
 romToSource.exe: bin/romToSource.o lib/lib$PROJECT.a $RAYLIB_BUILD/libraylib.a
-	$CXX $LDFLAGS -lm -lX11 $prereq -o $target
+	$CC $LDFLAGS -lm -lX11 $prereq -o $target
 
 test:V: test.exe
   ./test.exe
@@ -41,15 +41,10 @@ bin/romToSource.o: bin/romToSource.c
     -MT $target -MMD -MP -MF bin/$stem.d \
     -c bin/romToSource.c -o $target
 
-bin/tileBrowser.o: bin/tileBrowser.cpp
-  $CXX $CXXFLAGS -I$RAYLIB_INCLUDE \
+bin/tileBrowser.o: bin/tileBrowser.c
+  $CC $CFLAGS -I$RAYLIB_INCLUDE \
     -MT $target -MMD -MP -MF bin/$stem.d \
-    -c bin/tileBrowser.cpp -o $target
-
-bin/%.o: bin/%.cpp
-  $CXX $CXXFLAGS \
-    -MT $target -MMD -MP -MF bin/$stem.d \
-    -c bin/$stem.cpp -o $target
+    -c bin/tileBrowser.c -o $target
 
 lib/%.o: lib/%.c
   $CC $CFLAGS \
