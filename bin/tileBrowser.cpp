@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
   try {
     Result res = romNew(&rom, argv[1]);
     if (res.tag == resultErr_t) {
-      panic("Error: %s\n", res.err.s);
+      panic("Error: %s\n", res.err);
     }
   } catch (const char *msg) {
     panic("TODO: rewrite to use Result: %s!\n", msg);
